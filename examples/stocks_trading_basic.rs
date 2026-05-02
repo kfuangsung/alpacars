@@ -3,14 +3,14 @@
 //! Run with:
 //!   APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example stocks_trading_basic
 
-use alpaca_rs::data::enums::DataFeed;
-use alpaca_rs::data::historical::stock::{
+use alpacars::data::enums::DataFeed;
+use alpacars::data::historical::stock::{
     StockBarsRequest, StockHistoricalDataClient, StockLatestRequest,
 };
-use alpaca_rs::trading::client::TradingClient;
-use alpaca_rs::trading::enums::{AssetClass, AssetExchange, AssetStatus, OrderSide, TimeInForce};
-use alpaca_rs::trading::models::AccountConfiguration;
-use alpaca_rs::trading::requests::{
+use alpacars::trading::client::TradingClient;
+use alpacars::trading::enums::{AssetClass, AssetExchange, AssetStatus, OrderSide, TimeInForce};
+use alpacars::trading::models::AccountConfiguration;
+use alpacars::trading::requests::{
     GetAssetsRequest, GetOrdersRequest, OrderRequest, StopLossRequest, TakeProfitRequest,
 };
 
@@ -97,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Bracket order (market + take-profit + stop-loss)
     let mut bracket_order = OrderRequest::market("SPY", OrderSide::Buy, "1");
-    bracket_order.order_class = Some(alpaca_rs::trading::enums::OrderClass::Bracket);
+    bracket_order.order_class = Some(alpacars::trading::enums::OrderClass::Bracket);
     bracket_order.take_profit = Some(TakeProfitRequest { limit_price: "620.00".to_string() });
     bracket_order.stop_loss = Some(StopLossRequest {
         stop_price: "550.00".to_string(),
@@ -108,7 +108,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // OTO order (limit + stop-loss leg)
     let mut oto_order = OrderRequest::limit("SPY", OrderSide::Buy, "1", "555.00", TimeInForce::Day);
-    oto_order.order_class = Some(alpaca_rs::trading::enums::OrderClass::Oto);
+    oto_order.order_class = Some(alpacars::trading::enums::OrderClass::Oto);
     oto_order.stop_loss = Some(StopLossRequest {
         stop_price: "540.00".to_string(),
         limit_price: None,
@@ -118,7 +118,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // OCO order (limit buy with both take-profit and stop-loss already open)
     let mut oco_order = OrderRequest::limit("SPY", OrderSide::Sell, "1", "600.00", TimeInForce::Gtc);
-    oco_order.order_class = Some(alpaca_rs::trading::enums::OrderClass::Oco);
+    oco_order.order_class = Some(alpacars::trading::enums::OrderClass::Oco);
     oco_order.stop_loss = Some(StopLossRequest {
         stop_price: "540.00".to_string(),
         limit_price: None,
@@ -141,7 +141,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ── Query open orders ────────────────────────────────────────────────────
     let open_orders = trading
         .get_orders(Some(&GetOrdersRequest {
-            status: Some(alpaca_rs::trading::enums::QueryOrderStatus::Open),
+            status: Some(alpacars::trading::enums::QueryOrderStatus::Open),
             ..Default::default()
         }))
         .await?;
@@ -166,7 +166,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         trading
             .close_position(
                 sym,
-                Some(&alpaca_rs::trading::requests::ClosePositionRequest {
+                Some(&alpacars::trading::requests::ClosePositionRequest {
                     qty: Some("3".to_string()),
                     percentage: None,
                 }),

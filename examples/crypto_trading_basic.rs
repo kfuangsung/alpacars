@@ -3,10 +3,10 @@
 //! Run with:
 //!   APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example crypto_trading_basic
 
-use alpaca_rs::data::historical::crypto::{CryptoBarsRequest, CryptoHistoricalDataClient, CryptoLatestRequest};
-use alpaca_rs::trading::client::TradingClient;
-use alpaca_rs::trading::enums::{AssetClass, AssetStatus, OrderSide, TimeInForce};
-use alpaca_rs::trading::requests::{
+use alpacars::data::historical::crypto::{CryptoBarsRequest, CryptoHistoricalDataClient, CryptoLatestRequest};
+use alpacars::trading::client::TradingClient;
+use alpacars::trading::enums::{AssetClass, AssetStatus, OrderSide, TimeInForce};
+use alpacars::trading::requests::{
     ClosePositionRequest, GetAssetsRequest, GetOrdersRequest, OrderRequest,
 };
 
@@ -74,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ── Query orders ─────────────────────────────────────────────────────────
     let all_orders = trading
         .get_orders(Some(&GetOrdersRequest {
-            status: Some(alpaca_rs::trading::enums::QueryOrderStatus::All),
+            status: Some(alpacars::trading::enums::QueryOrderStatus::All),
             ..Default::default()
         }))
         .await?;
@@ -82,7 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let open_orders = trading
         .get_orders(Some(&GetOrdersRequest {
-            status: Some(alpaca_rs::trading::enums::QueryOrderStatus::Open),
+            status: Some(alpacars::trading::enums::QueryOrderStatus::Open),
             ..Default::default()
         }))
         .await?;

@@ -1,7 +1,7 @@
 mod common;
 
-use alpaca_rs::trading::models::{ClosePositionResponse, Order, Position};
-use alpaca_rs::trading::requests::ClosePositionRequest;
+use alpacars::trading::models::{ClosePositionResponse, Order, Position};
+use alpacars::trading::requests::ClosePositionRequest;
 use uuid::Uuid;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};

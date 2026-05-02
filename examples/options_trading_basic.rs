@@ -3,12 +3,12 @@
 //! Run with:
 //!   APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example options_trading_basic
 
-use alpaca_rs::data::historical::option::{
+use alpacars::data::historical::option::{
     OptionBarsRequest, OptionHistoricalDataClient, OptionLatestRequest, OptionSnapshotRequest,
 };
-use alpaca_rs::trading::client::TradingClient;
-use alpaca_rs::trading::enums::{AssetStatus, ContractType, ExerciseStyle, OrderSide};
-use alpaca_rs::trading::requests::{
+use alpacars::trading::client::TradingClient;
+use alpacars::trading::enums::{AssetStatus, ContractType, ExerciseStyle, OrderSide};
+use alpacars::trading::requests::{
     ClosePositionRequest, GetOptionContractsRequest, OrderRequest,
 };
 use chrono::{Duration, Utc};

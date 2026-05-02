@@ -1,4 +1,4 @@
-# 🦙 alpaca-rs
+# 🦙 alpacars
 
 > An async-first Rust SDK for the [Alpaca Markets](https://alpaca.markets) API — a Rust equivalent of the official [alpaca-py](https://github.com/alpacahq/alpaca-py) Python SDK.
 
@@ -27,7 +27,7 @@
 
 ## About
 
-`alpaca-rs` provides a fully async interface to all Alpaca API products — **Trading**, **Broker**, and **Market Data** (historical + live streaming). Every network call is `async` and returns a `Result<T, AlpacaError>`, making it easy to integrate into any `tokio`-based application.
+`alpacars` provides a fully async interface to all Alpaca API products — **Trading**, **Broker**, and **Market Data** (historical + live streaming). Every network call is `async` and returns a `Result<T, AlpacaError>`, making it easy to integrate into any `tokio`-based application.
 
 The design mirrors `alpaca-py` closely so that anyone familiar with the Python SDK can pick up the Rust SDK immediately, while taking full advantage of Rust's **type system**, **ownership model**, and **zero-cost abstractions**.
 
@@ -54,7 +54,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-alpaca-rs = { git = "https://github.com/kfuangsung/alpaca-rs" }
+alpacars = { git = "https://github.com/kfuangsung/alpacars" }
 ```
 
 > **Minimum Rust version:** 1.75
@@ -81,9 +81,9 @@ Obtain API keys from the [Alpaca dashboard](https://app.alpaca.markets). 🖥️
 ### Trading API
 
 ```rust
-use alpaca_rs::trading::client::TradingClient;
-use alpaca_rs::trading::enums::{OrderSide, TimeInForce};
-use alpaca_rs::trading::requests::OrderRequest;
+use alpacars::trading::client::TradingClient;
+use alpacars::trading::enums::{OrderSide, TimeInForce};
+use alpacars::trading::requests::OrderRequest;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -121,8 +121,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Broker API
 
 ```rust
-use alpaca_rs::broker::client::BrokerClient;
-use alpaca_rs::broker::requests::ListAccountsRequest;
+use alpacars::broker::client::BrokerClient;
+use alpacars::broker::requests::ListAccountsRequest;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -139,8 +139,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Market Data — Historical
 
 ```rust
-use alpaca_rs::data::historical::stock::{StockBarsRequest, StockHistoricalDataClient};
-use alpaca_rs::data::historical::crypto::{CryptoBarsRequest, CryptoHistoricalDataClient};
+use alpacars::data::historical::stock::{StockBarsRequest, StockHistoricalDataClient};
+use alpacars::data::historical::crypto::{CryptoBarsRequest, CryptoHistoricalDataClient};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -180,8 +180,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Market Data — Live Streaming
 
 ```rust
-use alpaca_rs::data::live::stock::StockDataStream;
-use alpaca_rs::data::enums::DataFeed;
+use alpacars::data::live::stock::StockDataStream;
+use alpacars::data::enums::DataFeed;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -205,7 +205,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 Real-time trade updates (fills, order status changes):
 
 ```rust
-use alpaca_rs::trading::stream::TradingStream;
+use alpacars::trading::stream::TradingStream;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

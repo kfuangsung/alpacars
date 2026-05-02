@@ -1,8 +1,8 @@
 mod common;
 
-use alpaca_rs::trading::enums::{OrderSide, OrderStatus, TimeInForce};
-use alpaca_rs::trading::models::{CancelOrderResponse, Order};
-use alpaca_rs::trading::requests::{GetOrdersRequest, OrderRequest, ReplaceOrderRequest};
+use alpacars::trading::enums::{OrderSide, OrderStatus, TimeInForce};
+use alpacars::trading::models::{CancelOrderResponse, Order};
+use alpacars::trading::requests::{GetOrdersRequest, OrderRequest, ReplaceOrderRequest};
 
 use uuid::Uuid;
 use wiremock::matchers::{method, path};

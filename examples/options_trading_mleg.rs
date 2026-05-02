@@ -7,8 +7,8 @@
 //! Run with:
 //!   APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example options_trading_mleg
 
-use alpaca_rs::trading::client::TradingClient;
-use alpaca_rs::trading::models::OptionContract;
+use alpacars::trading::client::TradingClient;
+use alpacars::trading::models::OptionContract;
 
 fn closest_strike(contracts: &[OptionContract], target: f64) -> Option<&OptionContract> {
     contracts.iter().min_by(|a, b| {
@@ -19,8 +19,8 @@ fn closest_strike(contracts: &[OptionContract], target: f64) -> Option<&OptionCo
         da.partial_cmp(&db).unwrap()
     })
 }
-use alpaca_rs::trading::enums::{AssetStatus, ContractType, OrderClass, OrderSide, TimeInForce};
-use alpaca_rs::trading::requests::{
+use alpacars::trading::enums::{AssetStatus, ContractType, OrderClass, OrderSide, TimeInForce};
+use alpacars::trading::requests::{
     GetOptionContractsRequest, OptionLegRequest, OrderRequest,
 };
 use chrono::{Duration, Utc};

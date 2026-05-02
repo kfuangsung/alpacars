@@ -1,7 +1,7 @@
 mod common;
 
-use alpaca_rs::trading::enums::{DTBPCheck, PDTCheck, TradeConfirmationEmail};
-use alpaca_rs::trading::models::{AccountConfiguration, TradeAccount};
+use alpacars::trading::enums::{DTBPCheck, PDTCheck, TradeConfirmationEmail};
+use alpacars::trading::models::{AccountConfiguration, TradeAccount};
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 

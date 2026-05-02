@@ -1,8 +1,8 @@
 mod common;
 
-use alpaca_rs::trading::enums::{AssetClass, AssetExchange, AssetStatus};
-use alpaca_rs::trading::models::Asset;
-use alpaca_rs::trading::requests::GetAssetsRequest;
+use alpacars::trading::enums::{AssetClass, AssetExchange, AssetStatus};
+use alpacars::trading::models::Asset;
+use alpacars::trading::requests::GetAssetsRequest;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 

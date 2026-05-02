@@ -1,5 +1,5 @@
 [package]
-name = "alpaca-rs"
+name = "alpacars"
 version = "0.1.0"
 edition = "2021"
 description = "Async Rust SDK for Alpaca Markets API"

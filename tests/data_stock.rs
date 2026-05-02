@@ -1,10 +1,10 @@
 mod common;
 
-use alpaca_rs::data::historical::stock::{
+use alpacars::data::historical::stock::{
     StockBarsRequest, StockLatestRequest, StockQuotesRequest, StockSnapshotRequest,
     StockTradesRequest,
 };
-use alpaca_rs::data::models::{Bar, Quote, Snapshot, Trade};
+use alpacars::data::models::{Bar, Quote, Snapshot, Trade};
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
