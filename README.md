@@ -280,6 +280,16 @@ test result: ok. 30 passed; 0 failed; 0 ignored
 
 ---
 
+## ⚠️ Disclaimer
+
+`alpacars` is an **unofficial, community-maintained** Rust SDK. It is not affiliated with, endorsed by, or supported by [Alpaca Markets](https://alpaca.markets) in any way. All trademarks and brand names belong to their respective owners.
+
+This software is provided **"as is"**, without warranty of any kind. The authors accept no liability for any financial losses, data loss, missed trades, or other damages arising from the use or misuse of this library. Trading financial instruments — including stocks, options, and cryptocurrencies — involves substantial risk of loss and is not suitable for all investors. **Past performance is not indicative of future results.**
+
+Always paper-trade and thoroughly test before deploying with real capital. You are solely responsible for your trading decisions and any outcomes that result from using this software.
+
+---
+
 ## 📄 License
 
 MIT — see [LICENSE](LICENSE).
