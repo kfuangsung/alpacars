@@ -3,6 +3,7 @@ use crate::data::live::websocket::{DataStreamConnection, RawStreamEvent, Subscri
 use crate::data::models::{Bar, Orderbook, Quote, Trade};
 use crate::error::AlpacaError;
 use std::sync::Arc;
+use tracing::warn;
 
 pub type Handler<T> = Arc<dyn Fn(T) + Send + Sync + 'static>;
 
@@ -104,14 +105,34 @@ impl CryptoDataStream {
 
         conn.run(move |event: RawStreamEvent| {
             let msg_type = event.msg_type.as_deref().unwrap_or("");
-            let raw = serde_json::to_value(&event.fields).unwrap_or_default();
+            let raw = serde_json::Value::Object(
+                event.fields.into_iter().collect::<serde_json::Map<_, _>>()
+            );
             match msg_type {
-                "t" => { if let (Some(h), Ok(v)) = (&trade_h, serde_json::from_value(raw)) { h(v); } }
-                "q" => { if let (Some(h), Ok(v)) = (&quote_h, serde_json::from_value(raw)) { h(v); } }
-                "b" => { if let (Some(h), Ok(v)) = (&bar_h, serde_json::from_value(raw)) { h(v); } }
-                "u" => { if let (Some(h), Ok(v)) = (&updated_bar_h, serde_json::from_value(raw)) { h(v); } }
-                "d" => { if let (Some(h), Ok(v)) = (&daily_bar_h, serde_json::from_value(raw)) { h(v); } }
-                "o" => { if let (Some(h), Ok(v)) = (&ob_h, serde_json::from_value(raw)) { h(v); } }
+                "t" => match serde_json::from_value::<Trade>(raw) {
+                    Ok(v) => { if let Some(h) = &trade_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize crypto Trade"),
+                },
+                "q" => match serde_json::from_value::<Quote>(raw) {
+                    Ok(v) => { if let Some(h) = &quote_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize crypto Quote"),
+                },
+                "b" => match serde_json::from_value::<Bar>(raw) {
+                    Ok(v) => { if let Some(h) = &bar_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize crypto Bar"),
+                },
+                "u" => match serde_json::from_value::<Bar>(raw) {
+                    Ok(v) => { if let Some(h) = &updated_bar_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize crypto updated Bar"),
+                },
+                "d" => match serde_json::from_value::<Bar>(raw) {
+                    Ok(v) => { if let Some(h) = &daily_bar_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize crypto daily Bar"),
+                },
+                "o" => match serde_json::from_value::<Orderbook>(raw) {
+                    Ok(v) => { if let Some(h) = &ob_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize Orderbook"),
+                },
                 _ => {}
             }
         })

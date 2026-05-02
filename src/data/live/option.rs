@@ -3,6 +3,7 @@ use crate::data::live::websocket::{DataStreamConnection, RawStreamEvent, Subscri
 use crate::data::models::{Quote, Trade};
 use crate::error::AlpacaError;
 use std::sync::Arc;
+use tracing::warn;
 
 pub type Handler<T> = Arc<dyn Fn(T) + Send + Sync + 'static>;
 
@@ -55,10 +56,18 @@ impl OptionDataStream {
 
         conn.run(move |event: RawStreamEvent| {
             let msg_type = event.msg_type.as_deref().unwrap_or("");
-            let raw = serde_json::to_value(&event.fields).unwrap_or_default();
+            let raw = serde_json::Value::Object(
+                event.fields.into_iter().collect::<serde_json::Map<_, _>>()
+            );
             match msg_type {
-                "t" => { if let (Some(h), Ok(v)) = (&trade_h, serde_json::from_value(raw)) { h(v); } }
-                "q" => { if let (Some(h), Ok(v)) = (&quote_h, serde_json::from_value(raw)) { h(v); } }
+                "t" => match serde_json::from_value::<Trade>(raw) {
+                    Ok(v) => { if let Some(h) = &trade_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize options Trade"),
+                },
+                "q" => match serde_json::from_value::<Quote>(raw) {
+                    Ok(v) => { if let Some(h) = &quote_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize options Quote"),
+                },
                 _ => {}
             }
         })

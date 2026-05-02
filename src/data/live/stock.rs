@@ -4,6 +4,7 @@ use crate::data::live::websocket::{DataStreamConnection, RawStreamEvent, Subscri
 use crate::data::models::{Bar, Quote, Trade, TradeCancel, TradeCorrection, TradingStatus};
 use crate::error::AlpacaError;
 use std::sync::Arc;
+use tracing::warn;
 
 pub type Handler<T> = Arc<dyn Fn(T) + Send + Sync + 'static>;
 
@@ -141,49 +142,43 @@ impl StockDataStream {
 
         conn.run(move |event: RawStreamEvent| {
             let msg_type = event.msg_type.as_deref().unwrap_or("");
-            let raw = serde_json::to_value(&event.fields).unwrap_or_default();
+            let raw = serde_json::Value::Object(
+                event.fields.into_iter().collect::<serde_json::Map<_, _>>()
+            );
 
             match msg_type {
-                "t" => {
-                    if let (Some(h), Ok(v)) = (&trade_h, serde_json::from_value::<Trade>(raw)) {
-                        h(v);
-                    }
-                }
-                "q" => {
-                    if let (Some(h), Ok(v)) = (&quote_h, serde_json::from_value::<Quote>(raw)) {
-                        h(v);
-                    }
-                }
-                "b" => {
-                    if let (Some(h), Ok(v)) = (&bar_h, serde_json::from_value::<Bar>(raw)) {
-                        h(v);
-                    }
-                }
-                "u" => {
-                    if let (Some(h), Ok(v)) = (&updated_bar_h, serde_json::from_value::<Bar>(raw)) {
-                        h(v);
-                    }
-                }
-                "d" => {
-                    if let (Some(h), Ok(v)) = (&daily_bar_h, serde_json::from_value::<Bar>(raw)) {
-                        h(v);
-                    }
-                }
-                "s" => {
-                    if let (Some(h), Ok(v)) = (&status_h, serde_json::from_value::<TradingStatus>(raw)) {
-                        h(v);
-                    }
-                }
-                "x" => {
-                    if let (Some(h), Ok(v)) = (&cancel_h, serde_json::from_value::<TradeCancel>(raw)) {
-                        h(v);
-                    }
-                }
-                "c" => {
-                    if let (Some(h), Ok(v)) = (&correction_h, serde_json::from_value::<TradeCorrection>(raw)) {
-                        h(v);
-                    }
-                }
+                "t" => match serde_json::from_value::<Trade>(raw) {
+                    Ok(v) => { if let Some(h) = &trade_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize stock Trade"),
+                },
+                "q" => match serde_json::from_value::<Quote>(raw) {
+                    Ok(v) => { if let Some(h) = &quote_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize stock Quote"),
+                },
+                "b" => match serde_json::from_value::<Bar>(raw) {
+                    Ok(v) => { if let Some(h) = &bar_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize stock Bar"),
+                },
+                "u" => match serde_json::from_value::<Bar>(raw) {
+                    Ok(v) => { if let Some(h) = &updated_bar_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize stock updated Bar"),
+                },
+                "d" => match serde_json::from_value::<Bar>(raw) {
+                    Ok(v) => { if let Some(h) = &daily_bar_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize stock daily Bar"),
+                },
+                "s" => match serde_json::from_value::<TradingStatus>(raw) {
+                    Ok(v) => { if let Some(h) = &status_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize TradingStatus"),
+                },
+                "x" => match serde_json::from_value::<TradeCancel>(raw) {
+                    Ok(v) => { if let Some(h) = &cancel_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize TradeCancel"),
+                },
+                "c" => match serde_json::from_value::<TradeCorrection>(raw) {
+                    Ok(v) => { if let Some(h) = &correction_h { h(v); } }
+                    Err(e) => warn!(error = %e, "failed to deserialize TradeCorrection"),
+                },
                 _ => {}
             }
         })

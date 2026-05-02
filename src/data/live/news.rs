@@ -3,6 +3,7 @@ use crate::data::live::websocket::{DataStreamConnection, RawStreamEvent, Subscri
 use crate::data::models::News;
 use crate::error::AlpacaError;
 use std::sync::Arc;
+use tracing::warn;
 
 pub type NewsHandler = Arc<dyn Fn(News) + Send + Sync + 'static>;
 
@@ -43,12 +44,15 @@ impl NewsDataStream {
         let handler = self.news_handler.clone();
 
         conn.run(move |event: RawStreamEvent| {
-            let msg_type = event.msg_type.as_deref().unwrap_or("");
-            if msg_type == "n" {
-                let raw = serde_json::to_value(&event.fields).unwrap_or_default();
-                if let (Some(h), Ok(v)) = (&handler, serde_json::from_value::<News>(raw)) {
-                    h(v);
-                }
+            if event.msg_type.as_deref() != Some("n") {
+                return;
+            }
+            let raw = serde_json::Value::Object(
+                event.fields.into_iter().collect::<serde_json::Map<_, _>>()
+            );
+            match serde_json::from_value::<News>(raw) {
+                Ok(v) => { if let Some(h) = &handler { h(v); } }
+                Err(e) => warn!(error = %e, "failed to deserialize News event"),
             }
         })
         .await
