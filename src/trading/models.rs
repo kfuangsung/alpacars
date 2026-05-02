@@ -1,0 +1,324 @@
+use crate::trading::enums::*;
+use chrono::{DateTime, NaiveDate, Utc};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Asset {
+    pub id: Uuid,
+    #[serde(rename = "class")]
+    pub asset_class: AssetClass,
+    pub exchange: AssetExchange,
+    pub symbol: String,
+    pub name: Option<String>,
+    pub status: AssetStatus,
+    pub tradable: bool,
+    pub marginable: bool,
+    pub shortable: bool,
+    pub easy_to_borrow: bool,
+    pub fractionable: bool,
+    pub min_order_size: Option<f64>,
+    pub min_trade_increment: Option<f64>,
+    pub price_increment: Option<f64>,
+    pub maintenance_margin_requirement: Option<f64>,
+    pub attributes: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UsdPositionValues {
+    pub avg_entry_price: String,
+    pub market_value: String,
+    pub cost_basis: String,
+    pub unrealized_pl: String,
+    pub unrealized_plpc: String,
+    pub unrealized_intraday_pl: String,
+    pub unrealized_intraday_plpc: String,
+    pub current_price: String,
+    pub lastday_price: String,
+    pub change_today: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Position {
+    pub asset_id: Uuid,
+    pub symbol: String,
+    pub exchange: AssetExchange,
+    pub asset_class: AssetClass,
+    pub asset_marginable: Option<bool>,
+    pub avg_entry_price: String,
+    pub qty: String,
+    pub side: PositionSide,
+    pub market_value: Option<String>,
+    pub cost_basis: String,
+    pub unrealized_pl: Option<String>,
+    pub unrealized_plpc: Option<String>,
+    pub unrealized_intraday_pl: Option<String>,
+    pub unrealized_intraday_plpc: Option<String>,
+    pub current_price: Option<String>,
+    pub lastday_price: Option<String>,
+    pub change_today: Option<String>,
+    pub swap_rate: Option<String>,
+    pub avg_entry_swap_rate: Option<String>,
+    pub usd: Option<UsdPositionValues>,
+    pub qty_available: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TakeProfitSpec {
+    pub limit_price: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StopLossSpec {
+    pub stop_price: String,
+    pub limit_price: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Order {
+    pub id: Uuid,
+    pub client_order_id: String,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub submitted_at: Option<DateTime<Utc>>,
+    pub filled_at: Option<DateTime<Utc>>,
+    pub expired_at: Option<DateTime<Utc>>,
+    pub expires_at: Option<DateTime<Utc>>,
+    pub canceled_at: Option<DateTime<Utc>>,
+    pub failed_at: Option<DateTime<Utc>>,
+    pub replaced_at: Option<DateTime<Utc>>,
+    pub replaced_by: Option<Uuid>,
+    pub replaces: Option<Uuid>,
+    pub asset_id: Option<Uuid>,
+    pub symbol: Option<String>,
+    pub asset_class: Option<AssetClass>,
+    pub notional: Option<String>,
+    pub qty: Option<String>,
+    pub filled_qty: Option<String>,
+    pub filled_avg_price: Option<String>,
+    pub order_class: OrderClass,
+    pub order_type: Option<OrderType>,
+    #[serde(rename = "type")]
+    pub order_type_v2: Option<OrderType>,
+    pub side: Option<OrderSide>,
+    pub time_in_force: TimeInForce,
+    pub limit_price: Option<String>,
+    pub stop_price: Option<String>,
+    pub status: OrderStatus,
+    pub extended_hours: bool,
+    pub legs: Option<Vec<Order>>,
+    pub trail_percent: Option<String>,
+    pub trail_price: Option<String>,
+    pub hwm: Option<String>,
+    pub subtag: Option<String>,
+    pub source: Option<String>,
+    pub position_intent: Option<PositionIntent>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ClosePositionResponse {
+    pub order_id: Option<Uuid>,
+    pub status: Option<u16>,
+    pub symbol: Option<String>,
+    pub body: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CancelOrderResponse {
+    pub id: Uuid,
+    pub status: u16,
+    pub body: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PortfolioHistory {
+    pub timestamp: Vec<i64>,
+    pub equity: Vec<Option<f64>>,
+    pub profit_loss: Vec<Option<f64>>,
+    pub profit_loss_pct: Vec<Option<f64>>,
+    pub base_value: f64,
+    pub base_value_asof: Option<String>,
+    pub timeframe: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WatchlistAsset {
+    pub id: Uuid,
+    pub symbol: String,
+    pub name: Option<String>,
+    pub asset_class: Option<AssetClass>,
+    pub exchange: Option<AssetExchange>,
+    pub status: Option<AssetStatus>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Watchlist {
+    pub id: Uuid,
+    pub name: String,
+    pub account_id: Option<Uuid>,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub assets: Option<Vec<WatchlistAsset>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Clock {
+    pub timestamp: DateTime<Utc>,
+    pub is_open: bool,
+    pub next_open: DateTime<Utc>,
+    pub next_close: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Calendar {
+    pub date: NaiveDate,
+    pub open: String,
+    pub close: String,
+    pub session_open: Option<String>,
+    pub session_close: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TradeAccount {
+    pub id: Uuid,
+    pub account_number: String,
+    pub status: AccountStatus,
+    pub crypto_status: Option<AccountStatus>,
+    pub currency: Option<String>,
+    pub buying_power: Option<String>,
+    pub regt_buying_power: Option<String>,
+    pub daytrading_buying_power: Option<String>,
+    pub effective_buying_power: Option<String>,
+    pub non_marginable_buying_power: Option<String>,
+    pub options_buying_power: Option<String>,
+    pub bod_dtbp: Option<String>,
+    pub cash: Option<String>,
+    pub accrued_fees: Option<String>,
+    pub pending_transfer_in: Option<String>,
+    pub portfolio_value: Option<String>,
+    pub pattern_day_trader: Option<bool>,
+    pub trading_blocked: Option<bool>,
+    pub transfers_blocked: Option<bool>,
+    pub account_blocked: Option<bool>,
+    pub created_at: Option<DateTime<Utc>>,
+    pub trade_suspended_by_user: Option<bool>,
+    pub multiplier: Option<String>,
+    pub shorting_enabled: Option<bool>,
+    pub equity: Option<String>,
+    pub last_equity: Option<String>,
+    pub long_market_value: Option<String>,
+    pub short_market_value: Option<String>,
+    pub initial_margin: Option<String>,
+    pub maintenance_margin: Option<String>,
+    pub last_maintenance_margin: Option<String>,
+    pub sma: Option<String>,
+    pub daytrade_count: Option<i64>,
+    pub options_approved_level: Option<i32>,
+    pub options_trading_level: Option<i32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AccountConfiguration {
+    pub dtbp_check: Option<DTBPCheck>,
+    pub trade_confirm_email: Option<TradeConfirmationEmail>,
+    pub suspend_trade: Option<bool>,
+    pub no_shorting: Option<bool>,
+    pub fractional_trading: Option<bool>,
+    pub max_margin_multiplier: Option<String>,
+    pub max_options_trading_level: Option<i32>,
+    pub pdt_check: Option<PDTCheck>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TradeActivity {
+    pub id: String,
+    pub activity_type: ActivityType,
+    pub transaction_time: Option<DateTime<Utc>>,
+    pub order_id: Option<Uuid>,
+    pub symbol: Option<String>,
+    pub side: Option<OrderSide>,
+    pub qty: Option<String>,
+    pub price: Option<String>,
+    pub cum_qty: Option<String>,
+    pub leaves_qty: Option<String>,
+    pub order_status: Option<OrderStatus>,
+    #[serde(rename = "type")]
+    pub trade_type: Option<TradeActivityType>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NonTradeActivity {
+    pub id: String,
+    pub activity_type: ActivityType,
+    pub date: Option<NaiveDate>,
+    pub net_amount: Option<String>,
+    pub symbol: Option<String>,
+    pub qty: Option<String>,
+    pub per_share_amount: Option<String>,
+    pub description: Option<String>,
+    pub status: Option<NonTradeActivityStatus>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum AccountActivity {
+    Trade(TradeActivity),
+    NonTrade(NonTradeActivity),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TradeUpdate {
+    pub event: TradeEvent,
+    pub order: Order,
+    pub timestamp: Option<DateTime<Utc>>,
+    pub position_qty: Option<String>,
+    pub price: Option<String>,
+    pub qty: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CorporateActionAnnouncement {
+    pub id: Uuid,
+    pub corporate_action_id: String,
+    pub ca_type: CorporateActionType,
+    pub ca_sub_type: CorporateActionSubType,
+    pub initiating_symbol: String,
+    pub initiating_original_cusip: Option<String>,
+    pub target_symbol: Option<String>,
+    pub target_original_cusip: Option<String>,
+    pub declaration_date: Option<NaiveDate>,
+    pub ex_date: Option<NaiveDate>,
+    pub record_date: Option<NaiveDate>,
+    pub payable_date: Option<NaiveDate>,
+    pub cash: Option<String>,
+    pub old_rate: Option<String>,
+    pub new_rate: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OptionContract {
+    pub id: Uuid,
+    pub symbol: String,
+    pub name: Option<String>,
+    pub status: Option<AssetStatus>,
+    pub tradable: Option<bool>,
+    pub expiration_date: Option<NaiveDate>,
+    pub root_symbol: Option<String>,
+    pub underlying_symbol: Option<String>,
+    pub underlying_asset_id: Option<Uuid>,
+    pub contract_type: Option<ContractType>,
+    pub style: Option<ExerciseStyle>,
+    pub strike_price: Option<String>,
+    pub multiplier: Option<String>,
+    pub size: Option<String>,
+    pub open_interest: Option<String>,
+    pub open_interest_date: Option<NaiveDate>,
+    pub close_price: Option<String>,
+    pub close_price_date: Option<NaiveDate>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OptionContractsResponse {
+    pub option_contracts: Vec<OptionContract>,
+    pub next_page_token: Option<String>,
+}
