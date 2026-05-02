@@ -282,11 +282,32 @@ test result: ok. 30 passed; 0 failed; 0 ignored
 
 ## ⚠️ Disclaimer
 
-`alpacars` is an **unofficial, community-maintained** Rust SDK. It is not affiliated with, endorsed by, or supported by [Alpaca Markets](https://alpaca.markets) in any way. All trademarks and brand names belong to their respective owners.
+**PLEASE READ CAREFULLY BEFORE USE.**
 
-This software is provided **"as is"**, without warranty of any kind. The authors accept no liability for any financial losses, data loss, missed trades, or other damages arising from the use or misuse of this library. Trading financial instruments — including stocks, options, and cryptocurrencies — involves substantial risk of loss and is not suitable for all investors. **Past performance is not indicative of future results.**
+`alpacars` is an **independent, unofficial, community-maintained** Rust SDK. It is not affiliated with, endorsed by, sponsored by, or in any way officially connected to [Alpaca Markets](https://alpaca.markets) or any of its subsidiaries. All trademarks, service marks, and brand names are the property of their respective owners.
 
-Always paper-trade and thoroughly test before deploying with real capital. You are solely responsible for your trading decisions and any outcomes that result from using this software.
+### No Financial Advice
+
+Nothing in this software, its documentation, or its source code constitutes financial, investment, legal, or tax advice. This library is provided for **educational and informational purposes only**. Any trading strategies or examples shown are purely illustrative and do not represent a recommendation to trade any particular instrument or strategy.
+
+### Risk Warning
+
+Trading financial instruments — including equities, options, cryptocurrencies, and other derivatives — involves **substantial risk of loss** and is not appropriate for all investors. Automated trading systems can malfunction, execute unintended orders, or behave unexpectedly under real market conditions.
+
+**You may lose some or all of your invested capital. Past performance is not indicative of future results.**
+
+### No Warranty or Liability
+
+This software is provided **"as is"**, without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement. In no event shall the authors or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including but not limited to loss of profits, loss of data, missed trades, or financial loss) arising out of or in connection with the use of this software, even if advised of the possibility of such damages.
+
+### Your Responsibility
+
+By using this software you acknowledge that:
+
+- You are solely responsible for all trading decisions and their outcomes.
+- You have read and agree to [Alpaca's Terms of Service](https://alpaca.markets/terms) and all applicable regulations in your jurisdiction.
+- You will **paper-trade thoroughly** and validate all behaviour before deploying with real capital.
+- Automated trading may be subject to regulatory requirements in your country — it is your responsibility to ensure compliance.
 
 ---
 
