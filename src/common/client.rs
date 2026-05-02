@@ -180,7 +180,12 @@ impl RestClient {
                 && attempts < self.retry_attempts
             {
                 attempts += 1;
-                sleep(Duration::from_secs(self.retry_wait_secs)).await;
+                let exp = attempts.saturating_sub(1).min(6) as u32;
+                let backoff = self
+                    .retry_wait_secs
+                    .saturating_mul(1u64 << exp)
+                    .min(60);
+                sleep(Duration::from_secs(backoff)).await;
                 continue;
             }
 
