@@ -5,6 +5,7 @@ use futures_util::{SinkExt, StreamExt};
 use serde::Serialize;
 use std::sync::Arc;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
+use tracing::{debug, warn};
 
 #[derive(Debug, Serialize)]
 struct AuthMessage<'a> {
@@ -65,13 +66,14 @@ impl TradingStream {
     /// Connect and run the event loop until an error occurs or the stream ends.
     pub async fn run(&self) -> Result<(), AlpacaError> {
         let url = self.stream_url();
+        debug!(url, paper = self.paper, "connecting to trading stream");
         let (ws, _) = connect_async(url)
             .await
             .map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 
         let (mut write, mut read) = ws.split();
 
-        // Authenticate
+        debug!("authenticating trading stream");
         let auth = serde_json::to_string(&AuthMessage {
             action: "auth",
             key: &self.api_key,
@@ -82,7 +84,7 @@ impl TradingStream {
             .await
             .map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 
-        // Subscribe to trade_updates
+        debug!("subscribing to trade_updates");
         let listen = serde_json::to_string(&ListenMessage {
             action: "listen",
             data: ListenData {
@@ -102,22 +104,33 @@ impl TradingStream {
                 Message::Text(text) => {
                     let event: serde_json::Value = match serde_json::from_str(&text) {
                         Ok(v) => v,
-                        Err(_) => continue,
+                        Err(e) => {
+                            warn!(error = %e, "failed to parse trading stream message");
+                            continue;
+                        }
                     };
                     let stream = event["stream"].as_str().unwrap_or("");
                     if stream == "trade_updates" {
                         if let Some(ref h) = handler {
-                            if let Ok(update) =
-                                serde_json::from_value::<TradeUpdate>(event["data"].clone())
-                            {
-                                h(update);
+                            match serde_json::from_value::<TradeUpdate>(event["data"].clone()) {
+                                Ok(update) => h(update),
+                                Err(e) => {
+                                    warn!(error = %e, "failed to deserialize TradeUpdate");
+                                }
                             }
                         }
+                    } else if !stream.is_empty() {
+                        debug!(stream, "received message for unhandled stream");
                     }
                 }
-                Message::Close(_) => break,
+                Message::Close(frame) => {
+                    debug!(frame = ?frame, "trading stream closed by server");
+                    break;
+                }
                 Message::Ping(data) => {
-                    let _ = write.send(Message::Pong(data)).await;
+                    if let Err(e) = write.send(Message::Pong(data)).await {
+                        warn!(error = %e, "failed to send Pong");
+                    }
                 }
                 _ => {}
             }
