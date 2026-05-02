@@ -1,52 +1,54 @@
-# alpaca-rs
+# 🦙 alpaca-rs
 
-An async-first Rust SDK for the [Alpaca Markets](https://alpaca.markets) API — a Rust equivalent of the official [alpaca-py](https://github.com/alpacahq/alpaca-py) Python SDK.
+> An async-first Rust SDK for the [Alpaca Markets](https://alpaca.markets) API — a Rust equivalent of the official [alpaca-py](https://github.com/alpacahq/alpaca-py) Python SDK.
 
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange?logo=rust)](https://www.rust-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
-## Table of Contents
+## 📚 Table of Contents
 
 - [About](#about)
-- [Features](#features)
-- [Installation](#installation)
-- [API Keys](#api-keys)
-- [Usage](#usage)
+- [✨ Features](#-features)
+- [📦 Installation](#-installation)
+- [🔑 API Keys](#-api-keys)
+- [🚀 Usage](#-usage)
   - [Trading API](#trading-api)
   - [Broker API](#broker-api)
   - [Market Data — Historical](#market-data--historical)
   - [Market Data — Live Streaming](#market-data--live-streaming)
-- [Examples](#examples)
-- [Running Tests](#running-tests)
-- [Supported Clients](#supported-clients)
-- [License](#license)
+- [▶️ Examples](#️-examples)
+- [🧪 Running Tests](#-running-tests)
+- [🗂️ Supported Clients](#️-supported-clients)
+- [📄 License](#-license)
 
 ---
 
 ## About
 
-`alpaca-rs` provides a fully async interface to all Alpaca API products — Trading, Broker, and Market Data (historical + live streaming). Every network call is `async` and returns a `Result<T, AlpacaError>`, making it easy to integrate into any `tokio`-based application.
+`alpaca-rs` provides a fully async interface to all Alpaca API products — **Trading**, **Broker**, and **Market Data** (historical + live streaming). Every network call is `async` and returns a `Result<T, AlpacaError>`, making it easy to integrate into any `tokio`-based application.
 
-The design mirrors `alpaca-py` closely so that anyone familiar with the Python SDK can pick up the Rust SDK immediately, while taking full advantage of Rust's type system, ownership model, and zero-cost abstractions.
-
----
-
-## Features
-
-- **Async by default** — built on `tokio` and `reqwest`; no blocking calls
-- **Trading API** — orders (market, limit, stop, stop-limit, bracket, OTO, OCO, trailing-stop, multi-leg), positions, assets, watchlists, corporate actions, options contracts
-- **Broker API** — account management, documents, ACH/bank transfers, journals, portfolio rebalancing, subscriptions
-- **Historical market data** — stocks, crypto, options, news, screener (most actives, movers), corporate actions; all endpoints auto-paginate
-- **Live streaming** — stocks, crypto, options, and news WebSocket streams with per-event-type handler callbacks; supports both JSON and msgpack frames
-- **Three auth modes** — API key headers, OAuth Bearer token, HTTP Basic (Broker)
-- **Retry logic** — automatic retry on HTTP 429 / 504 with configurable attempts and backoff
-- **Paper & live** — single flag switches between paper trading and live environments
+The design mirrors `alpaca-py` closely so that anyone familiar with the Python SDK can pick up the Rust SDK immediately, while taking full advantage of Rust's **type system**, **ownership model**, and **zero-cost abstractions**.
 
 ---
 
-## Installation
+## ✨ Features
+
+| | Feature | Details |
+|---|---|---|
+| ⚡ | **Async by default** | Built on `tokio` and `reqwest` — no blocking calls |
+| 📈 | **Trading API** | Orders (market, limit, stop, bracket, OTO, OCO, trailing-stop, multi-leg), positions, assets, watchlists, options contracts |
+| 🏦 | **Broker API** | Account management, documents, ACH/bank transfers, journals, portfolio rebalancing, subscriptions |
+| 🕰️ | **Historical market data** | Stocks, crypto, options, news, screener (most actives, movers) — all endpoints auto-paginate |
+| 📡 | **Live streaming** | Stocks, crypto, options, and news WebSocket streams with per-event-type handler callbacks; JSON and msgpack frames |
+| 🔐 | **Three auth modes** | API key headers, OAuth Bearer token, HTTP Basic (Broker) |
+| 🔄 | **Retry logic** | Automatic retry on HTTP 429 / 504 with configurable attempts and backoff |
+| 🧪 | **Paper & live** | Single flag switches between paper trading and live environments |
+
+---
+
+## 📦 Installation
 
 Add to your `Cargo.toml`:
 
@@ -55,11 +57,11 @@ Add to your `Cargo.toml`:
 alpaca-rs = { git = "https://github.com/kfuangsung/alpaca-rs" }
 ```
 
-**Minimum Rust version:** 1.75
+> **Minimum Rust version:** 1.75
 
 ---
 
-## API Keys
+## 🔑 API Keys
 
 Set your credentials as environment variables:
 
@@ -68,13 +70,13 @@ export APCA_API_KEY_ID="your-api-key"
 export APCA_API_SECRET_KEY="your-secret-key"
 ```
 
-For Broker API, use your Broker API key and secret. For OAuth, pass the token directly to the client constructor.
+> For Broker API, use your Broker API key and secret. For OAuth, pass the token directly to the client constructor.
 
-Obtain API keys from the [Alpaca dashboard](https://app.alpaca.markets).
+Obtain API keys from the [Alpaca dashboard](https://app.alpaca.markets). 🖥️
 
 ---
 
-## Usage
+## 🚀 Usage
 
 ### Trading API
 
@@ -87,17 +89,17 @@ use alpaca_rs::trading::requests::OrderRequest;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = TradingClient::new("API_KEY", "SECRET_KEY", true)?; // paper = true
 
-    // Account info
+    // 💰 Account info
     let account = client.get_account().await?;
     println!("Buying power: {:?}", account.buying_power);
 
-    // Submit a market order
+    // 📬 Submit a market order
     let order = client
         .submit_order(&OrderRequest::market("SPY", OrderSide::Buy, "5"))
         .await?;
     println!("Order ID: {}", order.id);
 
-    // Submit a limit order
+    // 📋 Submit a limit order
     let limit = client
         .submit_order(&OrderRequest::limit(
             "AAPL", OrderSide::Buy, "10", "175.00", TimeInForce::Day,
@@ -105,11 +107,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     println!("Limit order status: {:?}", limit.status);
 
-    // List open positions
+    // 📊 List open positions
     let positions = client.get_all_positions().await?;
     println!("Open positions: {}", positions.len());
 
-    // Cancel all open orders
+    // 🗑️ Cancel all open orders
     client.cancel_orders().await?;
 
     Ok(())
@@ -124,7 +126,7 @@ use alpaca_rs::broker::requests::ListAccountsRequest;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Broker API uses HTTP Basic auth
+    // 🏦 Broker API uses HTTP Basic auth
     let client = BrokerClient::new("BROKER_KEY", "BROKER_SECRET", true)?; // sandbox = true
 
     let accounts = client.list_accounts(Some(&ListAccountsRequest::default())).await?;
@@ -142,7 +144,7 @@ use alpaca_rs::data::historical::crypto::{CryptoBarsRequest, CryptoHistoricalDat
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Stock bars
+    // 📈 Stock bars
     let stock = StockHistoricalDataClient::new(Some("KEY"), Some("SECRET"), false)?;
 
     let bars = stock
@@ -158,7 +160,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             sym_bars.last().map(|b| b.close).unwrap_or(0.0));
     }
 
-    // Crypto bars
+    // ₿ Crypto bars
     let crypto = CryptoHistoricalDataClient::new(Some("KEY"), Some("SECRET"))?;
 
     let crypto_bars = crypto
@@ -183,14 +185,15 @@ use alpaca_rs::data::enums::DataFeed;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 📡 Connect to live stock stream
     let mut stream = StockDataStream::new("API_KEY", "SECRET_KEY", DataFeed::Iex);
 
     stream.subscribe_trades(["AAPL", "TSLA"], |trade| {
-        println!("Trade: {} @ ${} x {}", trade.symbol, trade.price, trade.size);
+        println!("🔔 Trade: {} @ ${} x {}", trade.symbol, trade.price, trade.size);
     });
 
     stream.subscribe_quotes(["AAPL"], |quote| {
-        println!("Quote: {} bid={} ask={}", quote.symbol, quote.bid_price, quote.ask_price);
+        println!("💬 Quote: {} bid={} ask={}", quote.symbol, quote.bid_price, quote.ask_price);
     });
 
     stream.run().await?; // blocks until stream ends or error
@@ -209,7 +212,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut stream = TradingStream::new("API_KEY", "SECRET_KEY", true); // paper
 
     stream.subscribe_trade_updates(|update| {
-        println!("Event: {:?}", update.event);
+        println!("⚡ Event: {:?}", update.event);
     });
 
     stream.run().await?;
@@ -220,29 +223,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ---
 
-## Examples
+## ▶️ Examples
 
 Four runnable examples are in `examples/`. Set your credentials, then:
 
 ```bash
-# Stock trading — orders, positions, historical data
+# 📈 Stock trading — orders, positions, historical data
 APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example stocks_trading_basic
 
-# Crypto trading — BTC/USD orders, positions, crypto data
+# ₿ Crypto trading — BTC/USD orders, positions, crypto data
 APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example crypto_trading_basic
 
-# Options trading — contract discovery, orders, exercise, snapshots
+# 🎯 Options trading — contract discovery, orders, exercise, snapshots
 APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example options_trading_basic
 
-# Multi-leg options — straddle and iron condor
+# 🦋 Multi-leg options — straddle and iron condor
 APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example options_trading_mleg
 ```
 
 ---
 
-## Running Tests
+## 🧪 Running Tests
 
-Tests use [`wiremock`](https://crates.io/crates/wiremock) to mock HTTP responses — no real API credentials needed.
+Tests use [`wiremock`](https://crates.io/crates/wiremock) to mock HTTP responses — **no real API credentials needed**.
 
 ```bash
 cargo test
@@ -256,26 +259,26 @@ test result: ok. 30 passed; 0 failed; 0 ignored
 
 ---
 
-## Supported Clients
+## 🗂️ Supported Clients
 
 | Client | Domain | Description |
 |---|---|---|
-| `TradingClient` | Trading | Orders, positions, assets, watchlists, options, corporate actions |
-| `TradingStream` | Trading | Real-time trade updates via WebSocket |
-| `BrokerClient` | Broker | Account management, funding, journals, rebalancing |
-| `StockHistoricalDataClient` | Data | Bars, quotes, trades, snapshots (auto-paginated) |
-| `CryptoHistoricalDataClient` | Data | Bars, quotes, trades, orderbook, snapshots |
-| `OptionHistoricalDataClient` | Data | Bars, trades, quotes, snapshots, option chains |
-| `NewsClient` | Data | News articles with optional full content |
-| `ScreenerClient` | Data | Most actives, market movers |
-| `CorporateActionsClient` | Data | Splits, dividends, spin-offs |
-| `StockDataStream` | Streaming | Real-time stock trades, quotes, bars, statuses |
-| `CryptoDataStream` | Streaming | Real-time crypto trades, quotes, bars, orderbooks |
-| `OptionDataStream` | Streaming | Real-time options trades and quotes |
-| `NewsDataStream` | Streaming | Real-time news events |
+| 📊 `TradingClient` | Trading | Orders, positions, assets, watchlists, options, corporate actions |
+| 🔔 `TradingStream` | Trading | Real-time trade updates via WebSocket |
+| 🏦 `BrokerClient` | Broker | Account management, funding, journals, rebalancing |
+| 📈 `StockHistoricalDataClient` | Data | Bars, quotes, trades, snapshots (auto-paginated) |
+| ₿ `CryptoHistoricalDataClient` | Data | Bars, quotes, trades, orderbook, snapshots |
+| 🎯 `OptionHistoricalDataClient` | Data | Bars, trades, quotes, snapshots, option chains |
+| 📰 `NewsClient` | Data | News articles with optional full content |
+| 🔍 `ScreenerClient` | Data | Most actives, market movers |
+| 🏢 `CorporateActionsClient` | Data | Splits, dividends, spin-offs |
+| 📡 `StockDataStream` | Streaming | Real-time stock trades, quotes, bars, statuses |
+| 📡 `CryptoDataStream` | Streaming | Real-time crypto trades, quotes, bars, orderbooks |
+| 📡 `OptionDataStream` | Streaming | Real-time options trades and quotes |
+| 📡 `NewsDataStream` | Streaming | Real-time news events |
 
 ---
 
-## License
+## 📄 License
 
 MIT — see [LICENSE](LICENSE).
