@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
+use tracing::{debug, error, warn};
 
 /// A single decoded event from the Alpaca data WebSocket stream.
 #[derive(Debug, Clone, Deserialize)]
@@ -95,13 +96,14 @@ impl DataStreamConnection {
     where
         F: FnMut(RawStreamEvent),
     {
+        debug!(url = %self.ws_url, "connecting to data stream");
         let (ws, _) = connect_async(&self.ws_url)
             .await
             .map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 
         let (mut write, mut read) = ws.split();
 
-        // Authenticate using JSON (Alpaca data streams accept JSON in addition to msgpack)
+        debug!("authenticating data stream");
         let auth = serde_json::to_string(&[AuthMsg {
             action: "auth",
             key: &self.api_key,
@@ -112,7 +114,7 @@ impl DataStreamConnection {
             .await
             .map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 
-        // Subscribe
+        debug!("sending subscription message");
         let sub = serde_json::to_string(&[&self.subscribe_msg])?;
         write
             .send(Message::Text(sub))
@@ -123,28 +125,65 @@ impl DataStreamConnection {
             let msg = msg.map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 
             let events: Vec<RawStreamEvent> = match msg {
-                Message::Text(text) => serde_json::from_str(&text).unwrap_or_default(),
+                Message::Text(text) => {
+                    match serde_json::from_str(&text) {
+                        Ok(evs) => evs,
+                        Err(e) => {
+                            warn!(error = %e, "failed to parse text frame");
+                            continue;
+                        }
+                    }
+                }
                 Message::Binary(bytes) => {
-                    // Try msgpack decode first
                     match rmp_serde::from_slice::<Vec<RawStreamEvent>>(&bytes) {
                         Ok(evs) => evs,
-                        Err(_) => serde_json::from_slice(&bytes).unwrap_or_default(),
+                        Err(msgpack_err) => {
+                            match serde_json::from_slice::<Vec<RawStreamEvent>>(&bytes) {
+                                Ok(evs) => evs,
+                                Err(json_err) => {
+                                    warn!(
+                                        msgpack_error = %msgpack_err,
+                                        json_error = %json_err,
+                                        "failed to parse binary frame as msgpack or JSON"
+                                    );
+                                    continue;
+                                }
+                            }
+                        }
                     }
                 }
                 Message::Ping(data) => {
-                    let _ = write.send(Message::Pong(data)).await;
+                    if let Err(e) = write.send(Message::Pong(data)).await {
+                        warn!(error = %e, "failed to send Pong");
+                    }
                     continue;
                 }
-                Message::Close(_) => break,
+                Message::Close(frame) => {
+                    debug!(frame = ?frame, "stream closed by server");
+                    break;
+                }
                 _ => continue,
             };
 
             for event in events {
-                // Skip control messages (connected, authenticated, subscription)
-                if let Some(ref t) = event.msg_type {
-                    if t == "success" || t == "subscription" || t == "error" {
+                match event.msg_type.as_deref() {
+                    Some("success") => {
+                        debug!("stream authenticated/connected");
                         continue;
                     }
+                    Some("subscription") => {
+                        debug!("subscription confirmed");
+                        continue;
+                    }
+                    Some("error") => {
+                        error!(
+                            code = ?event.fields.get("code"),
+                            msg = ?event.fields.get("msg"),
+                            "Alpaca stream error"
+                        );
+                        continue;
+                    }
+                    _ => {}
                 }
                 on_event(event);
             }
