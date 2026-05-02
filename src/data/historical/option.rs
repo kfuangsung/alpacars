@@ -171,6 +171,21 @@ impl OptionHistoricalDataClient {
         })
     }
 
+    /// Create a client pointed at a custom base URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(api_key: &str, secret_key: &str, base_url: &str) -> Result<Self, AlpacaError> {
+        Ok(Self {
+            client: RestClient::new(
+                Some(api_key.to_string()),
+                Some(secret_key.to_string()),
+                None,
+                base_url.to_string(),
+                "v2".to_string(),
+                false,
+            )?,
+        })
+    }
+
     fn syms(symbols: &[String]) -> String {
         symbols.join(",")
     }
