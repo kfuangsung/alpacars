@@ -3,6 +3,7 @@ use reqwest::{header, Client, Method, StatusCode};
 use serde::{de::DeserializeOwned, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
+use tracing::{debug, warn};
 
 pub const DEFAULT_RETRY_ATTEMPTS: u32 = 3;
 pub const DEFAULT_RETRY_WAIT_SECS: u64 = 3;
@@ -162,6 +163,7 @@ impl RestClient {
     ) -> Result<serde_json::Value, AlpacaError> {
         let mut attempts = 0u32;
         loop {
+            debug!(method = %method, url, attempt = attempts, "sending request");
             let mut req = self.http.request(method.clone(), url);
             req = req.headers(self.auth_headers());
 
@@ -185,6 +187,7 @@ impl RestClient {
                     .retry_wait_secs
                     .saturating_mul(1u64 << exp)
                     .min(60);
+                warn!(status = status_code, attempt = attempts, wait_secs = backoff, "retryable error, backing off");
                 sleep(Duration::from_secs(backoff)).await;
                 continue;
             }
@@ -203,6 +206,7 @@ impl RestClient {
                     .unwrap_or(&text)
                     .to_string();
                 let code = parsed["code"].as_u64().unwrap_or(0) as u32;
+                warn!(status = status_code, code, message, "API error");
                 return Err(AlpacaError::Api { status_code, code, message });
             }
 
