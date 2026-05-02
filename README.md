@@ -43,7 +43,8 @@ The design mirrors `alpaca-py` closely so that anyone familiar with the Python S
 | 🕰️ | **Historical market data** | Stocks, crypto, options, news, screener (most actives, movers) — all endpoints auto-paginate |
 | 📡 | **Live streaming** | Stocks, crypto, options, and news WebSocket streams with per-event-type handler callbacks; JSON and msgpack frames |
 | 🔐 | **Three auth modes** | API key headers, OAuth Bearer token, HTTP Basic (Broker) |
-| 🔄 | **Retry logic** | Automatic retry on HTTP 429 / 504 with configurable attempts and backoff |
+| 🔄 | **Retry with exponential backoff** | Automatic retry on HTTP 429 / 504 — wait doubles each attempt (3 s → 6 s → 12 s), capped at 60 s |
+| 🔍 | **Structured observability** | `tracing`-instrumented throughout — attach any `tracing-subscriber` to get request logs, retry events, and stream warnings |
 | 🧪 | **Paper & live** | Single flag switches between paper trading and live environments |
 
 ---
