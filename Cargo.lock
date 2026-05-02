@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "alpaca-rs"
+name = "alpacars"
 version = "0.1.0"
 dependencies = [
  "base64",
