@@ -55,7 +55,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-alpacars = { git = "https://github.com/kfuangsung/alpacars" }
+alpacars = "0.1"
 ```
 
 > **Minimum Rust version:** 1.75

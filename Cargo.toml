@@ -4,6 +4,13 @@ version = "0.1.0"
 edition = "2021"
 description = "Async Rust SDK for Alpaca Markets API"
 license = "MIT"
+authors = ["Kachain Fuangsung <kachain.f@outlook.com>"]
+repository = "https://github.com/kfuangsung/alpacars"
+homepage = "https://github.com/kfuangsung/alpacars"
+documentation = "https://docs.rs/alpacars"
+readme = "README.md"
+keywords = ["alpaca", "trading", "api", "async", "sdk"]
+categories = ["api-bindings", "asynchronous", "network-programming"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
