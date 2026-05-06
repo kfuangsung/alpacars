@@ -347,6 +347,7 @@ pub struct GetOptionContractsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub root_symbol: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type")]
     pub contract_type: Option<ContractType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub style: Option<ExerciseStyle>,

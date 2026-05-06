@@ -108,7 +108,7 @@ impl StockDataStream {
             DataFeed::Otc => "otc",
             _ => "iex",
         };
-        format!("{}/v2/stocks/{}", base_url::MARKET_DATA_STREAM, feed_str)
+        format!("{}/v2/{}", base_url::MARKET_DATA_STREAM, feed_str)
     }
 
     /// Connect and run the event loop until the stream ends or an error occurs.

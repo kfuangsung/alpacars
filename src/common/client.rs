@@ -206,7 +206,7 @@ impl RestClient {
                     .unwrap_or(&text)
                     .to_string();
                 let code = parsed["code"].as_u64().unwrap_or(0) as u32;
-                warn!(status = status_code, code, message, "API error");
+                warn!(status = status_code, code, message, body = %text, "API error");
                 return Err(AlpacaError::Api { status_code, code, message });
             }
 

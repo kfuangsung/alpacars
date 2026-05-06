@@ -146,6 +146,7 @@ pub struct WatchlistAsset {
     pub id: Uuid,
     pub symbol: String,
     pub name: Option<String>,
+    #[serde(rename = "class")]
     pub asset_class: Option<AssetClass>,
     pub exchange: Option<AssetExchange>,
     pub status: Option<AssetStatus>,
@@ -288,6 +289,7 @@ pub struct CorporateActionAnnouncement {
     pub target_original_cusip: Option<String>,
     pub declaration_date: Option<NaiveDate>,
     pub ex_date: Option<NaiveDate>,
+    pub effective_date: Option<NaiveDate>,
     pub record_date: Option<NaiveDate>,
     pub payable_date: Option<NaiveDate>,
     pub cash: Option<String>,
@@ -306,6 +308,7 @@ pub struct OptionContract {
     pub root_symbol: Option<String>,
     pub underlying_symbol: Option<String>,
     pub underlying_asset_id: Option<Uuid>,
+    #[serde(rename = "type")]
     pub contract_type: Option<ContractType>,
     pub style: Option<ExerciseStyle>,
     pub strike_price: Option<String>,

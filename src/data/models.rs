@@ -2,6 +2,25 @@ use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Deserializes the `"c"` conditions field, which stocks send as `["A","B"]`
+/// but options send as a bare string `"A"` or `" "`.
+fn deserialize_conditions<'de, D>(d: D) -> Result<Option<Vec<String>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let v: Option<serde_json::Value> = Option::deserialize(d)?;
+    Ok(match v {
+        None | Some(serde_json::Value::Null) => None,
+        Some(serde_json::Value::String(s)) => Some(vec![s]),
+        Some(serde_json::Value::Array(arr)) => Some(
+            arr.into_iter()
+                .filter_map(|v| v.as_str().map(str::to_owned))
+                .collect(),
+        ),
+        Some(other) => Some(vec![other.to_string()]),
+    })
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bar {
     /// Timestamp
@@ -61,8 +80,8 @@ pub struct Quote {
     /// Bid size
     #[serde(rename = "bs")]
     pub bid_size: f64,
-    /// Conditions
-    #[serde(rename = "c")]
+    /// Conditions — stocks send an array, options send a bare string; accept both.
+    #[serde(rename = "c", default, deserialize_with = "deserialize_conditions")]
     pub conditions: Option<Vec<String>>,
     /// Tape
     #[serde(rename = "z")]
@@ -91,8 +110,8 @@ pub struct Trade {
     /// Trade ID
     #[serde(rename = "i")]
     pub trade_id: Option<serde_json::Value>,
-    /// Conditions
-    #[serde(rename = "c")]
+    /// Conditions — stocks send an array, options send a bare string; accept both.
+    #[serde(rename = "c", default, deserialize_with = "deserialize_conditions")]
     pub conditions: Option<Vec<String>>,
     /// Tape
     #[serde(rename = "z")]
@@ -109,7 +128,9 @@ pub type LatestTradeSet = HashMap<String, Trade>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderbookEntry {
+    #[serde(rename = "p")]
     pub price: f64,
+    #[serde(rename = "s")]
     pub size: f64,
 }
 
@@ -150,6 +171,12 @@ pub struct OptionsSnapshot {
     pub latest_trade: Option<Trade>,
     #[serde(rename = "latestQuote")]
     pub latest_quote: Option<Quote>,
+    #[serde(rename = "minuteBar")]
+    pub minute_bar: Option<Bar>,
+    #[serde(rename = "dailyBar")]
+    pub daily_bar: Option<Bar>,
+    #[serde(rename = "prevDailyBar")]
+    pub prev_daily_bar: Option<Bar>,
     pub greeks: Option<OptionsGreeks>,
     #[serde(rename = "impliedVolatility")]
     pub implied_volatility: Option<f64>,

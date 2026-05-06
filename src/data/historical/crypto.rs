@@ -136,7 +136,7 @@ impl CryptoHistoricalDataClient {
                 secret_key.map(str::to_string),
                 None,
                 base_url::DATA.to_string(),
-                "v2".to_string(),
+                "v1beta3".to_string(),
                 false,
             )?,
         })
@@ -161,7 +161,7 @@ impl CryptoHistoricalDataClient {
 
         let mut result: BarSet = HashMap::new();
         loop {
-            let resp: PagedBars = self.client.get("/crypto/bars", Some(&params)).await?;
+            let resp: PagedBars = self.client.get("/crypto/us/bars", Some(&params)).await?;
             if let Some(bars) = resp.bars {
                 for (sym, b) in bars { result.entry(sym).or_default().extend(b); }
             }
@@ -185,7 +185,7 @@ impl CryptoHistoricalDataClient {
 
         let mut result: QuoteSet = HashMap::new();
         loop {
-            let resp: PagedQuotes = self.client.get("/crypto/quotes", Some(&params)).await?;
+            let resp: PagedQuotes = self.client.get("/crypto/us/quotes", Some(&params)).await?;
             if let Some(quotes) = resp.quotes {
                 for (sym, q) in quotes { result.entry(sym).or_default().extend(q); }
             }
@@ -209,7 +209,7 @@ impl CryptoHistoricalDataClient {
 
         let mut result: TradeSet = HashMap::new();
         loop {
-            let resp: PagedTrades = self.client.get("/crypto/trades", Some(&params)).await?;
+            let resp: PagedTrades = self.client.get("/crypto/us/trades", Some(&params)).await?;
             if let Some(trades) = resp.trades {
                 for (sym, t) in trades { result.entry(sym).or_default().extend(t); }
             }
@@ -223,31 +223,31 @@ impl CryptoHistoricalDataClient {
 
     pub async fn get_crypto_latest_trade(&self, req: &CryptoLatestRequest) -> Result<LatestTradeSet, AlpacaError> {
         let params = CryptoLatestParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: LatestTradesResp = self.client.get("/crypto/trades/latest", Some(&params)).await?;
+        let resp: LatestTradesResp = self.client.get("/crypto/us/latest/trades", Some(&params)).await?;
         Ok(resp.trades.unwrap_or_default())
     }
 
     pub async fn get_crypto_latest_quote(&self, req: &CryptoLatestRequest) -> Result<LatestQuoteSet, AlpacaError> {
         let params = CryptoLatestParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: LatestQuotesResp = self.client.get("/crypto/quotes/latest", Some(&params)).await?;
+        let resp: LatestQuotesResp = self.client.get("/crypto/us/latest/quotes", Some(&params)).await?;
         Ok(resp.quotes.unwrap_or_default())
     }
 
     pub async fn get_crypto_latest_bar(&self, req: &CryptoLatestRequest) -> Result<LatestBarSet, AlpacaError> {
         let params = CryptoLatestParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: LatestBarsResp = self.client.get("/crypto/bars/latest", Some(&params)).await?;
+        let resp: LatestBarsResp = self.client.get("/crypto/us/latest/bars", Some(&params)).await?;
         Ok(resp.bars.unwrap_or_default())
     }
 
     pub async fn get_crypto_latest_orderbook(&self, req: &CryptoLatestRequest) -> Result<LatestOrderbookSet, AlpacaError> {
         let params = CryptoLatestParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: LatestOrderbooksResp = self.client.get("/crypto/orderbooks/latest", Some(&params)).await?;
+        let resp: LatestOrderbooksResp = self.client.get("/crypto/us/latest/orderbooks", Some(&params)).await?;
         Ok(resp.orderbooks.unwrap_or_default())
     }
 
     pub async fn get_crypto_snapshot(&self, req: &CryptoSnapshotRequest) -> Result<SnapshotSet, AlpacaError> {
         let params = CryptoSnapshotParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: CryptoSnapshotsResp = self.client.get("/crypto/snapshots", Some(&params)).await?;
+        let resp: CryptoSnapshotsResp = self.client.get("/crypto/us/snapshots", Some(&params)).await?;
         Ok(resp.snapshots.or(resp.direct).unwrap_or_default())
     }
 }

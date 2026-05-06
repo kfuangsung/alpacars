@@ -48,6 +48,8 @@ pub enum OrderClass {
     Bracket,
     Oco,
     Oto,
+    #[serde(rename = "")]
+    Empty,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

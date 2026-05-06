@@ -165,7 +165,7 @@ impl OptionHistoricalDataClient {
                 secret_key.map(str::to_string),
                 None,
                 base_url::DATA.to_string(),
-                "v2".to_string(),
+                "v1beta1".to_string(),
                 false,
             )?,
         })
@@ -180,7 +180,7 @@ impl OptionHistoricalDataClient {
                 Some(secret_key.to_string()),
                 None,
                 base_url.to_string(),
-                "v2".to_string(),
+                "v1beta1".to_string(),
                 false,
             )?,
         })
@@ -216,10 +216,6 @@ impl OptionHistoricalDataClient {
             }
         }
         Ok(result)
-    }
-
-    pub async fn get_option_exchange_codes(&self) -> Result<serde_json::Value, AlpacaError> {
-        self.client.get_raw("/options/exchanges", None::<&()>).await
     }
 
     pub async fn get_option_latest_quote(&self, req: &OptionLatestRequest) -> Result<LatestQuoteSet, AlpacaError> {
@@ -306,7 +302,7 @@ impl OptionHistoricalDataClient {
         }
         self.client
             .get_raw(
-                "/options/chains",
+                "/options/snapshots",
                 Some(&Params {
                     underlying_symbols: underlying_symbol.to_string(),
                     feed,

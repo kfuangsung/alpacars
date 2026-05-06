@@ -93,7 +93,7 @@ impl CryptoDataStream {
             vec![],
         );
 
-        let url = format!("{}/v2/crypto/us", base_url::MARKET_DATA_STREAM);
+        let url = format!("{}/v1beta3/crypto/us", base_url::MARKET_DATA_STREAM);
         let conn = DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
 
         let trade_h = self.trade_handler.clone();

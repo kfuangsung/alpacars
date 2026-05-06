@@ -36,7 +36,7 @@ impl CorporateActionsClient {
                 secret_key.map(str::to_string),
                 None,
                 base_url::DATA.to_string(),
-                "v2".to_string(),
+                "v1beta1".to_string(),
                 false,
             )?,
         })
@@ -65,31 +65,39 @@ impl CorporateActionsClient {
             next_page_token: None,
         };
 
+        #[derive(serde::Deserialize)]
+        struct Wrapper {
+            corporate_actions: Option<CorporateActionsSet>,
+            next_page_token: Option<String>,
+        }
+
         loop {
-            let resp: CorporateActionsSet =
-                self.client.get("/corporate_actions", Some(&params)).await?;
+            let resp: Wrapper =
+                self.client.get("/corporate-actions", Some(&params)).await?;
 
-            macro_rules! merge_vec {
-                ($field:ident) => {
-                    if let Some(items) = resp.$field {
-                        result.$field.get_or_insert_with(Vec::new).extend(items);
-                    }
-                };
+            if let Some(data) = resp.corporate_actions {
+                macro_rules! merge_vec {
+                    ($field:ident) => {
+                        if let Some(items) = data.$field {
+                            result.$field.get_or_insert_with(Vec::new).extend(items);
+                        }
+                    };
+                }
+
+                merge_vec!(reverse_splits);
+                merge_vec!(forward_splits);
+                merge_vec!(unit_splits);
+                merge_vec!(cash_dividends);
+                merge_vec!(stock_dividends);
+                merge_vec!(spin_offs);
+                merge_vec!(cash_mergers);
+                merge_vec!(stock_mergers);
+                merge_vec!(stock_and_cash_mergers);
+                merge_vec!(redemptions);
+                merge_vec!(name_changes);
+                merge_vec!(worthless_removals);
+                merge_vec!(rights_distributions);
             }
-
-            merge_vec!(reverse_splits);
-            merge_vec!(forward_splits);
-            merge_vec!(unit_splits);
-            merge_vec!(cash_dividends);
-            merge_vec!(stock_dividends);
-            merge_vec!(spin_offs);
-            merge_vec!(cash_mergers);
-            merge_vec!(stock_mergers);
-            merge_vec!(stock_and_cash_mergers);
-            merge_vec!(redemptions);
-            merge_vec!(name_changes);
-            merge_vec!(worthless_removals);
-            merge_vec!(rights_distributions);
 
             match resp.next_page_token {
                 Some(t) if !t.is_empty() => params.page_token = Some(t),
