@@ -289,6 +289,12 @@ impl OptionHistoricalDataClient {
         Ok(result)
     }
 
+    pub async fn get_option_exchange_codes(&self) -> Result<serde_json::Value, AlpacaError> {
+        self.client
+            .get_raw("/options/meta/exchanges", None::<&()>)
+            .await
+    }
+
     pub async fn get_option_chain(
         &self,
         underlying_symbol: &str,
