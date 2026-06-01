@@ -8,10 +8,15 @@ use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::{debug, warn};
 
 #[derive(Debug, Serialize)]
+struct AuthData<'a> {
+    key_id: &'a str,
+    secret_key: &'a str,
+}
+
+#[derive(Debug, Serialize)]
 struct AuthMessage<'a> {
     action: &'a str,
-    key: &'a str,
-    secret: &'a str,
+    data: AuthData<'a>,
 }
 
 #[derive(Debug, Serialize)]
@@ -75,9 +80,11 @@ impl TradingStream {
 
         debug!("authenticating trading stream");
         let auth = serde_json::to_string(&AuthMessage {
-            action: "auth",
-            key: &self.api_key,
-            secret: &self.secret_key,
+            action: "authenticate",
+            data: AuthData {
+                key_id: &self.api_key,
+                secret_key: &self.secret_key,
+            },
         })?;
         write
             .send(Message::Text(auth))
@@ -119,6 +126,15 @@ impl TradingStream {
                                 }
                             }
                         }
+                    } else if stream == "authorization" {
+                        let status = event["data"]["status"].as_str().unwrap_or("unknown");
+                        if status == "authorized" {
+                            debug!("trading stream authenticated successfully");
+                        } else {
+                            warn!(%status, "trading stream authentication failed — no trade updates will be received");
+                        }
+                    } else if stream == "listening" {
+                        debug!("trading stream subscription confirmed");
                     } else if !stream.is_empty() {
                         debug!(stream, "received message for unhandled stream");
                     }
