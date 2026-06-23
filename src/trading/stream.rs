@@ -5,7 +5,7 @@ use futures_util::{SinkExt, StreamExt};
 use serde::Serialize;
 use std::sync::Arc;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 
 #[derive(Debug, Serialize)]
 struct AuthData<'a> {
@@ -118,23 +118,25 @@ impl TradingStream {
                     };
                     let stream = event["stream"].as_str().unwrap_or("");
                     if stream == "trade_updates" {
+                        let event_type = event["data"]["event"].as_str().unwrap_or("unknown");
+                        info!(event_type, "trading stream: trade_updates event received");
                         if let Some(ref h) = handler {
                             match serde_json::from_value::<TradeUpdate>(event["data"].clone()) {
                                 Ok(update) => h(update),
                                 Err(e) => {
-                                    warn!(error = %e, "failed to deserialize TradeUpdate");
+                                    warn!(error = %e, raw = %event["data"], "failed to deserialize TradeUpdate");
                                 }
                             }
                         }
                     } else if stream == "authorization" {
                         let status = event["data"]["status"].as_str().unwrap_or("unknown");
                         if status == "authorized" {
-                            debug!("trading stream authenticated successfully");
+                            info!("trading stream authenticated successfully");
                         } else {
                             warn!(%status, "trading stream authentication failed — no trade updates will be received");
                         }
                     } else if stream == "listening" {
-                        debug!("trading stream subscription confirmed");
+                        info!("trading stream subscription confirmed");
                     } else if !stream.is_empty() {
                         debug!(stream, "received message for unhandled stream");
                     }
