@@ -188,16 +188,13 @@ pub struct TradeAccount {
     pub currency: Option<String>,
     pub buying_power: Option<String>,
     pub regt_buying_power: Option<String>,
-    pub daytrading_buying_power: Option<String>,
     pub effective_buying_power: Option<String>,
     pub non_marginable_buying_power: Option<String>,
     pub options_buying_power: Option<String>,
-    pub bod_dtbp: Option<String>,
     pub cash: Option<String>,
     pub accrued_fees: Option<String>,
     pub pending_transfer_in: Option<String>,
     pub portfolio_value: Option<String>,
-    pub pattern_day_trader: Option<bool>,
     pub trading_blocked: Option<bool>,
     pub transfers_blocked: Option<bool>,
     pub account_blocked: Option<bool>,
@@ -213,21 +210,18 @@ pub struct TradeAccount {
     pub maintenance_margin: Option<String>,
     pub last_maintenance_margin: Option<String>,
     pub sma: Option<String>,
-    pub daytrade_count: Option<i64>,
     pub options_approved_level: Option<i32>,
     pub options_trading_level: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountConfiguration {
-    pub dtbp_check: Option<DTBPCheck>,
     pub trade_confirm_email: Option<TradeConfirmationEmail>,
     pub suspend_trade: Option<bool>,
     pub no_shorting: Option<bool>,
     pub fractional_trading: Option<bool>,
     pub max_margin_multiplier: Option<String>,
     pub max_options_trading_level: Option<i32>,
-    pub pdt_check: Option<PDTCheck>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

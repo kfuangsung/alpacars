@@ -203,22 +203,6 @@ pub enum QueryOrderStatus {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum DTBPCheck {
-    Both,
-    Entry,
-    Exit,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum PDTCheck {
-    Both,
-    Entry,
-    Exit,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
 pub enum TradeConfirmationEmail {
     All,
     None,
