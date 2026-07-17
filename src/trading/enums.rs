@@ -294,6 +294,14 @@ pub enum NonTradeActivityStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum LocateStatus {
+    Active,
+    Expired,
+    Rejected,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AdvancedAlgorithm {
     Dma,

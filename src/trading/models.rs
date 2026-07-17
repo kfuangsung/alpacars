@@ -324,3 +324,46 @@ pub struct OptionContractsResponse {
     pub option_contracts: Vec<OptionContract>,
     pub next_page_token: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Locate {
+    pub id: String,
+    pub symbol: String,
+    pub status: LocateStatus,
+    pub requested_qty: i64,
+    pub located_qty: Option<i64>,
+    pub located_price: Option<String>,
+    pub total_fee: Option<String>,
+    pub limit_price: Option<String>,
+    pub all_or_none: bool,
+    pub rejection_reason: Option<String>,
+    pub expires_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocateQuote {
+    pub symbol: String,
+    pub available_qty: i64,
+    pub price: Option<String>,
+    pub quoted_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocateQuoteError {
+    pub symbol: String,
+    pub code: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListLocatesResponse {
+    pub locates: Vec<Locate>,
+    pub next_page_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListLocateQuotesResponse {
+    pub quotes: Vec<LocateQuote>,
+    pub errors: Option<Vec<LocateQuoteError>>,
+}

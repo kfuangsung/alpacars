@@ -88,6 +88,14 @@ impl RestClient {
         &self.base_url
     }
 
+    /// Clone this client with a different API version prefix (e.g. "v1"
+    /// for endpoints not served under the client's default version).
+    pub(crate) fn with_api_version(&self, api_version: &str) -> RestClient {
+        let mut client = self.clone();
+        client.api_version = api_version.to_string();
+        client
+    }
+
     pub fn build_url(&self, path: &str) -> String {
         format!("{}/{}{}", self.base_url, self.api_version, path)
     }
