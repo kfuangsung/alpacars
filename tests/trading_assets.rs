@@ -1,6 +1,6 @@
 mod common;
 
-use alpacars::trading::enums::{AssetClass, AssetExchange, AssetStatus};
+use alpacars::trading::enums::{AssetClass, AssetExchange, AssetStatus, BorrowStatus};
 use alpacars::trading::models::Asset;
 use alpacars::trading::requests::GetAssetsRequest;
 use wiremock::matchers::{method, path};
@@ -17,6 +17,7 @@ const ASSET_JSON: &str = r#"{
   "marginable": true,
   "shortable": true,
   "easy_to_borrow": true,
+  "borrow_status": "easy_to_borrow",
   "fractionable": true
 }"#;
 
@@ -70,6 +71,26 @@ async fn test_get_all_assets_with_filters() {
 }
 
 #[tokio::test]
+async fn test_deserialize_new_asset_classes() {
+    let server = MockServer::start().await;
+
+    let treasury_json = ASSET_JSON
+        .replace(r#""class": "us_equity""#, r#""class": "treasury""#)
+        .replace(r#""symbol": "AAPL""#, r#""symbol": "US912797NB92""#);
+
+    Mock::given(method("GET"))
+        .and(path("/v2/assets"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{}]", treasury_json)))
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    let assets = client.get_all_assets(None::<&GetAssetsRequest>).await.unwrap();
+
+    assert_eq!(assets[0].asset_class, AssetClass::Treasury);
+}
+
+#[tokio::test]
 async fn test_get_asset_by_symbol() {
     let server = MockServer::start().await;
 
@@ -86,4 +107,6 @@ async fn test_get_asset_by_symbol() {
     assert_eq!(asset.symbol, "AAPL");
     assert_eq!(asset.status, AssetStatus::Active);
     assert!(asset.tradable);
+    assert_eq!(asset.easy_to_borrow, Some(true));
+    assert_eq!(asset.borrow_status, Some(BorrowStatus::EasyToBorrow));
 }

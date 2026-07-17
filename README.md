@@ -39,7 +39,7 @@ The design mirrors `alpaca-py` closely so that anyone familiar with the Python S
 | | Feature | Details |
 |---|---|---|
 | ⚡ | **Async by default** | Built on `tokio` and `reqwest` — no blocking calls |
-| 📈 | **Trading API** | Orders (market, limit, stop, bracket, OTO, OCO, trailing-stop, multi-leg), positions, assets, watchlists, options contracts |
+| 📈 | **Trading API** | Orders (market, limit, stop, bracket, OTO, OCO, trailing-stop, multi-leg, DMA routing), positions, assets, watchlists, options contracts, locates (hard-to-borrow) |
 | 🏦 | **Broker API** | Account management, documents, ACH/bank transfers, journals, portfolio rebalancing, subscriptions |
 | 🕰️ | **Historical market data** | Stocks, crypto, options, news, screener (most actives, movers) — all endpoints auto-paginate |
 | 📡 | **Live streaming** | Stocks, crypto, options, and news WebSocket streams with per-event-type handler callbacks; JSON and msgpack frames |
@@ -56,7 +56,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-alpacars = "0.1"
+alpacars = "0.3"
 ```
 
 > **Minimum Rust version:** 1.75
@@ -256,7 +256,7 @@ cargo test
 Expected output:
 
 ```
-test result: ok. 30 passed; 0 failed; 0 ignored
+test result: ok. 36 passed; 0 failed; 0 ignored
 ```
 
 ---
@@ -265,7 +265,7 @@ test result: ok. 30 passed; 0 failed; 0 ignored
 
 | Client | Domain | Description |
 |---|---|---|
-| 📊 `TradingClient` | Trading | Orders, positions, assets, watchlists, options, corporate actions |
+| 📊 `TradingClient` | Trading | Orders, positions, assets, watchlists, options, locates, corporate actions |
 | 🔔 `TradingStream` | Trading | Real-time trade updates via WebSocket |
 | 🏦 `BrokerClient` | Broker | Account management, funding, journals, rebalancing |
 | 📈 `StockHistoricalDataClient` | Data | Bars, quotes, trades, snapshots (auto-paginated) |

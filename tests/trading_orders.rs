@@ -1,8 +1,12 @@
 mod common;
 
-use alpacars::trading::enums::{OrderSide, OrderStatus, TimeInForce};
+use alpacars::trading::enums::{
+    AdvancedAlgorithm, OrderDestination, OrderSide, OrderStatus, TimeInForce,
+};
 use alpacars::trading::models::{CancelOrderResponse, Order};
-use alpacars::trading::requests::{GetOrdersRequest, OrderRequest, ReplaceOrderRequest};
+use alpacars::trading::requests::{
+    AdvancedInstructions, GetOrdersRequest, OrderRequest, ReplaceOrderRequest,
+};
 
 use uuid::Uuid;
 use wiremock::matchers::{method, path};
@@ -197,4 +201,22 @@ async fn test_cancel_all_orders() {
     assert_eq!(responses[0].id, Uuid::parse_str("497f6eca-6276-4993-bfeb-53cbbbba6f08").unwrap());
     assert_eq!(responses[0].status, 200);
     assert_eq!(responses[1].status, 404);
+}
+
+#[test]
+fn test_order_request_advanced_instructions_serialization() {
+    let mut req = OrderRequest::market("AAPL", OrderSide::Buy, "100");
+    let json = serde_json::to_value(&req).unwrap();
+    assert!(json.get("advanced_instructions").is_none());
+
+    req.advanced_instructions = Some(AdvancedInstructions {
+        algorithm: Some(AdvancedAlgorithm::Dma),
+        destination: Some(OrderDestination::Iex),
+        display_qty: Some("50".to_string()),
+    });
+    let json = serde_json::to_value(&req).unwrap();
+    let ai = &json["advanced_instructions"];
+    assert_eq!(ai["algorithm"], "DMA");
+    assert_eq!(ai["destination"], "IEX");
+    assert_eq!(ai["display_qty"], "50");
 }

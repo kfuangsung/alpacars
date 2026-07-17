@@ -15,7 +15,9 @@ pub struct Asset {
     pub tradable: bool,
     pub marginable: bool,
     pub shortable: bool,
-    pub easy_to_borrow: bool,
+    /// Deprecated by Alpaca; removed from the API on 2026-09-22. Use `borrow_status`.
+    pub easy_to_borrow: Option<bool>,
+    pub borrow_status: Option<BorrowStatus>,
     pub fractionable: bool,
     pub min_order_size: Option<f64>,
     pub min_trade_increment: Option<f64>,
@@ -59,6 +61,7 @@ pub struct Position {
     pub change_today: Option<String>,
     pub swap_rate: Option<String>,
     pub avg_entry_swap_rate: Option<String>,
+    pub prev_swap_rate: Option<String>,
     pub usd: Option<UsdPositionValues>,
     pub qty_available: Option<String>,
 }
@@ -94,6 +97,7 @@ pub struct Order {
     pub asset_class: Option<AssetClass>,
     pub notional: Option<String>,
     pub qty: Option<String>,
+    pub ratio_qty: Option<String>,
     pub filled_qty: Option<String>,
     pub filled_avg_price: Option<String>,
     pub order_class: OrderClass,
@@ -252,6 +256,7 @@ pub struct NonTradeActivity {
     pub per_share_amount: Option<String>,
     pub description: Option<String>,
     pub status: Option<NonTradeActivityStatus>,
+    pub currency: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -318,4 +323,47 @@ pub struct OptionContract {
 pub struct OptionContractsResponse {
     pub option_contracts: Vec<OptionContract>,
     pub next_page_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Locate {
+    pub id: String,
+    pub symbol: String,
+    pub status: LocateStatus,
+    pub requested_qty: i64,
+    pub located_qty: Option<i64>,
+    pub located_price: Option<String>,
+    pub total_fee: Option<String>,
+    pub limit_price: Option<String>,
+    pub all_or_none: bool,
+    pub rejection_reason: Option<String>,
+    pub expires_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocateQuote {
+    pub symbol: String,
+    pub available_qty: i64,
+    pub price: Option<String>,
+    pub quoted_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocateQuoteError {
+    pub symbol: String,
+    pub code: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListLocatesResponse {
+    pub locates: Vec<Locate>,
+    pub next_page_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListLocateQuotesResponse {
+    pub quotes: Vec<LocateQuote>,
+    pub errors: Option<Vec<LocateQuoteError>>,
 }

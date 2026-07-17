@@ -22,6 +22,16 @@ pub struct StopLossRequest {
     pub limit_price: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AdvancedInstructions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub algorithm: Option<AdvancedAlgorithm>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub destination: Option<OrderDestination>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub display_qty: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderRequest {
     pub symbol: String,
@@ -55,6 +65,8 @@ pub struct OrderRequest {
     pub position_intent: Option<PositionIntent>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub legs: Option<Vec<OptionLegRequest>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub advanced_instructions: Option<AdvancedInstructions>,
 }
 
 impl OrderRequest {
@@ -77,6 +89,7 @@ impl OrderRequest {
             stop_loss: None,
             position_intent: None,
             legs: None,
+            advanced_instructions: None,
         }
     }
 
@@ -99,6 +112,7 @@ impl OrderRequest {
             stop_loss: None,
             position_intent: None,
             legs: None,
+            advanced_instructions: None,
         }
     }
 
@@ -127,6 +141,7 @@ impl OrderRequest {
             stop_loss: None,
             position_intent: None,
             legs: None,
+            advanced_instructions: None,
         }
     }
 
@@ -154,6 +169,7 @@ impl OrderRequest {
             stop_loss: None,
             position_intent: None,
             legs: None,
+            advanced_instructions: None,
         }
     }
 
@@ -182,6 +198,7 @@ impl OrderRequest {
             stop_loss: None,
             position_intent: None,
             legs: None,
+            advanced_instructions: None,
         }
     }
 
@@ -210,6 +227,7 @@ impl OrderRequest {
             stop_loss: None,
             position_intent: None,
             legs: None,
+            advanced_instructions: None,
         }
     }
 }
@@ -254,6 +272,8 @@ pub struct ReplaceOrderRequest {
     pub trail: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub client_order_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub advanced_instructions: Option<AdvancedInstructions>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -365,6 +385,37 @@ pub struct GetOptionContractsRequest {
 pub struct CancelAllOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cancel_orders: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateLocateRequest {
+    pub symbol: String,
+    pub qty: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit_price: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub all_or_none: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct GetLocatesRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<LocateStatus>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct GetLocateQuotesRequest {
+    pub symbols: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -103,6 +103,8 @@ pub struct Account {
     pub enabled_assets: Option<Vec<String>>,
     pub account_type: Option<AccountType>,
     pub trading_configurations: Option<serde_json::Value>,
+    pub allow_instant_ach: Option<bool>,
+    pub instant_ach_blocked: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

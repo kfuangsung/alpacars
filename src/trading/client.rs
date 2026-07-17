@@ -325,4 +325,41 @@ impl TradingClient {
             .get(&format!("/options/contracts/{}", symbol_or_id), None::<&()>)
             .await
     }
+
+    // ── Locates (hard-to-borrow) ──────────────────────────────────────────────
+    // Served under /v1, unlike the rest of the Trading API.
+
+    pub async fn create_locate(&self, request: &CreateLocateRequest) -> Result<Locate, AlpacaError> {
+        self.client
+            .with_api_version("v1")
+            .post("/locates", Some(request))
+            .await
+    }
+
+    pub async fn get_locates(
+        &self,
+        request: Option<&GetLocatesRequest>,
+    ) -> Result<ListLocatesResponse, AlpacaError> {
+        self.client
+            .with_api_version("v1")
+            .get("/locates", request)
+            .await
+    }
+
+    pub async fn get_locate(&self, locate_id: &str) -> Result<Locate, AlpacaError> {
+        self.client
+            .with_api_version("v1")
+            .get(&format!("/locates/{}", locate_id), None::<&()>)
+            .await
+    }
+
+    pub async fn get_locate_quotes(
+        &self,
+        request: &GetLocateQuotesRequest,
+    ) -> Result<ListLocateQuotesResponse, AlpacaError> {
+        self.client
+            .with_api_version("v1")
+            .get("/locates/quotes", Some(request))
+            .await
+    }
 }

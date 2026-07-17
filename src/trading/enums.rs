@@ -70,6 +70,12 @@ pub enum AssetClass {
     UsOption,
     Crypto,
     CryptoPerp,
+    UsIndex,
+    Treasury,
+    Corporate,
+    GlobalEquity,
+    UsEquityChain,
+    Ipo,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -77,6 +83,13 @@ pub enum AssetClass {
 pub enum AssetStatus {
     Active,
     Inactive,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum BorrowStatus {
+    EasyToBorrow,
+    HardToBorrow,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -145,6 +158,7 @@ pub enum CorporateActionSubType {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AccountStatus {
     AccountClosed,
+    AccountClosedPending,
     AccountUpdated,
     ActionRequired,
     Active,
@@ -277,6 +291,30 @@ pub enum NonTradeActivityStatus {
     Executed,
     Correct,
     Canceled,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum LocateStatus {
+    Active,
+    Expired,
+    Rejected,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum AdvancedAlgorithm {
+    Dma,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum OrderDestination {
+    Nyse,
+    Nasdaq,
+    Arca,
+    Iex,
+    Memx,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
