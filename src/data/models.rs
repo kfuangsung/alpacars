@@ -327,6 +327,7 @@ pub struct ForwardSplit {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReverseSplit {
     pub symbol: String,
+    pub new_symbol: Option<String>,
     pub new_rate: f64,
     pub old_rate: f64,
     pub process_date: Option<NaiveDate>,
