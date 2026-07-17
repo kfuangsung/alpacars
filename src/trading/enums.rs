@@ -70,6 +70,12 @@ pub enum AssetClass {
     UsOption,
     Crypto,
     CryptoPerp,
+    UsIndex,
+    Treasury,
+    Corporate,
+    GlobalEquity,
+    UsEquityChain,
+    Ipo,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -145,6 +151,7 @@ pub enum CorporateActionSubType {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AccountStatus {
     AccountClosed,
+    AccountClosedPending,
     AccountUpdated,
     ActionRequired,
     Active,
