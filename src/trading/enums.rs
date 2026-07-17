@@ -294,6 +294,22 @@ pub enum NonTradeActivityStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum AdvancedAlgorithm {
+    Dma,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum OrderDestination {
+    Nyse,
+    Nasdaq,
+    Arca,
+    Iex,
+    Memx,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PositionIntent {
     BuyToOpen,
