@@ -256,6 +256,7 @@ pub struct NonTradeActivity {
     pub per_share_amount: Option<String>,
     pub description: Option<String>,
     pub status: Option<NonTradeActivityStatus>,
+    pub currency: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
