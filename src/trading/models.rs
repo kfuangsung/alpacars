@@ -59,6 +59,7 @@ pub struct Position {
     pub change_today: Option<String>,
     pub swap_rate: Option<String>,
     pub avg_entry_swap_rate: Option<String>,
+    pub prev_swap_rate: Option<String>,
     pub usd: Option<UsdPositionValues>,
     pub qty_available: Option<String>,
 }
@@ -94,6 +95,7 @@ pub struct Order {
     pub asset_class: Option<AssetClass>,
     pub notional: Option<String>,
     pub qty: Option<String>,
+    pub ratio_qty: Option<String>,
     pub filled_qty: Option<String>,
     pub filled_avg_price: Option<String>,
     pub order_class: OrderClass,
