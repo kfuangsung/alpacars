@@ -86,6 +86,13 @@ pub enum AssetStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum BorrowStatus {
+    EasyToBorrow,
+    HardToBorrow,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AssetExchange {
     #[serde(rename = "AMEX")]
     Amex,

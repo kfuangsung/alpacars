@@ -15,7 +15,9 @@ pub struct Asset {
     pub tradable: bool,
     pub marginable: bool,
     pub shortable: bool,
-    pub easy_to_borrow: bool,
+    /// Deprecated by Alpaca; removed from the API on 2026-09-22. Use `borrow_status`.
+    pub easy_to_borrow: Option<bool>,
+    pub borrow_status: Option<BorrowStatus>,
     pub fractionable: bool,
     pub min_order_size: Option<f64>,
     pub min_trade_increment: Option<f64>,
