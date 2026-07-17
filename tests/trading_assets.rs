@@ -71,6 +71,26 @@ async fn test_get_all_assets_with_filters() {
 }
 
 #[tokio::test]
+async fn test_deserialize_new_asset_classes() {
+    let server = MockServer::start().await;
+
+    let treasury_json = ASSET_JSON
+        .replace(r#""class": "us_equity""#, r#""class": "treasury""#)
+        .replace(r#""symbol": "AAPL""#, r#""symbol": "US912797NB92""#);
+
+    Mock::given(method("GET"))
+        .and(path("/v2/assets"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{}]", treasury_json)))
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    let assets = client.get_all_assets(None::<&GetAssetsRequest>).await.unwrap();
+
+    assert_eq!(assets[0].asset_class, AssetClass::Treasury);
+}
+
+#[tokio::test]
 async fn test_get_asset_by_symbol() {
     let server = MockServer::start().await;
 
