@@ -77,9 +77,9 @@ async fn test_get_stock_bars_empty_response() {
 
     Mock::given(method("GET"))
         .and(path("/v2/stocks/bars"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(
-            r#"{"bars": {}, "next_page_token": null}"#,
-        ))
+        .respond_with(
+            ResponseTemplate::new(200).set_body_string(r#"{"bars": {}, "next_page_token": null}"#),
+        )
         .mount(&server)
         .await;
 

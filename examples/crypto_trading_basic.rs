@@ -3,7 +3,9 @@
 //! Run with:
 //!   APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example crypto_trading_basic
 
-use alpacars::data::historical::crypto::{CryptoBarsRequest, CryptoHistoricalDataClient, CryptoLatestRequest};
+use alpacars::data::historical::crypto::{
+    CryptoBarsRequest, CryptoHistoricalDataClient, CryptoLatestRequest,
+};
 use alpacars::trading::client::TradingClient;
 use alpacars::trading::enums::{AssetClass, AssetStatus, OrderSide, TimeInForce};
 use alpacars::trading::requests::{
@@ -43,7 +45,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Market order — $1.11 notional
     let notional_order = trading
-        .submit_order(&OrderRequest::market_notional("BTC/USD", OrderSide::Buy, "1.11"))
+        .submit_order(&OrderRequest::market_notional(
+            "BTC/USD",
+            OrderSide::Buy,
+            "1.11",
+        ))
         .await?;
     println!("Notional order id: {:?}", notional_order.id);
 
@@ -99,7 +105,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Note: Alpaca uses "BTCUSD" (no slash) for position queries
     match trading.get_open_position("BTCUSD").await {
         Ok(pos) => {
-            println!("BTC/USD position: qty={} market_value={:?}", pos.qty, pos.market_value);
+            println!(
+                "BTC/USD position: qty={} market_value={:?}",
+                pos.qty, pos.market_value
+            );
 
             // Close the BTC position
             trading
@@ -128,7 +137,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     for (sym, sym_bars) in &bars {
         if let Some(last) = sym_bars.last() {
-            println!("{} latest bar: open={} close={}", sym, last.open, last.close);
+            println!(
+                "{} latest bar: open={} close={}",
+                sym, last.open, last.close
+            );
         }
     }
 

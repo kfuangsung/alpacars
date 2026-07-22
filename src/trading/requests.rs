@@ -93,7 +93,11 @@ impl OrderRequest {
         }
     }
 
-    pub fn market_notional(symbol: impl Into<String>, side: OrderSide, notional: impl Into<String>) -> Self {
+    pub fn market_notional(
+        symbol: impl Into<String>,
+        side: OrderSide,
+        notional: impl Into<String>,
+    ) -> Self {
         Self {
             symbol: symbol.into(),
             qty: None,

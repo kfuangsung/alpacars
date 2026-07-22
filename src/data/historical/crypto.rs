@@ -108,13 +108,21 @@ struct PagedTrades {
 }
 
 #[derive(serde::Deserialize)]
-struct LatestBarsResp { bars: Option<HashMap<String, Bar>> }
+struct LatestBarsResp {
+    bars: Option<HashMap<String, Bar>>,
+}
 #[derive(serde::Deserialize)]
-struct LatestQuotesResp { quotes: Option<HashMap<String, Quote>> }
+struct LatestQuotesResp {
+    quotes: Option<HashMap<String, Quote>>,
+}
 #[derive(serde::Deserialize)]
-struct LatestTradesResp { trades: Option<HashMap<String, Trade>> }
+struct LatestTradesResp {
+    trades: Option<HashMap<String, Trade>>,
+}
 #[derive(serde::Deserialize)]
-struct LatestOrderbooksResp { orderbooks: Option<HashMap<String, Orderbook>> }
+struct LatestOrderbooksResp {
+    orderbooks: Option<HashMap<String, Orderbook>>,
+}
 #[derive(serde::Deserialize)]
 struct CryptoSnapshotsResp {
     snapshots: Option<HashMap<String, Snapshot>>,
@@ -163,7 +171,9 @@ impl CryptoHistoricalDataClient {
         loop {
             let resp: PagedBars = self.client.get("/crypto/us/bars", Some(&params)).await?;
             if let Some(bars) = resp.bars {
-                for (sym, b) in bars { result.entry(sym).or_default().extend(b); }
+                for (sym, b) in bars {
+                    result.entry(sym).or_default().extend(b);
+                }
             }
             match resp.next_page_token {
                 Some(t) if !t.is_empty() => params.page_token = Some(t),
@@ -173,7 +183,10 @@ impl CryptoHistoricalDataClient {
         Ok(result)
     }
 
-    pub async fn get_crypto_quotes(&self, req: &CryptoQuotesRequest) -> Result<QuoteSet, AlpacaError> {
+    pub async fn get_crypto_quotes(
+        &self,
+        req: &CryptoQuotesRequest,
+    ) -> Result<QuoteSet, AlpacaError> {
         let mut params = CryptoQuotesParams {
             symbols: Self::syms(&req.symbols),
             start: req.start,
@@ -187,7 +200,9 @@ impl CryptoHistoricalDataClient {
         loop {
             let resp: PagedQuotes = self.client.get("/crypto/us/quotes", Some(&params)).await?;
             if let Some(quotes) = resp.quotes {
-                for (sym, q) in quotes { result.entry(sym).or_default().extend(q); }
+                for (sym, q) in quotes {
+                    result.entry(sym).or_default().extend(q);
+                }
             }
             match resp.next_page_token {
                 Some(t) if !t.is_empty() => params.page_token = Some(t),
@@ -197,7 +212,10 @@ impl CryptoHistoricalDataClient {
         Ok(result)
     }
 
-    pub async fn get_crypto_trades(&self, req: &CryptoQuotesRequest) -> Result<TradeSet, AlpacaError> {
+    pub async fn get_crypto_trades(
+        &self,
+        req: &CryptoQuotesRequest,
+    ) -> Result<TradeSet, AlpacaError> {
         let mut params = CryptoQuotesParams {
             symbols: Self::syms(&req.symbols),
             start: req.start,
@@ -211,7 +229,9 @@ impl CryptoHistoricalDataClient {
         loop {
             let resp: PagedTrades = self.client.get("/crypto/us/trades", Some(&params)).await?;
             if let Some(trades) = resp.trades {
-                for (sym, t) in trades { result.entry(sym).or_default().extend(t); }
+                for (sym, t) in trades {
+                    result.entry(sym).or_default().extend(t);
+                }
             }
             match resp.next_page_token {
                 Some(t) if !t.is_empty() => params.page_token = Some(t),
@@ -221,33 +241,78 @@ impl CryptoHistoricalDataClient {
         Ok(result)
     }
 
-    pub async fn get_crypto_latest_trade(&self, req: &CryptoLatestRequest) -> Result<LatestTradeSet, AlpacaError> {
-        let params = CryptoLatestParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: LatestTradesResp = self.client.get("/crypto/us/latest/trades", Some(&params)).await?;
+    pub async fn get_crypto_latest_trade(
+        &self,
+        req: &CryptoLatestRequest,
+    ) -> Result<LatestTradeSet, AlpacaError> {
+        let params = CryptoLatestParams {
+            symbols: Self::syms(&req.symbols),
+            loc: req.loc.clone(),
+        };
+        let resp: LatestTradesResp = self
+            .client
+            .get("/crypto/us/latest/trades", Some(&params))
+            .await?;
         Ok(resp.trades.unwrap_or_default())
     }
 
-    pub async fn get_crypto_latest_quote(&self, req: &CryptoLatestRequest) -> Result<LatestQuoteSet, AlpacaError> {
-        let params = CryptoLatestParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: LatestQuotesResp = self.client.get("/crypto/us/latest/quotes", Some(&params)).await?;
+    pub async fn get_crypto_latest_quote(
+        &self,
+        req: &CryptoLatestRequest,
+    ) -> Result<LatestQuoteSet, AlpacaError> {
+        let params = CryptoLatestParams {
+            symbols: Self::syms(&req.symbols),
+            loc: req.loc.clone(),
+        };
+        let resp: LatestQuotesResp = self
+            .client
+            .get("/crypto/us/latest/quotes", Some(&params))
+            .await?;
         Ok(resp.quotes.unwrap_or_default())
     }
 
-    pub async fn get_crypto_latest_bar(&self, req: &CryptoLatestRequest) -> Result<LatestBarSet, AlpacaError> {
-        let params = CryptoLatestParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: LatestBarsResp = self.client.get("/crypto/us/latest/bars", Some(&params)).await?;
+    pub async fn get_crypto_latest_bar(
+        &self,
+        req: &CryptoLatestRequest,
+    ) -> Result<LatestBarSet, AlpacaError> {
+        let params = CryptoLatestParams {
+            symbols: Self::syms(&req.symbols),
+            loc: req.loc.clone(),
+        };
+        let resp: LatestBarsResp = self
+            .client
+            .get("/crypto/us/latest/bars", Some(&params))
+            .await?;
         Ok(resp.bars.unwrap_or_default())
     }
 
-    pub async fn get_crypto_latest_orderbook(&self, req: &CryptoLatestRequest) -> Result<LatestOrderbookSet, AlpacaError> {
-        let params = CryptoLatestParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: LatestOrderbooksResp = self.client.get("/crypto/us/latest/orderbooks", Some(&params)).await?;
+    pub async fn get_crypto_latest_orderbook(
+        &self,
+        req: &CryptoLatestRequest,
+    ) -> Result<LatestOrderbookSet, AlpacaError> {
+        let params = CryptoLatestParams {
+            symbols: Self::syms(&req.symbols),
+            loc: req.loc.clone(),
+        };
+        let resp: LatestOrderbooksResp = self
+            .client
+            .get("/crypto/us/latest/orderbooks", Some(&params))
+            .await?;
         Ok(resp.orderbooks.unwrap_or_default())
     }
 
-    pub async fn get_crypto_snapshot(&self, req: &CryptoSnapshotRequest) -> Result<SnapshotSet, AlpacaError> {
-        let params = CryptoSnapshotParams { symbols: Self::syms(&req.symbols), loc: req.loc.clone() };
-        let resp: CryptoSnapshotsResp = self.client.get("/crypto/us/snapshots", Some(&params)).await?;
+    pub async fn get_crypto_snapshot(
+        &self,
+        req: &CryptoSnapshotRequest,
+    ) -> Result<SnapshotSet, AlpacaError> {
+        let params = CryptoSnapshotParams {
+            symbols: Self::syms(&req.symbols),
+            loc: req.loc.clone(),
+        };
+        let resp: CryptoSnapshotsResp = self
+            .client
+            .get("/crypto/us/snapshots", Some(&params))
+            .await?;
         Ok(resp.snapshots.or(resp.direct).unwrap_or_default())
     }
 }

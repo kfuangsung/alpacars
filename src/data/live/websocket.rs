@@ -49,6 +49,8 @@ pub struct SubscribeMsg {
 }
 
 impl SubscribeMsg {
+    // One Vec<String> param per subscription channel, mirroring `SubscribeMsg`'s fields 1:1.
+    #[allow(clippy::too_many_arguments)]
     pub fn subscribe(
         trades: Vec<String>,
         quotes: Vec<String>,
@@ -88,7 +90,12 @@ impl DataStreamConnection {
         secret_key: String,
         subscribe_msg: SubscribeMsg,
     ) -> Self {
-        Self { ws_url, api_key, secret_key, subscribe_msg }
+        Self {
+            ws_url,
+            api_key,
+            secret_key,
+            subscribe_msg,
+        }
     }
 
     /// Connect, authenticate, subscribe, then call `on_event` for every incoming event.
@@ -125,15 +132,13 @@ impl DataStreamConnection {
             let msg = msg.map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 
             let events: Vec<RawStreamEvent> = match msg {
-                Message::Text(text) => {
-                    match serde_json::from_str(&text) {
-                        Ok(evs) => evs,
-                        Err(e) => {
-                            warn!(error = %e, "failed to parse text frame");
-                            continue;
-                        }
+                Message::Text(text) => match serde_json::from_str(&text) {
+                    Ok(evs) => evs,
+                    Err(e) => {
+                        warn!(error = %e, "failed to parse text frame");
+                        continue;
                     }
-                }
+                },
                 Message::Binary(bytes) => {
                     match rmp_serde::from_slice::<Vec<RawStreamEvent>>(&bytes) {
                         Ok(evs) => evs,

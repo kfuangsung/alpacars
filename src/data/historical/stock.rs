@@ -220,7 +220,11 @@ impl StockHistoricalDataClient {
 
     /// Create a client pointed at a custom base URL (for testing / mocking).
     #[doc(hidden)]
-    pub fn new_with_url(api_key: &str, secret_key: &str, base_url: &str) -> Result<Self, AlpacaError> {
+    pub fn new_with_url(
+        api_key: &str,
+        secret_key: &str,
+        base_url: &str,
+    ) -> Result<Self, AlpacaError> {
         Ok(Self {
             client: RestClient::new(
                 Some(api_key.to_string()),
@@ -239,11 +243,7 @@ impl StockHistoricalDataClient {
 
     /// Fetch historical bars (auto-paginated).
     pub async fn get_stock_bars(&self, req: &StockBarsRequest) -> Result<BarSet, AlpacaError> {
-        let tf = req
-            .timeframe
-            .clone()
-            .unwrap_or_else(TimeFrame::day)
-            .value();
+        let tf = req.timeframe.clone().unwrap_or_else(TimeFrame::day).value();
         let mut params = BarsParams {
             symbols: Self::symbols_str(&req.symbols),
             timeframe: tf,
@@ -275,7 +275,10 @@ impl StockHistoricalDataClient {
     }
 
     /// Fetch historical quotes (auto-paginated).
-    pub async fn get_stock_quotes(&self, req: &StockQuotesRequest) -> Result<QuoteSet, AlpacaError> {
+    pub async fn get_stock_quotes(
+        &self,
+        req: &StockQuotesRequest,
+    ) -> Result<QuoteSet, AlpacaError> {
         let mut params = QuotesParams {
             symbols: Self::symbols_str(&req.symbols),
             start: req.start,
@@ -304,7 +307,10 @@ impl StockHistoricalDataClient {
     }
 
     /// Fetch historical trades (auto-paginated).
-    pub async fn get_stock_trades(&self, req: &StockTradesRequest) -> Result<TradeSet, AlpacaError> {
+    pub async fn get_stock_trades(
+        &self,
+        req: &StockTradesRequest,
+    ) -> Result<TradeSet, AlpacaError> {
         let mut params = TradesParams {
             symbols: Self::symbols_str(&req.symbols),
             start: req.start,
@@ -342,7 +348,10 @@ impl StockHistoricalDataClient {
             feed: req.feed.clone(),
             currency: req.currency.clone(),
         };
-        let resp: LatestTradesResp = self.client.get("/stocks/trades/latest", Some(&params)).await?;
+        let resp: LatestTradesResp = self
+            .client
+            .get("/stocks/trades/latest", Some(&params))
+            .await?;
         Ok(resp.trades.unwrap_or_default())
     }
 
@@ -356,7 +365,10 @@ impl StockHistoricalDataClient {
             feed: req.feed.clone(),
             currency: req.currency.clone(),
         };
-        let resp: LatestQuotesResp = self.client.get("/stocks/quotes/latest", Some(&params)).await?;
+        let resp: LatestQuotesResp = self
+            .client
+            .get("/stocks/quotes/latest", Some(&params))
+            .await?;
         Ok(resp.quotes.unwrap_or_default())
     }
 
@@ -370,7 +382,10 @@ impl StockHistoricalDataClient {
             feed: req.feed.clone(),
             currency: req.currency.clone(),
         };
-        let resp: LatestBarsResp = self.client.get("/stocks/bars/latest", Some(&params)).await?;
+        let resp: LatestBarsResp = self
+            .client
+            .get("/stocks/bars/latest", Some(&params))
+            .await?;
         Ok(resp.bars.unwrap_or_default())
     }
 

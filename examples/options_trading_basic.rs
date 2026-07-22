@@ -8,9 +8,7 @@ use alpacars::data::historical::option::{
 };
 use alpacars::trading::client::TradingClient;
 use alpacars::trading::enums::{AssetStatus, ContractType, ExerciseStyle, OrderSide};
-use alpacars::trading::requests::{
-    ClosePositionRequest, GetOptionContractsRequest, OrderRequest,
-};
+use alpacars::trading::requests::{ClosePositionRequest, GetOptionContractsRequest, OrderRequest};
 use chrono::{Duration, Utc};
 
 #[tokio::main]
@@ -23,12 +21,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // ── Check options capability ──────────────────────────────────────────────
     let account = trading.get_account().await?;
-    println!("Options buying power   : {:?}", account.options_buying_power);
-    println!("Options approved level : {:?}", account.options_approved_level);
-    println!("Options trading level  : {:?}", account.options_trading_level);
+    println!(
+        "Options buying power   : {:?}",
+        account.options_buying_power
+    );
+    println!(
+        "Options approved level : {:?}",
+        account.options_approved_level
+    );
+    println!(
+        "Options trading level  : {:?}",
+        account.options_trading_level
+    );
 
     let config = trading.get_account_configurations().await?;
-    println!("Max options trading level: {:?}", config.max_options_trading_level);
+    println!(
+        "Max options trading level: {:?}",
+        config.max_options_trading_level
+    );
 
     // ── Discover SPY option contracts ─────────────────────────────────────────
     let today = Utc::now().date_naive();
@@ -51,14 +61,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Found {} SPY call contracts.", contracts.len());
 
     // Pick the contract with the highest open interest
-    let best = contracts
-        .iter()
-        .max_by_key(|c| {
-            c.open_interest
-                .as_deref()
-                .and_then(|v| v.parse::<u64>().ok())
-                .unwrap_or(0)
-        });
+    let best = contracts.iter().max_by_key(|c| {
+        c.open_interest
+            .as_deref()
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(0)
+    });
 
     let Some(contract) = best else {
         println!("No contracts found — exiting.");
@@ -85,7 +93,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .iter()
         .filter(|p| p.symbol == contract.symbol)
         .collect();
-    println!("Options positions for {}: {}", contract.symbol, options_positions.len());
+    println!(
+        "Options positions for {}: {}",
+        contract.symbol,
+        options_positions.len()
+    );
 
     if let Some(pos) = options_positions.first() {
         // Close the options position
@@ -154,7 +166,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             })
             .await?;
         if let Some(s) = snapshot.get(sym.as_str()) {
-            println!("{} snapshot implied vol: {:?}", sym, s.greeks.as_ref().map(|g| g.vega));
+            println!(
+                "{} snapshot implied vol: {:?}",
+                sym,
+                s.greeks.as_ref().map(|g| g.vega)
+            );
         }
     }
 

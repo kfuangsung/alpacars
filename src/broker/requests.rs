@@ -351,6 +351,6 @@ pub struct GetOrdersForAccountRequest {
 }
 
 pub use crate::trading::requests::{
-    ClosePositionRequest, GetAssetsRequest, GetCalendarRequest, OrderRequest,
-    ReplaceOrderRequest, CreateWatchlistRequest, UpdateWatchlistRequest,
+    ClosePositionRequest, CreateWatchlistRequest, GetAssetsRequest, GetCalendarRequest,
+    OrderRequest, ReplaceOrderRequest, UpdateWatchlistRequest,
 };

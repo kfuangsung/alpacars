@@ -54,49 +54,85 @@ impl StockDataStream {
         }
     }
 
-    pub fn subscribe_trades<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Trade) + Send + Sync + 'static {
+    pub fn subscribe_trades<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Trade) + Send + Sync + 'static,
+    {
         self.trade_syms.extend(symbols.into_iter().map(Into::into));
         self.trade_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_quotes<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Quote) + Send + Sync + 'static {
+    pub fn subscribe_quotes<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Quote) + Send + Sync + 'static,
+    {
         self.quote_syms.extend(symbols.into_iter().map(Into::into));
         self.quote_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_bars<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Bar) + Send + Sync + 'static {
+    pub fn subscribe_bars<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Bar) + Send + Sync + 'static,
+    {
         self.bar_syms.extend(symbols.into_iter().map(Into::into));
         self.bar_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_updated_bars<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Bar) + Send + Sync + 'static {
-        self.updated_bar_syms.extend(symbols.into_iter().map(Into::into));
+    pub fn subscribe_updated_bars<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Bar) + Send + Sync + 'static,
+    {
+        self.updated_bar_syms
+            .extend(symbols.into_iter().map(Into::into));
         self.updated_bar_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_daily_bars<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Bar) + Send + Sync + 'static {
-        self.daily_bar_syms.extend(symbols.into_iter().map(Into::into));
+    pub fn subscribe_daily_bars<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Bar) + Send + Sync + 'static,
+    {
+        self.daily_bar_syms
+            .extend(symbols.into_iter().map(Into::into));
         self.daily_bar_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_trading_statuses<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(TradingStatus) + Send + Sync + 'static {
+    pub fn subscribe_trading_statuses<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(TradingStatus) + Send + Sync + 'static,
+    {
         self.status_syms.extend(symbols.into_iter().map(Into::into));
         self.trading_status_handler = Some(Arc::new(handler));
     }
 
     pub fn register_trade_cancels<F>(&mut self, handler: F)
-    where F: Fn(TradeCancel) + Send + Sync + 'static {
+    where
+        F: Fn(TradeCancel) + Send + Sync + 'static,
+    {
         self.trade_cancel_handler = Some(Arc::new(handler));
     }
 
     pub fn register_trade_corrections<F>(&mut self, handler: F)
-    where F: Fn(TradeCorrection) + Send + Sync + 'static {
+    where
+        F: Fn(TradeCorrection) + Send + Sync + 'static,
+    {
         self.trade_correction_handler = Some(Arc::new(handler));
     }
 
@@ -143,40 +179,72 @@ impl StockDataStream {
         conn.run(move |event: RawStreamEvent| {
             let msg_type = event.msg_type.as_deref().unwrap_or("");
             let raw = serde_json::Value::Object(
-                event.fields.into_iter().collect::<serde_json::Map<_, _>>()
+                event.fields.into_iter().collect::<serde_json::Map<_, _>>(),
             );
 
             match msg_type {
                 "t" => match serde_json::from_value::<Trade>(raw) {
-                    Ok(v) => { if let Some(h) = &trade_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &trade_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize stock Trade"),
                 },
                 "q" => match serde_json::from_value::<Quote>(raw) {
-                    Ok(v) => { if let Some(h) = &quote_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &quote_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize stock Quote"),
                 },
                 "b" => match serde_json::from_value::<Bar>(raw) {
-                    Ok(v) => { if let Some(h) = &bar_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &bar_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize stock Bar"),
                 },
                 "u" => match serde_json::from_value::<Bar>(raw) {
-                    Ok(v) => { if let Some(h) = &updated_bar_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &updated_bar_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize stock updated Bar"),
                 },
                 "d" => match serde_json::from_value::<Bar>(raw) {
-                    Ok(v) => { if let Some(h) = &daily_bar_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &daily_bar_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize stock daily Bar"),
                 },
                 "s" => match serde_json::from_value::<TradingStatus>(raw) {
-                    Ok(v) => { if let Some(h) = &status_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &status_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize TradingStatus"),
                 },
                 "x" => match serde_json::from_value::<TradeCancel>(raw) {
-                    Ok(v) => { if let Some(h) = &cancel_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &cancel_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize TradeCancel"),
                 },
                 "c" => match serde_json::from_value::<TradeCorrection>(raw) {
-                    Ok(v) => { if let Some(h) = &correction_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &correction_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize TradeCorrection"),
                 },
                 _ => {}

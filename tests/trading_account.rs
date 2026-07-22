@@ -78,6 +78,9 @@ async fn test_get_account_configurations() {
     let config = client.get_account_configurations().await.unwrap();
 
     assert!(matches!(config, AccountConfiguration { .. }));
-    assert_eq!(config.trade_confirm_email, Some(TradeConfirmationEmail::All));
+    assert_eq!(
+        config.trade_confirm_email,
+        Some(TradeConfirmationEmail::All)
+    );
     assert_eq!(config.max_options_trading_level, Some(1));
 }

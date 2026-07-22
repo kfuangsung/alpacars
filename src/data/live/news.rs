@@ -26,20 +26,32 @@ impl NewsDataStream {
     }
 
     /// Subscribe to news for the given symbols. Use `["*"]` for all symbols.
-    pub fn subscribe_news<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(News) + Send + Sync + 'static {
+    pub fn subscribe_news<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(News) + Send + Sync + 'static,
+    {
         self.symbols.extend(symbols.into_iter().map(Into::into));
         self.news_handler = Some(Arc::new(handler));
     }
 
     pub async fn run(&self) -> Result<(), AlpacaError> {
         let sub = SubscribeMsg::subscribe(
-            vec![], vec![], vec![], vec![], vec![], vec![], vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
             self.symbols.clone(),
         );
 
         let url = format!("{}/v1beta1/news", base_url::MARKET_DATA_STREAM);
-        let conn = DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
+        let conn =
+            DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
 
         let handler = self.news_handler.clone();
 
@@ -48,10 +60,14 @@ impl NewsDataStream {
                 return;
             }
             let raw = serde_json::Value::Object(
-                event.fields.into_iter().collect::<serde_json::Map<_, _>>()
+                event.fields.into_iter().collect::<serde_json::Map<_, _>>(),
             );
             match serde_json::from_value::<News>(raw) {
-                Ok(v) => { if let Some(h) = &handler { h(v); } }
+                Ok(v) => {
+                    if let Some(h) = &handler {
+                        h(v);
+                    }
+                }
                 Err(e) => warn!(error = %e, "failed to deserialize News event"),
             }
         })
