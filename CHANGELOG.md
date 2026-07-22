@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-22
+
 ### Changed
-- Relicensed under dual `MIT OR Apache-2.0` (previously MIT-only), matching the Rust ecosystem convention and adding Apache-2.0's explicit patent grant. Applies to releases from the next version onward; already-published versions (0.1.0–0.4.0) remain MIT-only as published.
+- Relicensed under dual `MIT OR Apache-2.0` (previously MIT-only), matching the Rust ecosystem convention and adding Apache-2.0's explicit patent grant. Applies to releases from this version onward; already-published versions (0.1.0–0.4.0) remain MIT-only as published.
 
 ## [0.4.0] - 2026-07-22
 
@@ -70,7 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/kfuangsung/alpacars/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/kfuangsung/alpacars/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/kfuangsung/alpacars/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/kfuangsung/alpacars/compare/v0.1.2...v0.2.0
