@@ -5,7 +5,7 @@
 [![CI](https://github.com/kfuangsung/alpacars/actions/workflows/ci.yml/badge.svg)](https://github.com/kfuangsung/alpacars/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/alpacars.svg)](https://crates.io/crates/alpacars)
 [![Rust](https://img.shields.io/badge/rust-1.88%2B-orange?logo=rust)](https://www.rust-lang.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#-license)
 
 ---
 
@@ -316,4 +316,13 @@ By using this software you acknowledge that:
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE).
+Licensed under either of
+
+- [Apache License, Version 2.0](LICENSE-APACHE)
+- [MIT license](LICENSE-MIT)
+
+at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in this crate by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
