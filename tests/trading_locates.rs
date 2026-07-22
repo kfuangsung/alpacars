@@ -89,7 +89,7 @@ async fn test_get_locate_by_id() {
         .unwrap();
 
     assert_eq!(locate.id, "0f4361a4-90c6-4a3f-b3f1-6d5e78c8a1b2");
-    assert_eq!(locate.all_or_none, true);
+    assert!(locate.all_or_none);
 }
 
 #[tokio::test]

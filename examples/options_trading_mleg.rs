@@ -12,17 +12,23 @@ use alpacars::trading::models::OptionContract;
 
 fn closest_strike(contracts: &[OptionContract], target: f64) -> Option<&OptionContract> {
     contracts.iter().min_by(|a, b| {
-        let da = a.strike_price.as_deref().and_then(|s| s.parse::<f64>().ok())
-            .map(|v| (v - target).abs()).unwrap_or(f64::MAX);
-        let db = b.strike_price.as_deref().and_then(|s| s.parse::<f64>().ok())
-            .map(|v| (v - target).abs()).unwrap_or(f64::MAX);
+        let da = a
+            .strike_price
+            .as_deref()
+            .and_then(|s| s.parse::<f64>().ok())
+            .map(|v| (v - target).abs())
+            .unwrap_or(f64::MAX);
+        let db = b
+            .strike_price
+            .as_deref()
+            .and_then(|s| s.parse::<f64>().ok())
+            .map(|v| (v - target).abs())
+            .unwrap_or(f64::MAX);
         da.partial_cmp(&db).unwrap()
     })
 }
 use alpacars::trading::enums::{AssetStatus, ContractType, OrderClass, OrderSide, TimeInForce};
-use alpacars::trading::requests::{
-    GetOptionContractsRequest, OptionLegRequest, OrderRequest,
-};
+use alpacars::trading::requests::{GetOptionContractsRequest, OptionLegRequest, OrderRequest};
 use chrono::{Duration, Utc};
 
 #[tokio::main]
@@ -37,7 +43,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let options_level = account.options_trading_level.unwrap_or(0);
     println!("Options trading level: {}", options_level);
     if options_level < 3 {
-        eprintln!("Multi-leg options require trading level 3 (current: {}). Exiting.", options_level);
+        eprintln!(
+            "Multi-leg options require trading level 3 (current: {}). Exiting.",
+            options_level
+        );
         return Ok(());
     }
 
@@ -80,10 +89,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Find a matched call + put at the same strike closest to ATM (choose highest OI call)
     let straddle_call = calls.iter().max_by_key(|c| {
-        c.open_interest.as_deref().and_then(|v| v.parse::<u64>().ok()).unwrap_or(0)
+        c.open_interest
+            .as_deref()
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(0)
     });
     let straddle_put = straddle_call.as_ref().and_then(|call| {
-        puts.iter().find(|p| p.strike_price == call.strike_price && p.expiration_date == call.expiration_date)
+        puts.iter().find(|p| {
+            p.strike_price == call.strike_price && p.expiration_date == call.expiration_date
+        })
     });
 
     if let (Some(call), Some(put)) = (straddle_call, straddle_put) {
@@ -97,13 +111,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         straddle_order.symbol = call.symbol.clone(); // symbol unused for MLEG but required
         straddle_order.order_class = Some(OrderClass::Mleg);
         straddle_order.legs = Some(vec![
-            OptionLegRequest { symbol: call.symbol.clone(), side: OrderSide::Buy, ratio_qty: 1 },
-            OptionLegRequest { symbol: put.symbol.clone(),  side: OrderSide::Buy, ratio_qty: 1 },
+            OptionLegRequest {
+                symbol: call.symbol.clone(),
+                side: OrderSide::Buy,
+                ratio_qty: 1,
+            },
+            OptionLegRequest {
+                symbol: put.symbol.clone(),
+                side: OrderSide::Buy,
+                ratio_qty: 1,
+            },
         ]);
 
         match trading.submit_order(&straddle_order).await {
             Ok(order) => println!("Straddle order id: {:?}", order.id),
-            Err(e)    => println!("Straddle order error (expected in paper): {}", e),
+            Err(e) => println!("Straddle order error (expected in paper): {}", e),
         }
     } else {
         println!("Could not find matching call+put for straddle.");
@@ -139,16 +161,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     let spy_calls = spy_calls_resp.option_contracts;
-    let spy_puts  = spy_puts_resp.option_contracts;
+    let spy_puts = spy_puts_resp.option_contracts;
 
     // Assume SPY is around 550; adjust based on actual price in production
     let spy_price = 550.0_f64;
     let wing_width = 10.0_f64;
 
-    let short_call = closest_strike(&spy_calls, spy_price + wing_width);       // sell C
-    let long_call  = closest_strike(&spy_calls, spy_price + wing_width * 2.0); // buy  D
-    let short_put  = closest_strike(&spy_puts,  spy_price - wing_width);       // sell B
-    let long_put   = closest_strike(&spy_puts,  spy_price - wing_width * 2.0); // buy  A
+    let short_call = closest_strike(&spy_calls, spy_price + wing_width); // sell C
+    let long_call = closest_strike(&spy_calls, spy_price + wing_width * 2.0); // buy  D
+    let short_put = closest_strike(&spy_puts, spy_price - wing_width); // sell B
+    let long_put = closest_strike(&spy_puts, spy_price - wing_width * 2.0); // buy  A
 
     if let (Some(sc), Some(lc), Some(sp), Some(lp)) = (short_call, long_call, short_put, long_put) {
         println!(
@@ -157,13 +179,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
 
         // Build MLEG limit order at $0 credit (net zero for demo)
-        let mut condor_order = OrderRequest::limit("", OrderSide::Sell, "1", "0.00", TimeInForce::Day);
+        let mut condor_order =
+            OrderRequest::limit("", OrderSide::Sell, "1", "0.00", TimeInForce::Day);
         condor_order.order_class = Some(OrderClass::Mleg);
         condor_order.legs = Some(vec![
-            OptionLegRequest { symbol: sc.symbol.clone(), side: OrderSide::Sell, ratio_qty: 1 },
-            OptionLegRequest { symbol: lc.symbol.clone(), side: OrderSide::Buy,  ratio_qty: 1 },
-            OptionLegRequest { symbol: sp.symbol.clone(), side: OrderSide::Sell, ratio_qty: 1 },
-            OptionLegRequest { symbol: lp.symbol.clone(), side: OrderSide::Buy,  ratio_qty: 1 },
+            OptionLegRequest {
+                symbol: sc.symbol.clone(),
+                side: OrderSide::Sell,
+                ratio_qty: 1,
+            },
+            OptionLegRequest {
+                symbol: lc.symbol.clone(),
+                side: OrderSide::Buy,
+                ratio_qty: 1,
+            },
+            OptionLegRequest {
+                symbol: sp.symbol.clone(),
+                side: OrderSide::Sell,
+                ratio_qty: 1,
+            },
+            OptionLegRequest {
+                symbol: lp.symbol.clone(),
+                side: OrderSide::Buy,
+                ratio_qty: 1,
+            },
         ]);
 
         match trading.submit_order(&condor_order).await {

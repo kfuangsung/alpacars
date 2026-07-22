@@ -2,8 +2,9 @@
 
 > An async-first Rust SDK for the [Alpaca Markets](https://alpaca.markets) API — a Rust equivalent of the official [alpaca-py](https://github.com/alpacahq/alpaca-py) Python SDK.
 
+[![CI](https://github.com/kfuangsung/alpacars/actions/workflows/ci.yml/badge.svg)](https://github.com/kfuangsung/alpacars/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/alpacars.svg)](https://crates.io/crates/alpacars)
-[![Rust](https://img.shields.io/badge/rust-1.75%2B-orange?logo=rust)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/rust-1.88%2B-orange?logo=rust)](https://www.rust-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---

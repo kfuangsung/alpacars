@@ -40,7 +40,10 @@ impl BrokerClient {
 
     // ── Accounts ──────────────────────────────────────────────────────────────
 
-    pub async fn create_account(&self, data: &CreateAccountRequest) -> Result<Account, AlpacaError> {
+    pub async fn create_account(
+        &self,
+        data: &CreateAccountRequest,
+    ) -> Result<Account, AlpacaError> {
         self.client.post("/accounts", Some(data)).await
     }
 
@@ -224,10 +227,7 @@ impl BrokerClient {
             .await
     }
 
-    pub async fn get_banks_for_account(
-        &self,
-        account_id: &Uuid,
-    ) -> Result<Vec<Bank>, AlpacaError> {
+    pub async fn get_banks_for_account(&self, account_id: &Uuid) -> Result<Vec<Bank>, AlpacaError> {
         self.client
             .get(&format!("/accounts/{}/banks", account_id), None::<&()>)
             .await
@@ -288,10 +288,7 @@ impl BrokerClient {
         account_id: &Uuid,
     ) -> Result<Vec<Position>, AlpacaError> {
         self.client
-            .get(
-                &format!("/accounts/{}/positions", account_id),
-                None::<&()>,
-            )
+            .get(&format!("/accounts/{}/positions", account_id), None::<&()>)
             .await
     }
 
@@ -334,10 +331,7 @@ impl BrokerClient {
     ) -> Result<Order, AlpacaError> {
         self.client
             .delete_with_body(
-                &format!(
-                    "/accounts/{}/positions/{}",
-                    account_id, symbol_or_asset_id
-                ),
+                &format!("/accounts/{}/positions/{}", account_id, symbol_or_asset_id),
                 close_options,
             )
             .await
@@ -397,10 +391,7 @@ impl BrokerClient {
         account_id: &Uuid,
     ) -> Result<Vec<serde_json::Value>, AlpacaError> {
         self.client
-            .delete(
-                &format!("/accounts/{}/orders", account_id),
-                None::<&()>,
-            )
+            .delete(&format!("/accounts/{}/orders", account_id), None::<&()>)
             .await
     }
 
@@ -437,7 +428,9 @@ impl BrokerClient {
         &self,
         data: &CreateReverseBatchJournalRequest,
     ) -> Result<Vec<Journal>, AlpacaError> {
-        self.client.post("/journals:batch_reverse", Some(data)).await
+        self.client
+            .post("/journals:batch_reverse", Some(data))
+            .await
     }
 
     pub async fn get_journals(
@@ -494,10 +487,7 @@ impl BrokerClient {
         account_id: &Uuid,
     ) -> Result<Vec<Watchlist>, AlpacaError> {
         self.client
-            .get(
-                &format!("/accounts/{}/watchlists", account_id),
-                None::<&()>,
-            )
+            .get(&format!("/accounts/{}/watchlists", account_id), None::<&()>)
             .await
     }
 
@@ -520,10 +510,7 @@ impl BrokerClient {
         data: &CreateWatchlistRequest,
     ) -> Result<Watchlist, AlpacaError> {
         self.client
-            .post(
-                &format!("/accounts/{}/watchlists", account_id),
-                Some(data),
-            )
+            .post(&format!("/accounts/{}/watchlists", account_id), Some(data))
             .await
     }
 
@@ -570,10 +557,7 @@ impl BrokerClient {
         self.client.get("/portfolios", filter).await
     }
 
-    pub async fn get_portfolio_by_id(
-        &self,
-        portfolio_id: &Uuid,
-    ) -> Result<Portfolio, AlpacaError> {
+    pub async fn get_portfolio_by_id(&self, portfolio_id: &Uuid) -> Result<Portfolio, AlpacaError> {
         self.client
             .get(&format!("/portfolios/{}", portfolio_id), None::<&()>)
             .await
@@ -589,10 +573,7 @@ impl BrokerClient {
             .await
     }
 
-    pub async fn inactivate_portfolio_by_id(
-        &self,
-        portfolio_id: &Uuid,
-    ) -> Result<(), AlpacaError> {
+    pub async fn inactivate_portfolio_by_id(&self, portfolio_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
             .post_void(
                 &format!("/portfolios/{}:inactivate", portfolio_id),
@@ -626,15 +607,9 @@ impl BrokerClient {
             .await
     }
 
-    pub async fn unsubscribe_account(
-        &self,
-        subscription_id: &Uuid,
-    ) -> Result<(), AlpacaError> {
+    pub async fn unsubscribe_account(&self, subscription_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
-            .delete_void(
-                &format!("/subscriptions/{}", subscription_id),
-                None::<&()>,
-            )
+            .delete_void(&format!("/subscriptions/{}", subscription_id), None::<&()>)
             .await
     }
 

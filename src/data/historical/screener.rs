@@ -53,8 +53,6 @@ impl ScreenerClient {
         &self,
         req: &MarketMoversRequest,
     ) -> Result<Movers, AlpacaError> {
-        self.client
-            .get("/screener/stocks/movers", Some(req))
-            .await
+        self.client.get("/screener/stocks/movers", Some(req)).await
     }
 }

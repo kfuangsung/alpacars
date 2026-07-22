@@ -29,14 +29,24 @@ impl OptionDataStream {
         }
     }
 
-    pub fn subscribe_trades<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Trade) + Send + Sync + 'static {
+    pub fn subscribe_trades<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Trade) + Send + Sync + 'static,
+    {
         self.trade_syms.extend(symbols.into_iter().map(Into::into));
         self.trade_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_quotes<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Quote) + Send + Sync + 'static {
+    pub fn subscribe_quotes<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Quote) + Send + Sync + 'static,
+    {
         self.quote_syms.extend(symbols.into_iter().map(Into::into));
         self.quote_handler = Some(Arc::new(handler));
     }
@@ -45,11 +55,17 @@ impl OptionDataStream {
         let sub = SubscribeMsg::subscribe(
             self.trade_syms.clone(),
             self.quote_syms.clone(),
-            vec![], vec![], vec![], vec![], vec![], vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
         );
 
         let url = format!("{}/v2/options/opra", base_url::MARKET_DATA_STREAM);
-        let conn = DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
+        let conn =
+            DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
 
         let trade_h = self.trade_handler.clone();
         let quote_h = self.quote_handler.clone();
@@ -57,15 +73,23 @@ impl OptionDataStream {
         conn.run(move |event: RawStreamEvent| {
             let msg_type = event.msg_type.as_deref().unwrap_or("");
             let raw = serde_json::Value::Object(
-                event.fields.into_iter().collect::<serde_json::Map<_, _>>()
+                event.fields.into_iter().collect::<serde_json::Map<_, _>>(),
             );
             match msg_type {
                 "t" => match serde_json::from_value::<Trade>(raw) {
-                    Ok(v) => { if let Some(h) = &trade_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &trade_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize options Trade"),
                 },
                 "q" => match serde_json::from_value::<Quote>(raw) {
-                    Ok(v) => { if let Some(h) = &quote_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &quote_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize options Quote"),
                 },
                 _ => {}

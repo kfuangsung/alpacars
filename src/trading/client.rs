@@ -37,7 +37,11 @@ impl TradingClient {
 
     /// Create a client pointed at a custom base URL (for testing / mocking).
     #[doc(hidden)]
-    pub fn new_with_url(api_key: &str, secret_key: &str, base_url: &str) -> Result<Self, AlpacaError> {
+    pub fn new_with_url(
+        api_key: &str,
+        secret_key: &str,
+        base_url: &str,
+    ) -> Result<Self, AlpacaError> {
         Ok(Self {
             client: RestClient::new(
                 Some(api_key.to_string()),
@@ -76,14 +80,18 @@ impl TradingClient {
     }
 
     pub async fn get_account_configurations(&self) -> Result<AccountConfiguration, AlpacaError> {
-        self.client.get("/account/configurations", None::<&()>).await
+        self.client
+            .get("/account/configurations", None::<&()>)
+            .await
     }
 
     pub async fn set_account_configurations(
         &self,
         config: &AccountConfiguration,
     ) -> Result<AccountConfiguration, AlpacaError> {
-        self.client.patch("/account/configurations", Some(config)).await
+        self.client
+            .patch("/account/configurations", Some(config))
+            .await
     }
 
     pub async fn get_portfolio_history(
@@ -129,7 +137,12 @@ impl TradingClient {
             client_order_id: &'a str,
         }
         self.client
-            .get("/orders:by_client_order_id", Some(&Params { client_order_id: client_id }))
+            .get(
+                "/orders:by_client_order_id",
+                Some(&Params {
+                    client_order_id: client_id,
+                }),
+            )
             .await
     }
 
@@ -266,7 +279,9 @@ impl TradingClient {
         watchlist_id: &Uuid,
         symbol: &str,
     ) -> Result<Watchlist, AlpacaError> {
-        let body = AddSymbolToWatchlistRequest { symbol: symbol.to_string() };
+        let body = AddSymbolToWatchlistRequest {
+            symbol: symbol.to_string(),
+        };
         self.client
             .post(&format!("/watchlists/{}", watchlist_id), Some(&body))
             .await
@@ -284,7 +299,10 @@ impl TradingClient {
         symbol: &str,
     ) -> Result<Watchlist, AlpacaError> {
         self.client
-            .delete(&format!("/watchlists/{}/{}", watchlist_id, symbol), None::<&()>)
+            .delete(
+                &format!("/watchlists/{}/{}", watchlist_id, symbol),
+                None::<&()>,
+            )
             .await
     }
 
@@ -304,7 +322,10 @@ impl TradingClient {
         id: &str,
     ) -> Result<CorporateActionAnnouncement, AlpacaError> {
         self.client
-            .get(&format!("/corporate_actions/announcements/{}", id), None::<&()>)
+            .get(
+                &format!("/corporate_actions/announcements/{}", id),
+                None::<&()>,
+            )
             .await
     }
 
@@ -329,7 +350,10 @@ impl TradingClient {
     // ── Locates (hard-to-borrow) ──────────────────────────────────────────────
     // Served under /v1, unlike the rest of the Trading API.
 
-    pub async fn create_locate(&self, request: &CreateLocateRequest) -> Result<Locate, AlpacaError> {
+    pub async fn create_locate(
+        &self,
+        request: &CreateLocateRequest,
+    ) -> Result<Locate, AlpacaError> {
         self.client
             .with_api_version("v1")
             .post("/locates", Some(request))

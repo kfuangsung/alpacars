@@ -2,7 +2,28 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Exchange {
-    Z, I, M, U, L, W, X, B, D, J, P, Q, S, V, A, E, N, T, Y, C, H, K,
+    Z,
+    I,
+    M,
+    U,
+    L,
+    W,
+    X,
+    B,
+    D,
+    J,
+    P,
+    Q,
+    S,
+    V,
+    A,
+    E,
+    N,
+    T,
+    Y,
+    C,
+    H,
+    K,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -116,11 +137,21 @@ impl TimeFrame {
         Self { amount, unit }
     }
 
-    pub fn minute() -> Self { Self::new(1, TimeFrameUnit::Minute) }
-    pub fn hour() -> Self { Self::new(1, TimeFrameUnit::Hour) }
-    pub fn day() -> Self { Self::new(1, TimeFrameUnit::Day) }
-    pub fn week() -> Self { Self::new(1, TimeFrameUnit::Week) }
-    pub fn month() -> Self { Self::new(1, TimeFrameUnit::Month) }
+    pub fn minute() -> Self {
+        Self::new(1, TimeFrameUnit::Minute)
+    }
+    pub fn hour() -> Self {
+        Self::new(1, TimeFrameUnit::Hour)
+    }
+    pub fn day() -> Self {
+        Self::new(1, TimeFrameUnit::Day)
+    }
+    pub fn week() -> Self {
+        Self::new(1, TimeFrameUnit::Week)
+    }
+    pub fn month() -> Self {
+        Self::new(1, TimeFrameUnit::Month)
+    }
 
     pub fn value(&self) -> String {
         format!("{}{}", self.amount, self.unit.as_str())

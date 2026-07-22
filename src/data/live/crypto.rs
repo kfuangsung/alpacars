@@ -45,39 +45,72 @@ impl CryptoDataStream {
         }
     }
 
-    pub fn subscribe_trades<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Trade) + Send + Sync + 'static {
+    pub fn subscribe_trades<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Trade) + Send + Sync + 'static,
+    {
         self.trade_syms.extend(symbols.into_iter().map(Into::into));
         self.trade_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_quotes<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Quote) + Send + Sync + 'static {
+    pub fn subscribe_quotes<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Quote) + Send + Sync + 'static,
+    {
         self.quote_syms.extend(symbols.into_iter().map(Into::into));
         self.quote_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_bars<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Bar) + Send + Sync + 'static {
+    pub fn subscribe_bars<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Bar) + Send + Sync + 'static,
+    {
         self.bar_syms.extend(symbols.into_iter().map(Into::into));
         self.bar_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_updated_bars<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Bar) + Send + Sync + 'static {
-        self.updated_bar_syms.extend(symbols.into_iter().map(Into::into));
+    pub fn subscribe_updated_bars<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Bar) + Send + Sync + 'static,
+    {
+        self.updated_bar_syms
+            .extend(symbols.into_iter().map(Into::into));
         self.updated_bar_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_daily_bars<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Bar) + Send + Sync + 'static {
-        self.daily_bar_syms.extend(symbols.into_iter().map(Into::into));
+    pub fn subscribe_daily_bars<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Bar) + Send + Sync + 'static,
+    {
+        self.daily_bar_syms
+            .extend(symbols.into_iter().map(Into::into));
         self.daily_bar_handler = Some(Arc::new(handler));
     }
 
-    pub fn subscribe_orderbooks<F>(&mut self, symbols: impl IntoIterator<Item = impl Into<String>>, handler: F)
-    where F: Fn(Orderbook) + Send + Sync + 'static {
-        self.orderbook_syms.extend(symbols.into_iter().map(Into::into));
+    pub fn subscribe_orderbooks<F>(
+        &mut self,
+        symbols: impl IntoIterator<Item = impl Into<String>>,
+        handler: F,
+    ) where
+        F: Fn(Orderbook) + Send + Sync + 'static,
+    {
+        self.orderbook_syms
+            .extend(symbols.into_iter().map(Into::into));
         self.orderbook_handler = Some(Arc::new(handler));
     }
 
@@ -94,7 +127,8 @@ impl CryptoDataStream {
         );
 
         let url = format!("{}/v1beta3/crypto/us", base_url::MARKET_DATA_STREAM);
-        let conn = DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
+        let conn =
+            DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
 
         let trade_h = self.trade_handler.clone();
         let quote_h = self.quote_handler.clone();
@@ -106,31 +140,55 @@ impl CryptoDataStream {
         conn.run(move |event: RawStreamEvent| {
             let msg_type = event.msg_type.as_deref().unwrap_or("");
             let raw = serde_json::Value::Object(
-                event.fields.into_iter().collect::<serde_json::Map<_, _>>()
+                event.fields.into_iter().collect::<serde_json::Map<_, _>>(),
             );
             match msg_type {
                 "t" => match serde_json::from_value::<Trade>(raw) {
-                    Ok(v) => { if let Some(h) = &trade_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &trade_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize crypto Trade"),
                 },
                 "q" => match serde_json::from_value::<Quote>(raw) {
-                    Ok(v) => { if let Some(h) = &quote_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &quote_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize crypto Quote"),
                 },
                 "b" => match serde_json::from_value::<Bar>(raw) {
-                    Ok(v) => { if let Some(h) = &bar_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &bar_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize crypto Bar"),
                 },
                 "u" => match serde_json::from_value::<Bar>(raw) {
-                    Ok(v) => { if let Some(h) = &updated_bar_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &updated_bar_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize crypto updated Bar"),
                 },
                 "d" => match serde_json::from_value::<Bar>(raw) {
-                    Ok(v) => { if let Some(h) = &daily_bar_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &daily_bar_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize crypto daily Bar"),
                 },
                 "o" => match serde_json::from_value::<Orderbook>(raw) {
-                    Ok(v) => { if let Some(h) = &ob_h { h(v); } }
+                    Ok(v) => {
+                        if let Some(h) = &ob_h {
+                            h(v);
+                        }
+                    }
                     Err(e) => warn!(error = %e, "failed to deserialize Orderbook"),
                 },
                 _ => {}

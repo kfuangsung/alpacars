@@ -61,7 +61,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Market order — $1.11 notional (fractional)
     let notional_order = trading
-        .submit_order(&OrderRequest::market_notional("SPY", OrderSide::Buy, "1.11"))
+        .submit_order(&OrderRequest::market_notional(
+            "SPY",
+            OrderSide::Buy,
+            "1.11",
+        ))
         .await?;
     println!("Notional order id: {:?}", notional_order.id);
 
@@ -98,7 +102,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Bracket order (market + take-profit + stop-loss)
     let mut bracket_order = OrderRequest::market("SPY", OrderSide::Buy, "1");
     bracket_order.order_class = Some(alpacars::trading::enums::OrderClass::Bracket);
-    bracket_order.take_profit = Some(TakeProfitRequest { limit_price: "620.00".to_string() });
+    bracket_order.take_profit = Some(TakeProfitRequest {
+        limit_price: "620.00".to_string(),
+    });
     bracket_order.stop_loss = Some(StopLossRequest {
         stop_price: "550.00".to_string(),
         limit_price: None,
@@ -117,7 +123,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("OTO order id: {:?}", oto.id);
 
     // OCO order (limit buy with both take-profit and stop-loss already open)
-    let mut oco_order = OrderRequest::limit("SPY", OrderSide::Sell, "1", "600.00", TimeInForce::Gtc);
+    let mut oco_order =
+        OrderRequest::limit("SPY", OrderSide::Sell, "1", "600.00", TimeInForce::Gtc);
     oco_order.order_class = Some(alpacars::trading::enums::OrderClass::Oco);
     oco_order.stop_loss = Some(StopLossRequest {
         stop_price: "540.00".to_string(),
@@ -185,8 +192,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .await?;
     for (sym, sym_bars) in &bars {
-        println!("{} has {} bar(s). Latest close: {}", sym, sym_bars.len(),
-            sym_bars.last().map(|b| b.close).unwrap_or(0.0));
+        println!(
+            "{} has {} bar(s). Latest close: {}",
+            sym,
+            sym_bars.len(),
+            sym_bars.last().map(|b| b.close).unwrap_or(0.0)
+        );
     }
 
     let latest_quote = data_client

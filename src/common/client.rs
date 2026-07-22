@@ -109,8 +109,8 @@ impl RestClient {
         } else if self.use_basic_auth {
             if let (Some(key), Some(secret)) = (&self.api_key, &self.secret_key) {
                 use base64::Engine;
-                let encoded = base64::engine::general_purpose::STANDARD
-                    .encode(format!("{}:{}", key, secret));
+                let encoded =
+                    base64::engine::general_purpose::STANDARD.encode(format!("{}:{}", key, secret));
                 if let Ok(v) = format!("Basic {}", encoded).parse() {
                     headers.insert(header::AUTHORIZATION, v);
                 }
@@ -145,9 +145,9 @@ impl RestClient {
                 serde_json::Value::Array(arr) => {
                     let joined = arr
                         .iter()
-                        .filter_map(|v| match v {
-                            serde_json::Value::String(s) => Some(s.clone()),
-                            other => Some(other.to_string()),
+                        .map(|v| match v {
+                            serde_json::Value::String(s) => s.clone(),
+                            other => other.to_string(),
                         })
                         .collect::<Vec<_>>()
                         .join(",");
@@ -186,16 +186,16 @@ impl RestClient {
             let status = resp.status();
             let status_code = status.as_u16();
 
-            if self.retry_status_codes.contains(&status_code)
-                && attempts < self.retry_attempts
-            {
+            if self.retry_status_codes.contains(&status_code) && attempts < self.retry_attempts {
                 attempts += 1;
-                let exp = attempts.saturating_sub(1).min(6) as u32;
-                let backoff = self
-                    .retry_wait_secs
-                    .saturating_mul(1u64 << exp)
-                    .min(60);
-                warn!(status = status_code, attempt = attempts, wait_secs = backoff, "retryable error, backing off");
+                let exp = attempts.saturating_sub(1).min(6);
+                let backoff = self.retry_wait_secs.saturating_mul(1u64 << exp).min(60);
+                warn!(
+                    status = status_code,
+                    attempt = attempts,
+                    wait_secs = backoff,
+                    "retryable error, backing off"
+                );
                 sleep(Duration::from_secs(backoff)).await;
                 continue;
             }
@@ -209,13 +209,14 @@ impl RestClient {
             if !status.is_success() {
                 let parsed: serde_json::Value =
                     serde_json::from_str(&text).unwrap_or(serde_json::Value::Null);
-                let message = parsed["message"]
-                    .as_str()
-                    .unwrap_or(&text)
-                    .to_string();
+                let message = parsed["message"].as_str().unwrap_or(&text).to_string();
                 let code = parsed["code"].as_u64().unwrap_or(0) as u32;
                 warn!(status = status_code, code, message, body = %text, "API error");
-                return Err(AlpacaError::Api { status_code, code, message });
+                return Err(AlpacaError::Api {
+                    status_code,
+                    code,
+                    message,
+                });
             }
 
             if text.is_empty() {
@@ -237,7 +238,11 @@ impl RestClient {
         Ok(serde_json::from_value(val)?)
     }
 
-    pub async fn get_raw<Q>(&self, path: &str, query: Option<&Q>) -> Result<serde_json::Value, AlpacaError>
+    pub async fn get_raw<Q>(
+        &self,
+        path: &str,
+        query: Option<&Q>,
+    ) -> Result<serde_json::Value, AlpacaError>
     where
         Q: Serialize,
     {
@@ -310,7 +315,11 @@ impl RestClient {
         Ok(serde_json::from_value(val)?)
     }
 
-    pub async fn delete_with_body<B, R>(&self, path: &str, body: Option<&B>) -> Result<R, AlpacaError>
+    pub async fn delete_with_body<B, R>(
+        &self,
+        path: &str,
+        body: Option<&B>,
+    ) -> Result<R, AlpacaError>
     where
         B: Serialize,
         R: DeserializeOwned,

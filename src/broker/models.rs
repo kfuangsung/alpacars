@@ -255,7 +255,7 @@ pub struct CIPInfo {
 
 pub use crate::trading::models::{
     AccountActivity, Asset, Calendar, Clock, ClosePositionResponse, NonTradeActivity,
-    OptionContract, Position, TradeActivity, TradeAccount, Watchlist,
+    OptionContract, Position, TradeAccount, TradeActivity, Watchlist,
 };
 pub use crate::trading::requests::{
     CreateWatchlistRequest, GetAssetsRequest, GetCalendarRequest, UpdateWatchlistRequest,

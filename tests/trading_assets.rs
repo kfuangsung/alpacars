@@ -27,14 +27,15 @@ async fn test_get_all_assets() {
 
     Mock::given(method("GET"))
         .and(path("/v2/assets"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(
-            format!("[{}]", ASSET_JSON),
-        ))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{}]", ASSET_JSON)))
         .mount(&server)
         .await;
 
     let client = common::trading_client(&server.uri());
-    let req = GetAssetsRequest { status: Some(AssetStatus::Active), ..Default::default() };
+    let req = GetAssetsRequest {
+        status: Some(AssetStatus::Active),
+        ..Default::default()
+    };
     let assets = client.get_all_assets(Some(&req)).await.unwrap();
 
     assert_eq!(assets.len(), 1);
@@ -49,9 +50,7 @@ async fn test_get_all_assets_with_filters() {
 
     Mock::given(method("GET"))
         .and(path("/v2/assets"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(
-            format!("[{}]", ASSET_JSON),
-        ))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{}]", ASSET_JSON)))
         .mount(&server)
         .await;
 
@@ -85,7 +84,10 @@ async fn test_deserialize_new_asset_classes() {
         .await;
 
     let client = common::trading_client(&server.uri());
-    let assets = client.get_all_assets(None::<&GetAssetsRequest>).await.unwrap();
+    let assets = client
+        .get_all_assets(None::<&GetAssetsRequest>)
+        .await
+        .unwrap();
 
     assert_eq!(assets[0].asset_class, AssetClass::Treasury);
 }

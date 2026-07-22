@@ -50,9 +50,7 @@ async fn test_get_all_positions() {
 
     Mock::given(method("GET"))
         .and(path("/v2/positions"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(
-            format!("[{}]", POSITION_JSON),
-        ))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{}]", POSITION_JSON)))
         .mount(&server)
         .await;
 
@@ -94,7 +92,10 @@ async fn test_get_open_position_by_id() {
         .await;
 
     let client = common::trading_client(&server.uri());
-    let pos = client.get_open_position(&asset_id.to_string()).await.unwrap();
+    let pos = client
+        .get_open_position(&asset_id.to_string())
+        .await
+        .unwrap();
 
     assert_eq!(pos.asset_id, asset_id);
 }
@@ -105,7 +106,8 @@ async fn test_close_all_positions() {
 
     Mock::given(method("DELETE"))
         .and(path("/v2/positions"))
-        .respond_with(ResponseTemplate::new(207).set_body_string(r#"[
+        .respond_with(ResponseTemplate::new(207).set_body_string(
+            r#"[
             {
                 "symbol": "AAPL",
                 "status": 200,
@@ -128,7 +130,8 @@ async fn test_close_all_positions() {
                     "trail_percent": null, "trail_price": null, "hwm": null
                 }
             }
-        ]"#))
+        ]"#,
+        ))
         .mount(&server)
         .await;
 
@@ -169,7 +172,10 @@ async fn test_close_position_with_qty() {
         .await;
 
     let client = common::trading_client(&server.uri());
-    let opts = ClosePositionRequest { qty: Some("3".to_string()), percentage: None };
+    let opts = ClosePositionRequest {
+        qty: Some("3".to_string()),
+        percentage: None,
+    };
     let order = client.close_position("AAPL", Some(&opts)).await.unwrap();
 
     assert!(matches!(order, Order { .. }));

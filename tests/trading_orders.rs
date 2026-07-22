@@ -70,10 +70,10 @@ async fn test_submit_market_order() {
 async fn test_submit_limit_order() {
     let server = MockServer::start().await;
 
-    let limit_json = ORDER_JSON.replace(r#""order_type": "market""#, r#""order_type": "limit""#)
+    let limit_json = ORDER_JSON
+        .replace(r#""order_type": "market""#, r#""order_type": "limit""#)
         .replace(r#""type": "market""#, r#""type": "limit""#)
-        .replace(r#""limit_price": null"#, r#""limit_price": "300.00""#)
-        .replace(r#""status": "accepted""#, r#""status": "accepted""#);
+        .replace(r#""limit_price": null"#, r#""limit_price": "300.00""#);
 
     Mock::given(method("POST"))
         .and(path("/v2/orders"))
@@ -94,9 +94,7 @@ async fn test_get_orders() {
 
     Mock::given(method("GET"))
         .and(path("/v2/orders"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(
-            format!("[{}]", ORDER_JSON),
-        ))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{}]", ORDER_JSON)))
         .mount(&server)
         .await;
 
@@ -139,7 +137,10 @@ async fn test_replace_order() {
         .await;
 
     let client = common::trading_client(&server.uri());
-    let req = ReplaceOrderRequest { qty: Some("2".to_string()), ..Default::default() };
+    let req = ReplaceOrderRequest {
+        qty: Some("2".to_string()),
+        ..Default::default()
+    };
     let order = client.replace_order_by_id(&order_id, &req).await.unwrap();
 
     assert_eq!(order.id, order_id);
@@ -167,9 +168,10 @@ async fn test_cancel_order_returns_api_error_on_422() {
 
     Mock::given(method("DELETE"))
         .and(path(format!("/v2/orders/{}", order_id)))
-        .respond_with(ResponseTemplate::new(422).set_body_string(
-            r#"{"code": 42210000, "message": "order is not cancelable"}"#,
-        ))
+        .respond_with(
+            ResponseTemplate::new(422)
+                .set_body_string(r#"{"code": 42210000, "message": "order is not cancelable"}"#),
+        )
         .mount(&server)
         .await;
 
@@ -185,11 +187,13 @@ async fn test_cancel_all_orders() {
 
     Mock::given(method("DELETE"))
         .and(path("/v2/orders"))
-        .respond_with(ResponseTemplate::new(207).set_body_string(r#"[
+        .respond_with(ResponseTemplate::new(207).set_body_string(
+            r#"[
           {"id": "497f6eca-6276-4993-bfeb-53cbbbba6f08", "status": 200},
           {"id": "72249bb6-6c89-4ea7-b8cf-73f1a140812b", "status": 404,
            "body": {"code": 40410000, "message": "order not found"}}
-        ]"#))
+        ]"#,
+        ))
         .mount(&server)
         .await;
 
@@ -198,7 +202,10 @@ async fn test_cancel_all_orders() {
 
     assert_eq!(responses.len(), 2);
     assert!(matches!(responses[0], CancelOrderResponse { .. }));
-    assert_eq!(responses[0].id, Uuid::parse_str("497f6eca-6276-4993-bfeb-53cbbbba6f08").unwrap());
+    assert_eq!(
+        responses[0].id,
+        Uuid::parse_str("497f6eca-6276-4993-bfeb-53cbbbba6f08").unwrap()
+    );
     assert_eq!(responses[0].status, 200);
     assert_eq!(responses[1].status, 404);
 }

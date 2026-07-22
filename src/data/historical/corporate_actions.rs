@@ -72,8 +72,7 @@ impl CorporateActionsClient {
         }
 
         loop {
-            let resp: Wrapper =
-                self.client.get("/corporate-actions", Some(&params)).await?;
+            let resp: Wrapper = self.client.get("/corporate-actions", Some(&params)).await?;
 
             if let Some(data) = resp.corporate_actions {
                 macro_rules! merge_vec {

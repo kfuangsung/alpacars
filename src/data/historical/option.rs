@@ -139,9 +139,13 @@ struct PagedTrades {
 }
 
 #[derive(serde::Deserialize)]
-struct LatestQuotesResp { quotes: Option<HashMap<String, Quote>> }
+struct LatestQuotesResp {
+    quotes: Option<HashMap<String, Quote>>,
+}
 #[derive(serde::Deserialize)]
-struct LatestTradesResp { trades: Option<HashMap<String, Trade>> }
+struct LatestTradesResp {
+    trades: Option<HashMap<String, Trade>>,
+}
 
 #[derive(serde::Deserialize)]
 struct OptionSnapshotsResp {
@@ -173,7 +177,11 @@ impl OptionHistoricalDataClient {
 
     /// Create a client pointed at a custom base URL (for testing / mocking).
     #[doc(hidden)]
-    pub fn new_with_url(api_key: &str, secret_key: &str, base_url: &str) -> Result<Self, AlpacaError> {
+    pub fn new_with_url(
+        api_key: &str,
+        secret_key: &str,
+        base_url: &str,
+    ) -> Result<Self, AlpacaError> {
         Ok(Self {
             client: RestClient::new(
                 Some(api_key.to_string()),
@@ -208,7 +216,9 @@ impl OptionHistoricalDataClient {
         loop {
             let resp: PagedBars = self.client.get("/options/bars", Some(&params)).await?;
             if let Some(bars) = resp.bars {
-                for (sym, b) in bars { result.entry(sym).or_default().extend(b); }
+                for (sym, b) in bars {
+                    result.entry(sym).or_default().extend(b);
+                }
             }
             match resp.next_page_token {
                 Some(t) if !t.is_empty() => params.page_token = Some(t),
@@ -218,27 +228,42 @@ impl OptionHistoricalDataClient {
         Ok(result)
     }
 
-    pub async fn get_option_latest_quote(&self, req: &OptionLatestRequest) -> Result<LatestQuoteSet, AlpacaError> {
+    pub async fn get_option_latest_quote(
+        &self,
+        req: &OptionLatestRequest,
+    ) -> Result<LatestQuoteSet, AlpacaError> {
         let params = OptionLatestParams {
             symbols: Self::syms(&req.symbols),
             feed: req.feed.clone(),
             currency: req.currency.clone(),
         };
-        let resp: LatestQuotesResp = self.client.get("/options/quotes/latest", Some(&params)).await?;
+        let resp: LatestQuotesResp = self
+            .client
+            .get("/options/quotes/latest", Some(&params))
+            .await?;
         Ok(resp.quotes.unwrap_or_default())
     }
 
-    pub async fn get_option_latest_trade(&self, req: &OptionLatestRequest) -> Result<LatestTradeSet, AlpacaError> {
+    pub async fn get_option_latest_trade(
+        &self,
+        req: &OptionLatestRequest,
+    ) -> Result<LatestTradeSet, AlpacaError> {
         let params = OptionLatestParams {
             symbols: Self::syms(&req.symbols),
             feed: req.feed.clone(),
             currency: req.currency.clone(),
         };
-        let resp: LatestTradesResp = self.client.get("/options/trades/latest", Some(&params)).await?;
+        let resp: LatestTradesResp = self
+            .client
+            .get("/options/trades/latest", Some(&params))
+            .await?;
         Ok(resp.trades.unwrap_or_default())
     }
 
-    pub async fn get_option_trades(&self, req: &OptionTradesRequest) -> Result<TradeSet, AlpacaError> {
+    pub async fn get_option_trades(
+        &self,
+        req: &OptionTradesRequest,
+    ) -> Result<TradeSet, AlpacaError> {
         let mut params = OptionTradesParams {
             symbols: Self::syms(&req.symbols),
             start: req.start,
@@ -254,7 +279,9 @@ impl OptionHistoricalDataClient {
         loop {
             let resp: PagedTrades = self.client.get("/options/trades", Some(&params)).await?;
             if let Some(trades) = resp.trades {
-                for (sym, t) in trades { result.entry(sym).or_default().extend(t); }
+                for (sym, t) in trades {
+                    result.entry(sym).or_default().extend(t);
+                }
             }
             match resp.next_page_token {
                 Some(t) if !t.is_empty() => params.page_token = Some(t),
@@ -264,7 +291,10 @@ impl OptionHistoricalDataClient {
         Ok(result)
     }
 
-    pub async fn get_option_snapshot(&self, req: &OptionSnapshotRequest) -> Result<OptionsSnapshotSet, AlpacaError> {
+    pub async fn get_option_snapshot(
+        &self,
+        req: &OptionSnapshotRequest,
+    ) -> Result<OptionsSnapshotSet, AlpacaError> {
         let mut params = OptionSnapshotParams {
             symbols: Self::syms(&req.symbols),
             feed: req.feed.clone(),
@@ -278,7 +308,8 @@ impl OptionHistoricalDataClient {
 
         let mut result: OptionsSnapshotSet = HashMap::new();
         loop {
-            let resp: OptionSnapshotsResp = self.client.get("/options/snapshots", Some(&params)).await?;
+            let resp: OptionSnapshotsResp =
+                self.client.get("/options/snapshots", Some(&params)).await?;
             let snaps = resp.snapshots.or(resp.direct).unwrap_or_default();
             result.extend(snaps);
             match resp.next_page_token {
