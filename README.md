@@ -23,6 +23,7 @@
 - [▶️ Examples](#️-examples)
 - [🧪 Running Tests](#-running-tests)
 - [🗂️ Supported Clients](#️-supported-clients)
+- [📝 Changelog](CHANGELOG.md)
 - [📄 License](#-license)
 
 ---
