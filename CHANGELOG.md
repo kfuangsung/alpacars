@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Relicensed under dual `MIT OR Apache-2.0` (previously MIT-only), matching the Rust ecosystem convention and adding Apache-2.0's explicit patent grant. Applies to releases from the next version onward; already-published versions (0.1.0–0.4.0) remain MIT-only as published.
+
 ## [0.4.0] - 2026-07-22
 
 ### Added
