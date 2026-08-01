@@ -291,6 +291,7 @@ pub enum NonTradeActivityStatus {
     Executed,
     Correct,
     Canceled,
+    Pending,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

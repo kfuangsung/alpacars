@@ -140,7 +140,7 @@ pub struct PortfolioHistory {
     pub equity: Vec<Option<f64>>,
     pub profit_loss: Vec<Option<f64>>,
     pub profit_loss_pct: Vec<Option<f64>>,
-    pub base_value: f64,
+    pub base_value: Option<f64>,
     pub base_value_asof: Option<String>,
     pub timeframe: String,
 }
