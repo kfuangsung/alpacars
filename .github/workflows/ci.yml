@@ -77,6 +77,23 @@ jobs:
       - name: Verify the crate packages and builds
         run: cargo publish --dry-run --locked
 
+  semver:
+    # Compares the PR's public API against the latest crates.io release and
+    # fails if it breaks without an adequate version bump. Understands pre-1.0
+    # rules, so 0.4.x -> 0.5.0 with breaking changes passes, while a break at
+    # an unchanged version does not.
+    #
+    # PRs only: on a push to main the merge has already happened, so there is
+    # nothing left to gate.
+    name: Semver
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: obi1kenobi/cargo-semver-checks-action@v2
+
   msrv:
     name: MSRV (1.88)
     runs-on: ubuntu-latest
