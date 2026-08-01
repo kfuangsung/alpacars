@@ -50,6 +50,33 @@ jobs:
       - name: Test
         run: cargo test --locked
 
+  docs:
+    # Catches what would otherwise only surface as a failed docs.rs build
+    # after the version is already published and irreversible.
+    name: Docs
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build documentation
+        run: cargo doc --no-deps --locked
+
+  package:
+    # Building from the packaged tarball is a different code path from a normal
+    # build (excluded files, path deps, .gitignore interactions). Fail here at
+    # PR time rather than mid-release.
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify the crate packages and builds
+        run: cargo publish --dry-run --locked
+
   msrv:
     name: MSRV (1.88)
     runs-on: ubuntu-latest
