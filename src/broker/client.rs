@@ -677,4 +677,95 @@ impl BrokerClient {
             )
             .await
     }
+
+    // ── Tokenization ──────────────────────────────────────────────────────────
+
+    /// Convert an account's underlying equity securities into a tokenized asset.
+    pub async fn mint_tokenized_asset_for_account(
+        &self,
+        account_id: &Uuid,
+        data: &TokenizationMintRequest,
+    ) -> Result<TokenizationMintResponse, AlpacaError> {
+        self.client
+            .post(
+                &format!("/accounts/{}/tokenization/mint", account_id),
+                Some(data),
+            )
+            .await
+    }
+
+    pub async fn get_tokenization_requests_for_account(
+        &self,
+        account_id: &Uuid,
+        filter: Option<&GetTokenizationRequestsRequest>,
+    ) -> Result<Vec<TokenizationRequest>, AlpacaError> {
+        self.client
+            .get(
+                &format!("/accounts/{}/tokenization/requests", account_id),
+                filter,
+            )
+            .await
+    }
+
+    pub async fn get_tokenization_request_for_account(
+        &self,
+        account_id: &Uuid,
+        tokenization_request_id: &str,
+    ) -> Result<TokenizationRequest, AlpacaError> {
+        self.client
+            .get(
+                &format!(
+                    "/accounts/{}/tokenization/requests/{}",
+                    account_id, tokenization_request_id
+                ),
+                None::<&()>,
+            )
+            .await
+    }
+
+    /// Look up a tokenization request by the `client_request_id` supplied at mint time.
+    ///
+    /// When several requests share a `client_request_id`, the most recently created wins.
+    pub async fn get_tokenization_request_for_account_by_client_request_id(
+        &self,
+        account_id: &Uuid,
+        client_request_id: &str,
+    ) -> Result<TokenizationRequest, AlpacaError> {
+        #[derive(serde::Serialize)]
+        struct Params<'a> {
+            client_request_id: &'a str,
+        }
+        self.client
+            .get(
+                &format!(
+                    "/accounts/{}/tokenization/requests:by_client_request_id",
+                    account_id
+                ),
+                Some(&Params { client_request_id }),
+            )
+            .await
+    }
+
+    /// Look up a tokenization request by the issuer-assigned `issuer_request_id`.
+    ///
+    /// Broker API only; the Trading API has no equivalent.
+    pub async fn get_tokenization_request_for_account_by_issuer_request_id(
+        &self,
+        account_id: &Uuid,
+        issuer_request_id: &str,
+    ) -> Result<TokenizationRequest, AlpacaError> {
+        #[derive(serde::Serialize)]
+        struct Params<'a> {
+            issuer_request_id: &'a str,
+        }
+        self.client
+            .get(
+                &format!(
+                    "/accounts/{}/tokenization/requests:by_issuer_request_id",
+                    account_id
+                ),
+                Some(&Params { issuer_request_id }),
+            )
+            .await
+    }
 }
