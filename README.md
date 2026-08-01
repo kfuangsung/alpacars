@@ -42,8 +42,9 @@ The design mirrors `alpaca-py` closely so that anyone familiar with the Python S
 | | Feature | Details |
 |---|---|---|
 | ⚡ | **Async by default** | Built on `tokio` and `reqwest` — no blocking calls |
-| 📈 | **Trading API** | Orders (market, limit, stop, bracket, OTO, OCO, trailing-stop, multi-leg, DMA routing), positions, assets, watchlists, options contracts, locates (hard-to-borrow) |
-| 🏦 | **Broker API** | Account management, documents, ACH/bank transfers, journals, portfolio rebalancing, subscriptions |
+| 📈 | **Trading API** | Orders (market, limit, stop, bracket, OTO, OCO, trailing-stop, multi-leg, DMA routing), positions, assets, watchlists, options contracts, locates (hard-to-borrow), tokenization |
+| 🏦 | **Broker API** | Account management, documents, ACH/bank transfers, journals, portfolio rebalancing, subscriptions, tokenization |
+| 🪙 | **Tokenization** | Mint tokenized assets and look up requests by Alpaca, client, or issuer ID — on both Trading and Broker |
 | 🕰️ | **Historical market data** | Stocks, crypto, options, news, screener (most actives, movers) — all endpoints auto-paginate |
 | 📡 | **Live streaming** | Stocks, crypto, options, and news WebSocket streams with per-event-type handler callbacks; JSON and msgpack frames |
 | 🔐 | **Three auth modes** | API key headers, OAuth Bearer token, HTTP Basic (Broker) |
@@ -59,10 +60,12 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-alpacars = "0.3"
+alpacars = "0.5"
 ```
 
-> **Minimum Rust version:** 1.75
+> **Minimum Rust version:** 1.88 — enforced by a dedicated CI job.
+
+> **Pre-1.0 versioning:** a `0.x` **minor** bump is the breaking-change bump. Check [CHANGELOG.md](CHANGELOG.md) before upgrading across one.
 
 ---
 
@@ -256,11 +259,9 @@ Tests use [`wiremock`](https://crates.io/crates/wiremock) to mock HTTP responses
 cargo test
 ```
 
-Expected output:
+57 tests across 9 files, all passing. Every mocked request asserts the exact path and HTTP verb, not just the response shape — so a client pointed at the wrong endpoint fails loudly rather than quietly deserializing a canned body.
 
-```
-test result: ok. 36 passed; 0 failed; 0 ignored
-```
+CI additionally runs the suite on **macOS and Windows**, checks formatting and clippy (`-D warnings`), builds the docs, verifies the crate packages, scans dependencies for advisories and license violations, and checks every PR for breaking API changes. To reproduce that locally, see [CLAUDE.md](CLAUDE.md#reproducing-ci-locally).
 
 ---
 
@@ -268,9 +269,9 @@ test result: ok. 36 passed; 0 failed; 0 ignored
 
 | Client | Domain | Description |
 |---|---|---|
-| 📊 `TradingClient` | Trading | Orders, positions, assets, watchlists, options, locates, corporate actions |
+| 📊 `TradingClient` | Trading | Orders, positions, assets, watchlists, options, locates, tokenization, corporate actions |
 | 🔔 `TradingStream` | Trading | Real-time trade updates via WebSocket |
-| 🏦 `BrokerClient` | Broker | Account management, funding, journals, rebalancing |
+| 🏦 `BrokerClient` | Broker | Account management, funding, journals, rebalancing, tokenization |
 | 📈 `StockHistoricalDataClient` | Data | Bars, quotes, trades, snapshots (auto-paginated) |
 | ₿ `CryptoHistoricalDataClient` | Data | Bars, quotes, trades, orderbook, snapshots |
 | 🎯 `OptionHistoricalDataClient` | Data | Bars, trades, quotes, snapshots, option chains |
