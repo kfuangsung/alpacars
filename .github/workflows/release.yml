@@ -1,0 +1,114 @@
+name: Release
+
+# Publishing to crates.io is irreversible — a version can be yanked but never
+# replaced or deleted. Everything here is ordered so that anything recoverable
+# fails before anything irreversible happens.
+#
+# Releasing is: bump Cargo.toml, update CHANGELOG.md, tag vX.Y.Z, push the tag.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+# Deliberately no `concurrency` block: a release must never be cancelled
+# part-way through by a subsequent push.
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+
+      # Catches the two most common release mistakes: tagging without bumping,
+      # and bumping without tagging. Cheap, and it runs before anything else.
+      - name: Tag must match Cargo.toml version
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME#v}"
+          MANIFEST=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          echo "tag=$TAG manifest=$MANIFEST"
+          if [ "$TAG" != "$MANIFEST" ]; then
+            echo "::error::tag v$TAG does not match Cargo.toml version $MANIFEST"
+            exit 1
+          fi
+
+      # The release notes must exist before we publish, not after — otherwise a
+      # missing CHANGELOG section is only discovered once the crate is already
+      # on crates.io and cannot be unpublished.
+      - name: CHANGELOG must have an entry for this version
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES=$(awk -v v="$VERSION" '$0 ~ "^## \\["v"\\]" {f=1; next} f && /^## \[/ {exit} f' CHANGELOG.md)
+          if [ -z "$(printf '%s' "$NOTES" | tr -d '[:space:]')" ]; then
+            echo "::error::no CHANGELOG.md section found for [$VERSION]"
+            exit 1
+          fi
+          printf '%s\n' "$NOTES"
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --locked
+      - name: Verify the crate packages and builds
+        run: cargo publish --dry-run --locked
+
+  publish:
+    name: Publish to crates.io
+    needs: verify
+    runs-on: ubuntu-latest
+    # Requires a GitHub Environment named `crates-io` and a matching Trusted
+    # Publishing config on crates.io (owner + repo + workflow filename +
+    # environment). Add required reviewers to the environment to gate every
+    # publish behind a manual approval.
+    environment: crates-io
+    permissions:
+      # Required for the OIDC token exchange. No CARGO_REGISTRY_TOKEN secret
+      # exists or should be created — the token below is short-lived, scoped to
+      # this repo and workflow, and revoked when the job ends.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Authenticate with crates.io
+        id: auth
+        uses: rust-lang/crates-io-auth-action@v1
+      - name: Publish
+        run: cargo publish --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+
+  github-release:
+    name: GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Create release from the CHANGELOG entry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v v="$VERSION" '$0 ~ "^## \\["v"\\]" {f=1; next} f && /^## \[/ {exit} f' \
+            CHANGELOG.md > notes.md
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file notes.md \
+            --verify-tag

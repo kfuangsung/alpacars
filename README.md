@@ -4,6 +4,7 @@
 
 [![CI](https://github.com/kfuangsung/alpacars/actions/workflows/ci.yml/badge.svg)](https://github.com/kfuangsung/alpacars/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/alpacars.svg)](https://crates.io/crates/alpacars)
+[![docs.rs](https://img.shields.io/docsrs/alpacars)](https://docs.rs/alpacars)
 [![Rust](https://img.shields.io/badge/rust-1.88%2B-orange?logo=rust)](https://www.rust-lang.org)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#-license)
 
