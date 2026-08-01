@@ -1,0 +1,44 @@
+# cargo-deny configuration. Run locally with `cargo deny check`.
+#
+# The license allow-list below was derived from an actual `cargo deny list` run
+# against the real dependency tree, not copied from a template. Keep it that way:
+# if a new dependency introduces a license, add it deliberately rather than
+# broadening the list to make CI green.
+
+[graph]
+all-features = true
+
+[advisories]
+# No `ignore` entries, deliberately. An advisory in a financial SDK should be
+# resolved by upgrading the dependency, not silenced here. If you ever do need
+# an entry, it must carry a comment saying why and when it will be removed.
+ignore = []
+
+[licenses]
+# Every entry below is load-bearing for the current tree:
+#   MIT / Apache-2.0  the overwhelming majority, and alpacars' own license
+#   BSD-3-Clause      encoding_rs, which is `(Apache-2.0 OR MIT) AND BSD-3-Clause`
+#                     — an AND clause, so this cannot be satisfied another way
+#   Unicode-3.0       the icu_* family pulled in through idna -> url
+#
+# Crates offering a choice (`Unlicense OR MIT`, `... OR LGPL-2.1-or-later`)
+# resolve against MIT or Apache-2.0 and need nothing extra.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "Unicode-3.0",
+]
+confidence-threshold = 0.8
+
+[bans]
+# Duplicate transitive versions are normal in a large tree and mostly outside a
+# library's control, so warn rather than fail. Wildcard version requirements are
+# a different matter: they make builds unreproducible and are ours to fix.
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

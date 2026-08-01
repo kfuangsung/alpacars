@@ -1,0 +1,36 @@
+version: 2
+
+updates:
+  # Minor and patch updates are batched into a single PR so routine dependency
+  # churn costs one review rather than a dozen. Majors stay separate — for an
+  # SDK whose whole job is wire-format compatibility, a major bump on reqwest
+  # or tokio-tungstenite deserves to be looked at on its own.
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: "chore"
+      include: scope
+
+  # This is the one that would have caught the actions/checkout v4 -> v7 bump
+  # for the Node 20 deprecation, which had to be found and applied by hand.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "ci"
+      include: scope
