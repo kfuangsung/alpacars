@@ -8,11 +8,18 @@ on:
 permissions:
   contents: read
 
-# A rapid second push supersedes the first; don't burn a runner finishing a run
-# nobody will look at. Deliberately not applied to release.yml.
+# On a PR branch, a rapid second push supersedes the first, so cancelling the
+# in-flight run saves a runner nobody was going to look at.
+#
+# On main it is the opposite: every commit must end up with its own verdict.
+# Two merges in quick succession would otherwise cancel the first commit's run,
+# leaving it permanently unverified and displaying a red ✗ that reads as a
+# failure — which is exactly what happened to 1c2b1d9.
+#
+# Deliberately not applied to release.yml at all.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   CARGO_TERM_COLOR: always
