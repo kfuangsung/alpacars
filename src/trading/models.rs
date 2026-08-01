@@ -367,3 +367,47 @@ pub struct ListLocateQuotesResponse {
     pub quotes: Vec<LocateQuote>,
     pub errors: Option<Vec<LocateQuoteError>>,
 }
+
+/// A request to mint or redeem a tokenized asset.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TokenizationRequest {
+    /// Unique identifier of the tokenization request, assigned by Alpaca.
+    pub tokenization_request_id: String,
+    pub status: TokenizationRequestStatus,
+    #[serde(rename = "type")]
+    pub request_type: TokenizationRequestType,
+    pub underlying_symbol: String,
+    pub token_symbol: String,
+    pub qty: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub issuer: TokenizationIssuer,
+    pub network: TokenizationNetwork,
+    /// Authorized Participant-supplied label for this request.
+    pub client_request_id: Option<String>,
+    /// Alpaca account UUID of the Authorized Participant.
+    pub client_account_id: Option<Uuid>,
+    /// Issuer-side account identifier of the Authorized Participant.
+    pub client_external_account_id: Option<String>,
+    /// Unique identifier of the request set by the issuer.
+    pub issuer_request_id: Option<String>,
+    pub fees: Option<String>,
+    /// Transaction hash of the completed request on the blockchain.
+    pub tx_hash: Option<String>,
+    /// Deprecated by Alpaca; removed from the API on 2026-10-15. Use `client_account_id`.
+    pub account: Option<String>,
+    /// Deprecated by Alpaca; removed from the API on 2026-10-15. Use `client_external_account_id`.
+    pub issuer_account: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TokenizationMintResponse {
+    pub tokenization_request_id: String,
+    pub status: TokenizationRequestStatus,
+    pub underlying_symbol: String,
+    pub token_symbol: String,
+    pub qty: String,
+    pub created_at: DateTime<Utc>,
+    pub issuer: TokenizationIssuer,
+    pub network: TokenizationNetwork,
+}

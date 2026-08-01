@@ -386,4 +386,52 @@ impl TradingClient {
             .get("/locates/quotes", Some(request))
             .await
     }
+
+    // ── Tokenization ──────────────────────────────────────────────────────────
+
+    /// Convert underlying equity securities into a tokenized asset.
+    pub async fn mint_tokenized_asset(
+        &self,
+        request: &TokenizationMintRequest,
+    ) -> Result<TokenizationMintResponse, AlpacaError> {
+        self.client.post("/tokenization/mint", Some(request)).await
+    }
+
+    pub async fn get_tokenization_requests(
+        &self,
+        request: Option<&GetTokenizationRequestsRequest>,
+    ) -> Result<Vec<TokenizationRequest>, AlpacaError> {
+        self.client.get("/tokenization/requests", request).await
+    }
+
+    pub async fn get_tokenization_request(
+        &self,
+        tokenization_request_id: &str,
+    ) -> Result<TokenizationRequest, AlpacaError> {
+        self.client
+            .get(
+                &format!("/tokenization/requests/{}", tokenization_request_id),
+                None::<&()>,
+            )
+            .await
+    }
+
+    /// Look up a tokenization request by the `client_request_id` supplied at mint time.
+    ///
+    /// When several requests share a `client_request_id`, the most recently created wins.
+    pub async fn get_tokenization_request_by_client_request_id(
+        &self,
+        client_request_id: &str,
+    ) -> Result<TokenizationRequest, AlpacaError> {
+        #[derive(serde::Serialize)]
+        struct Params<'a> {
+            client_request_id: &'a str,
+        }
+        self.client
+            .get(
+                "/tokenization/requests:by_client_request_id",
+                Some(&Params { client_request_id }),
+            )
+            .await
+    }
 }

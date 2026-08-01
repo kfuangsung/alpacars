@@ -326,3 +326,40 @@ pub enum PositionIntent {
     SellToOpen,
     SellToClose,
 }
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum TokenizationRequestStatus {
+    Pending,
+    Rejected,
+    Completed,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum TokenizationRequestType {
+    Mint,
+    Redeem,
+}
+
+/// Blockchain network a tokenized asset is issued on.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum TokenizationNetwork {
+    Solana,
+    Arbitrum,
+    Ethereum,
+    Binance,
+    Base,
+    Ton,
+    Tron,
+    Mantle,
+}
+
+/// Issuer of a tokenized asset.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum TokenizationIssuer {
+    Xstocks,
+    St0x,
+}
