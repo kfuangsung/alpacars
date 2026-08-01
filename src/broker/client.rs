@@ -666,7 +666,7 @@ impl BrokerClient {
     pub async fn get_all_runs(
         &self,
         filter: Option<&GetRunsRequest>,
-    ) -> Result<Vec<RebalancingRun>, AlpacaError> {
+    ) -> Result<ListRunsResponse, AlpacaError> {
         self.client.get("/rebalancing/runs", filter).await
     }
 

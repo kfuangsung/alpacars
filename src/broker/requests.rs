@@ -308,13 +308,14 @@ pub struct CreateRunRequest {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetRunsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub portfolio_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub before: Option<DateTime<Utc>>,
+    pub account_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
+    /// Portfolio run type: `full_rebalance` or `invest_cash`.
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub run_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_token: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
 }
