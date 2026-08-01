@@ -2,7 +2,7 @@ mod common;
 
 use alpacars::trading::enums::LocateStatus;
 use alpacars::trading::requests::{CreateLocateRequest, GetLocateQuotesRequest, GetLocatesRequest};
-use wiremock::matchers::{method, path, query_param};
+use wiremock::matchers::{header, header_exists, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 const LOCATE_JSON: &str = r#"{
@@ -44,6 +44,62 @@ async fn test_create_locate() {
     assert_eq!(locate.requested_qty, 100);
     assert_eq!(locate.located_qty, Some(100));
     assert_eq!(locate.total_fee.as_deref(), Some("5.00"));
+}
+
+#[tokio::test]
+async fn test_create_locate_sends_idempotency_key() {
+    let server = MockServer::start().await;
+
+    Mock::given(method("POST"))
+        .and(path("/v1/locates"))
+        .and(header("Idempotency-Key", "1f0a9c3e-retry-safe"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(LOCATE_JSON))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    let req = CreateLocateRequest {
+        symbol: "GME".to_string(),
+        qty: 100,
+        limit_price: None,
+        all_or_none: None,
+    };
+    let locate = client
+        .create_locate(&req, Some("1f0a9c3e-retry-safe"))
+        .await
+        .unwrap();
+
+    assert_eq!(locate.symbol, "GME");
+}
+
+#[tokio::test]
+async fn test_create_locate_omits_idempotency_key_when_none() {
+    let server = MockServer::start().await;
+
+    // Only matches when no Idempotency-Key header is present at all.
+    Mock::given(method("POST"))
+        .and(path("/v1/locates"))
+        .and(header_exists("Idempotency-Key"))
+        .respond_with(ResponseTemplate::new(500))
+        .mount(&server)
+        .await;
+
+    Mock::given(method("POST"))
+        .and(path("/v1/locates"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(LOCATE_JSON))
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    let req = CreateLocateRequest {
+        symbol: "GME".to_string(),
+        qty: 100,
+        limit_price: None,
+        all_or_none: None,
+    };
+
+    assert!(client.create_locate(&req, None).await.is_ok());
 }
 
 #[tokio::test]
