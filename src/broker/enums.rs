@@ -219,9 +219,9 @@ pub enum JournalStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "snake_case")]
 pub enum PortfolioStatus {
     Active,
-    Suspended,
     Inactive,
+    NeedsAdjustment,
 }

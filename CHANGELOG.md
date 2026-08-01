@@ -16,7 +16,7 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 - Tokenization API on `BrokerClient`: the same four plus `get_tokenization_request_for_account_by_issuer_request_id`, which has no Trading API equivalent (`/v1/accounts/{account_id}/tokenization/*`).
 - `Idempotency-Key` support on `create_locate`, so retries return the original locate instead of creating a second one.
 - `RestClient::post_with_headers` for endpoints needing per-request headers. The headers replay on every retry attempt.
-- `BrokerClient::new_with_url`, the `#[doc(hidden)]` test constructor every other client already had. The Broker API previously had no test coverage at all.
+- `BrokerClient::new_with_url`, the `#[doc(hidden)]` test constructor every other client already had. The Broker API previously had no test coverage at all; adding it is what surfaced the rebalancing bugs below.
 - `NonTradeActivityStatus::Pending`.
 
 ### Changed
@@ -24,6 +24,13 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 - **Breaking**: `PortfolioHistory.base_value` is now `Option<f64>`. Alpaca marked `equity`, `profit_loss`, `profit_loss_pct` and `base_value` nullable on 2026-07-20; the three array fields were already optional, `base_value` was not and would fail to deserialize on a null.
 - **Breaking**: the new `NonTradeActivityStatus` variant may require a new arm in exhaustive `match`es.
 - Documented the known error-code values on `Locate.rejection_reason` and `LocateQuoteError.code`, including `quote_unavailable` (added 2026-07-23) and `idempotency_key_conflict`. Both stay `String` rather than becoming enums, since Alpaca keeps adding values.
+
+### Fixed
+- **Broker rebalancing endpoints were entirely non-functional.** All 13 methods targeted `/v1/portfolios`, `/v1/subscriptions` and `/v1/runs`; the API serves them under a `/v1/rebalancing` prefix, so every call 404'd.
+- **Breaking**: `inactivate_portfolio_by_id` renamed to `archive_portfolio_by_id` and switched from `POST /v1/portfolios/{id}:inactivate` to the real `DELETE /v1/rebalancing/portfolios/{portfolio_id}`.
+- **Breaking**: `get_all_runs` returns `ListRunsResponse { runs, next_page_token }` instead of `Vec<RebalancingRun>` — the endpoint returns a paginated object, so the previous return type failed to deserialize every response.
+- **Breaking**: `GetRunsRequest` carried `portfolio_id`/`after`/`before`, none of which the endpoint accepts. Replaced with the documented `account_id`, `status`, `type` and `page_token`.
+- **Breaking**: `PortfolioStatus` was `SCREAMING_SNAKE_CASE` with an `Active`/`Suspended`/`Inactive` variant set. The API uses lowercase `active`/`inactive`/`needs_adjustment` — there is no `suspended`, and `needs_adjustment` was missing — so every portfolio response failed to deserialize.
 
 ### Deprecated
 - `TokenizationRequest.account` and `.issuer_account` are modeled as `Option` and superseded by `client_account_id` / `client_external_account_id`. Alpaca removes them on 2026-10-15.

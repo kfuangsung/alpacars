@@ -240,6 +240,12 @@ pub struct RebalancingRun {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListRunsResponse {
+    pub runs: Vec<RebalancingRun>,
+    pub next_page_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CIPInfo {
     pub id: Uuid,
     pub account_id: Option<Uuid>,

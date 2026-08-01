@@ -566,19 +566,24 @@ impl BrokerClient {
         &self,
         data: &CreatePortfolioRequest,
     ) -> Result<Portfolio, AlpacaError> {
-        self.client.post("/portfolios", Some(data)).await
+        self.client
+            .post("/rebalancing/portfolios", Some(data))
+            .await
     }
 
     pub async fn get_all_portfolios(
         &self,
         filter: Option<&GetPortfoliosRequest>,
     ) -> Result<Vec<Portfolio>, AlpacaError> {
-        self.client.get("/portfolios", filter).await
+        self.client.get("/rebalancing/portfolios", filter).await
     }
 
     pub async fn get_portfolio_by_id(&self, portfolio_id: &Uuid) -> Result<Portfolio, AlpacaError> {
         self.client
-            .get(&format!("/portfolios/{}", portfolio_id), None::<&()>)
+            .get(
+                &format!("/rebalancing/portfolios/{}", portfolio_id),
+                None::<&()>,
+            )
             .await
     }
 
@@ -588,14 +593,23 @@ impl BrokerClient {
         data: &serde_json::Value,
     ) -> Result<Portfolio, AlpacaError> {
         self.client
-            .patch(&format!("/portfolios/{}", portfolio_id), Some(data))
+            .patch(
+                &format!("/rebalancing/portfolios/{}", portfolio_id),
+                Some(data),
+            )
             .await
     }
 
-    pub async fn inactivate_portfolio_by_id(&self, portfolio_id: &Uuid) -> Result<(), AlpacaError> {
+    /// Archive (soft-delete) a portfolio.
+    ///
+    /// Only permitted when the portfolio has no active subscriptions. Archived
+    /// portfolios are hidden from default list responses and cannot be used for
+    /// new subscriptions, but may still be referenced as weights in other
+    /// portfolios.
+    pub async fn archive_portfolio_by_id(&self, portfolio_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
-            .post_void(
-                &format!("/portfolios/{}:inactivate", portfolio_id),
+            .delete_void(
+                &format!("/rebalancing/portfolios/{}", portfolio_id),
                 None::<&()>,
             )
             .await
@@ -607,14 +621,16 @@ impl BrokerClient {
         &self,
         data: &CreateSubscriptionRequest,
     ) -> Result<Subscription, AlpacaError> {
-        self.client.post("/subscriptions", Some(data)).await
+        self.client
+            .post("/rebalancing/subscriptions", Some(data))
+            .await
     }
 
     pub async fn get_all_subscriptions(
         &self,
         filter: Option<&GetSubscriptionsRequest>,
     ) -> Result<Vec<Subscription>, AlpacaError> {
-        self.client.get("/subscriptions", filter).await
+        self.client.get("/rebalancing/subscriptions", filter).await
     }
 
     pub async fn get_subscription_by_id(
@@ -622,13 +638,19 @@ impl BrokerClient {
         subscription_id: &Uuid,
     ) -> Result<Subscription, AlpacaError> {
         self.client
-            .get(&format!("/subscriptions/{}", subscription_id), None::<&()>)
+            .get(
+                &format!("/rebalancing/subscriptions/{}", subscription_id),
+                None::<&()>,
+            )
             .await
     }
 
     pub async fn unsubscribe_account(&self, subscription_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
-            .delete_void(&format!("/subscriptions/{}", subscription_id), None::<&()>)
+            .delete_void(
+                &format!("/rebalancing/subscriptions/{}", subscription_id),
+                None::<&()>,
+            )
             .await
     }
 
@@ -638,25 +660,25 @@ impl BrokerClient {
         &self,
         data: &CreateRunRequest,
     ) -> Result<RebalancingRun, AlpacaError> {
-        self.client.post("/runs", Some(data)).await
+        self.client.post("/rebalancing/runs", Some(data)).await
     }
 
     pub async fn get_all_runs(
         &self,
         filter: Option<&GetRunsRequest>,
-    ) -> Result<Vec<RebalancingRun>, AlpacaError> {
-        self.client.get("/runs", filter).await
+    ) -> Result<ListRunsResponse, AlpacaError> {
+        self.client.get("/rebalancing/runs", filter).await
     }
 
     pub async fn get_run_by_id(&self, run_id: &Uuid) -> Result<RebalancingRun, AlpacaError> {
         self.client
-            .get(&format!("/runs/{}", run_id), None::<&()>)
+            .get(&format!("/rebalancing/runs/{}", run_id), None::<&()>)
             .await
     }
 
     pub async fn cancel_run_by_id(&self, run_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
-            .delete_void(&format!("/runs/{}", run_id), None::<&()>)
+            .delete_void(&format!("/rebalancing/runs/{}", run_id), None::<&()>)
             .await
     }
 
