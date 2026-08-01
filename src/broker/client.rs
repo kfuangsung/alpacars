@@ -38,6 +38,25 @@ impl BrokerClient {
         })
     }
 
+    /// Create a client pointed at a custom base URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(
+        api_key: &str,
+        secret_key: &str,
+        base_url: &str,
+    ) -> Result<Self, AlpacaError> {
+        Ok(Self {
+            client: RestClient::new(
+                Some(api_key.to_string()),
+                Some(secret_key.to_string()),
+                None,
+                base_url.to_string(),
+                "v1".to_string(),
+                true, // basic auth
+            )?,
+        })
+    }
+
     // ── Accounts ──────────────────────────────────────────────────────────────
 
     pub async fn create_account(

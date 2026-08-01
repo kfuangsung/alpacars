@@ -1,10 +1,15 @@
 #![allow(dead_code)]
 
+use alpacars::broker::client::BrokerClient;
 use alpacars::data::historical::stock::StockHistoricalDataClient;
 use alpacars::trading::client::TradingClient;
 
 pub fn trading_client(base_url: &str) -> TradingClient {
     TradingClient::new_with_url("test-key", "test-secret", base_url).unwrap()
+}
+
+pub fn broker_client(base_url: &str) -> BrokerClient {
+    BrokerClient::new_with_url("test-key", "test-secret", base_url).unwrap()
 }
 
 pub fn stock_client(base_url: &str) -> StockHistoricalDataClient {
