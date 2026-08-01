@@ -5,12 +5,21 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+# A rapid second push supersedes the first; don't burn a runner finishing a run
+# nobody will look at. Deliberately not applied to release.yml.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    name: Build, test & lint (stable)
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -22,10 +31,68 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
+
+  test:
+    # tokio-tungstenite uses native-tls, which is a different backend per OS
+    # (OpenSSL / Security.framework / SChannel), so this axis is worth covering.
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - name: Build (lib, bins, examples, tests)
         run: cargo build --all-targets --locked
       - name: Test
         run: cargo test --locked
+
+  docs:
+    # Catches what would otherwise only surface as a failed docs.rs build
+    # after the version is already published and irreversible.
+    name: Docs
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build documentation
+        run: cargo doc --no-deps --locked
+
+  package:
+    # Building from the packaged tarball is a different code path from a normal
+    # build (excluded files, path deps, .gitignore interactions). Fail here at
+    # PR time rather than mid-release.
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify the crate packages and builds
+        run: cargo publish --dry-run --locked
+
+  semver:
+    # Compares the PR's public API against the latest crates.io release and
+    # fails if it breaks without an adequate version bump. Understands pre-1.0
+    # rules, so 0.4.x -> 0.5.0 with breaking changes passes, while a break at
+    # an unchanged version does not.
+    #
+    # PRs only: on a push to main the merge has already happened, so there is
+    # nothing left to gate.
+    name: Semver
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: obi1kenobi/cargo-semver-checks-action@v2
 
   msrv:
     name: MSRV (1.88)

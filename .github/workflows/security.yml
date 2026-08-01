@@ -1,0 +1,44 @@
+name: Security
+
+# Separate from ci.yml because the value here is mostly in the scheduled run:
+# a newly published advisory should fail a Monday cron, not sit undetected
+# until someone happens to push. A cron run also has no PR context, so it
+# cannot share ci.yml's concurrency group or path filters.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "deny.toml"
+      - ".github/workflows/security.yml"
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "deny.toml"
+      - ".github/workflows/security.yml"
+  schedule:
+    # Mondays 06:00 UTC.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cargo-deny:
+    name: cargo-deny (${{ matrix.check }})
+    runs-on: ubuntu-latest
+    strategy:
+      # One job per check so a failure is individually attributable — an
+      # advisory hit must not mask a license or source problem.
+      fail-fast: false
+      matrix:
+        check: [advisories, licenses, bans, sources]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check
+          command-arguments: ${{ matrix.check }}
