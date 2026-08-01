@@ -37,7 +37,7 @@ async fn test_create_locate() {
         limit_price: Some("0.10".to_string()),
         all_or_none: Some(true),
     };
-    let locate = client.create_locate(&req).await.unwrap();
+    let locate = client.create_locate(&req, None).await.unwrap();
 
     assert_eq!(locate.symbol, "GME");
     assert_eq!(locate.status, LocateStatus::Active);

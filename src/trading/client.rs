@@ -350,14 +350,25 @@ impl TradingClient {
     // ── Locates (hard-to-borrow) ──────────────────────────────────────────────
     // Served under /v1, unlike the rest of the Trading API.
 
+    /// Create a locate.
+    ///
+    /// Pass an `idempotency_key` to make retries safe: reusing a key returns
+    /// the original result instead of creating a second locate. Reusing a key
+    /// with a different payload fails with an `idempotency_key_conflict` error.
     pub async fn create_locate(
         &self,
         request: &CreateLocateRequest,
+        idempotency_key: Option<&str>,
     ) -> Result<Locate, AlpacaError> {
-        self.client
-            .with_api_version("v1")
-            .post("/locates", Some(request))
-            .await
+        let client = self.client.with_api_version("v1");
+        match idempotency_key {
+            Some(key) => {
+                client
+                    .post_with_headers("/locates", Some(request), &[("Idempotency-Key", key)])
+                    .await
+            }
+            None => client.post("/locates", Some(request)).await,
+        }
     }
 
     pub async fn get_locates(

@@ -336,6 +336,11 @@ pub struct Locate {
     pub total_fee: Option<String>,
     pub limit_price: Option<String>,
     pub all_or_none: bool,
+    /// Machine-readable rejection reason, e.g. `inventory_unavailable`.
+    ///
+    /// Left untyped: Alpaca adds values over time (most recently
+    /// `quote_unavailable` and `idempotency_key_conflict` in July 2026) and an
+    /// enum without a catch-all variant would fail to deserialize on the next one.
     pub rejection_reason: Option<String>,
     pub expires_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
@@ -352,6 +357,9 @@ pub struct LocateQuote {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocateQuoteError {
     pub symbol: String,
+    /// One of `symbol_not_found`, `easy_to_borrow`, `threshold_security`,
+    /// `corporate_action`, `quote_unavailable`. Left untyped for the same
+    /// reason as [`Locate::rejection_reason`].
     pub code: String,
     pub message: String,
 }
