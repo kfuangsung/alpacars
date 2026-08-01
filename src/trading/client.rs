@@ -350,14 +350,25 @@ impl TradingClient {
     // ── Locates (hard-to-borrow) ──────────────────────────────────────────────
     // Served under /v1, unlike the rest of the Trading API.
 
+    /// Create a locate.
+    ///
+    /// Pass an `idempotency_key` to make retries safe: reusing a key returns
+    /// the original result instead of creating a second locate. Reusing a key
+    /// with a different payload fails with an `idempotency_key_conflict` error.
     pub async fn create_locate(
         &self,
         request: &CreateLocateRequest,
+        idempotency_key: Option<&str>,
     ) -> Result<Locate, AlpacaError> {
-        self.client
-            .with_api_version("v1")
-            .post("/locates", Some(request))
-            .await
+        let client = self.client.with_api_version("v1");
+        match idempotency_key {
+            Some(key) => {
+                client
+                    .post_with_headers("/locates", Some(request), &[("Idempotency-Key", key)])
+                    .await
+            }
+            None => client.post("/locates", Some(request)).await,
+        }
     }
 
     pub async fn get_locates(
@@ -384,6 +395,54 @@ impl TradingClient {
         self.client
             .with_api_version("v1")
             .get("/locates/quotes", Some(request))
+            .await
+    }
+
+    // ── Tokenization ──────────────────────────────────────────────────────────
+
+    /// Convert underlying equity securities into a tokenized asset.
+    pub async fn mint_tokenized_asset(
+        &self,
+        request: &TokenizationMintRequest,
+    ) -> Result<TokenizationMintResponse, AlpacaError> {
+        self.client.post("/tokenization/mint", Some(request)).await
+    }
+
+    pub async fn get_tokenization_requests(
+        &self,
+        request: Option<&GetTokenizationRequestsRequest>,
+    ) -> Result<Vec<TokenizationRequest>, AlpacaError> {
+        self.client.get("/tokenization/requests", request).await
+    }
+
+    pub async fn get_tokenization_request(
+        &self,
+        tokenization_request_id: &str,
+    ) -> Result<TokenizationRequest, AlpacaError> {
+        self.client
+            .get(
+                &format!("/tokenization/requests/{}", tokenization_request_id),
+                None::<&()>,
+            )
+            .await
+    }
+
+    /// Look up a tokenization request by the `client_request_id` supplied at mint time.
+    ///
+    /// When several requests share a `client_request_id`, the most recently created wins.
+    pub async fn get_tokenization_request_by_client_request_id(
+        &self,
+        client_request_id: &str,
+    ) -> Result<TokenizationRequest, AlpacaError> {
+        #[derive(serde::Serialize)]
+        struct Params<'a> {
+            client_request_id: &'a str,
+        }
+        self.client
+            .get(
+                "/tokenization/requests:by_client_request_id",
+                Some(&Params { client_request_id }),
+            )
             .await
     }
 }

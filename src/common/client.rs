@@ -169,11 +169,29 @@ impl RestClient {
         query: Option<serde_json::Value>,
         body: Option<serde_json::Value>,
     ) -> Result<serde_json::Value, AlpacaError> {
+        self.execute_raw_with_headers(method, url, query, body, None)
+            .await
+    }
+
+    /// Like [`Self::execute_raw`], but merges `extra_headers` on top of the auth
+    /// headers. The extra headers are replayed on every retry attempt, which is
+    /// what idempotency keys need.
+    async fn execute_raw_with_headers(
+        &self,
+        method: Method,
+        url: &str,
+        query: Option<serde_json::Value>,
+        body: Option<serde_json::Value>,
+        extra_headers: Option<&header::HeaderMap>,
+    ) -> Result<serde_json::Value, AlpacaError> {
         let mut attempts = 0u32;
         loop {
             debug!(method = %method, url, attempt = attempts, "sending request");
             let mut req = self.http.request(method.clone(), url);
             req = req.headers(self.auth_headers());
+            if let Some(extra) = extra_headers {
+                req = req.headers(extra.clone());
+            }
 
             if let Some(ref q) = query {
                 req = req.query(&Self::query_pairs(q));
@@ -259,6 +277,36 @@ impl RestClient {
         let url = self.build_url(path);
         let b = body.map(serde_json::to_value).transpose()?;
         let val = self.execute_raw(Method::POST, &url, None, b).await?;
+        Ok(serde_json::from_value(val)?)
+    }
+
+    /// POST with additional request headers merged on top of the auth headers.
+    ///
+    /// Header names or values that are not valid HTTP headers are skipped.
+    pub async fn post_with_headers<B, R>(
+        &self,
+        path: &str,
+        body: Option<&B>,
+        headers: &[(&str, &str)],
+    ) -> Result<R, AlpacaError>
+    where
+        B: Serialize,
+        R: DeserializeOwned,
+    {
+        let url = self.build_url(path);
+        let b = body.map(serde_json::to_value).transpose()?;
+        let mut map = header::HeaderMap::new();
+        for (name, value) in headers {
+            if let (Ok(n), Ok(v)) = (
+                name.parse::<header::HeaderName>(),
+                value.parse::<header::HeaderValue>(),
+            ) {
+                map.insert(n, v);
+            }
+        }
+        let val = self
+            .execute_raw_with_headers(Method::POST, &url, None, b, Some(&map))
+            .await?;
         Ok(serde_json::from_value(val)?)
     }
 

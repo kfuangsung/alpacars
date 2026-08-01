@@ -140,7 +140,7 @@ pub struct PortfolioHistory {
     pub equity: Vec<Option<f64>>,
     pub profit_loss: Vec<Option<f64>>,
     pub profit_loss_pct: Vec<Option<f64>>,
-    pub base_value: f64,
+    pub base_value: Option<f64>,
     pub base_value_asof: Option<String>,
     pub timeframe: String,
 }
@@ -336,6 +336,11 @@ pub struct Locate {
     pub total_fee: Option<String>,
     pub limit_price: Option<String>,
     pub all_or_none: bool,
+    /// Machine-readable rejection reason, e.g. `inventory_unavailable`.
+    ///
+    /// Left untyped: Alpaca adds values over time (most recently
+    /// `quote_unavailable` and `idempotency_key_conflict` in July 2026) and an
+    /// enum without a catch-all variant would fail to deserialize on the next one.
     pub rejection_reason: Option<String>,
     pub expires_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
@@ -352,6 +357,9 @@ pub struct LocateQuote {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocateQuoteError {
     pub symbol: String,
+    /// One of `symbol_not_found`, `easy_to_borrow`, `threshold_security`,
+    /// `corporate_action`, `quote_unavailable`. Left untyped for the same
+    /// reason as [`Locate::rejection_reason`].
     pub code: String,
     pub message: String,
 }
@@ -366,4 +374,48 @@ pub struct ListLocatesResponse {
 pub struct ListLocateQuotesResponse {
     pub quotes: Vec<LocateQuote>,
     pub errors: Option<Vec<LocateQuoteError>>,
+}
+
+/// A request to mint or redeem a tokenized asset.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TokenizationRequest {
+    /// Unique identifier of the tokenization request, assigned by Alpaca.
+    pub tokenization_request_id: String,
+    pub status: TokenizationRequestStatus,
+    #[serde(rename = "type")]
+    pub request_type: TokenizationRequestType,
+    pub underlying_symbol: String,
+    pub token_symbol: String,
+    pub qty: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub issuer: TokenizationIssuer,
+    pub network: TokenizationNetwork,
+    /// Authorized Participant-supplied label for this request.
+    pub client_request_id: Option<String>,
+    /// Alpaca account UUID of the Authorized Participant.
+    pub client_account_id: Option<Uuid>,
+    /// Issuer-side account identifier of the Authorized Participant.
+    pub client_external_account_id: Option<String>,
+    /// Unique identifier of the request set by the issuer.
+    pub issuer_request_id: Option<String>,
+    pub fees: Option<String>,
+    /// Transaction hash of the completed request on the blockchain.
+    pub tx_hash: Option<String>,
+    /// Deprecated by Alpaca; removed from the API on 2026-10-15. Use `client_account_id`.
+    pub account: Option<String>,
+    /// Deprecated by Alpaca; removed from the API on 2026-10-15. Use `client_external_account_id`.
+    pub issuer_account: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TokenizationMintResponse {
+    pub tokenization_request_id: String,
+    pub status: TokenizationRequestStatus,
+    pub underlying_symbol: String,
+    pub token_symbol: String,
+    pub qty: String,
+    pub created_at: DateTime<Utc>,
+    pub issuer: TokenizationIssuer,
+    pub network: TokenizationNetwork,
 }

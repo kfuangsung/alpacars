@@ -84,3 +84,36 @@ async fn test_get_account_configurations() {
     );
     assert_eq!(config.max_options_trading_level, Some(1));
 }
+
+/// Alpaca marked equity, profit_loss, profit_loss_pct and base_value nullable
+/// on the PortfolioHistory schema (changelog 2026-07-20).
+#[tokio::test]
+async fn test_get_portfolio_history_with_null_numeric_fields() {
+    let server = MockServer::start().await;
+
+    Mock::given(method("GET"))
+        .and(path("/v2/account/portfolio/history"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(
+            r#"{
+              "timestamp": [1775606400, 1775692800],
+              "equity": [8425.21, null],
+              "profit_loss": [12.17, null],
+              "profit_loss_pct": [0.0014, null],
+              "base_value": null,
+              "base_value_asof": "2026-07-19",
+              "timeframe": "1D"
+            }"#,
+        ))
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    let history = client.get_portfolio_history(None).await.unwrap();
+
+    assert_eq!(history.timestamp.len(), 2);
+    assert_eq!(history.equity, vec![Some(8425.21), None]);
+    assert_eq!(history.profit_loss, vec![Some(12.17), None]);
+    assert!(history.base_value.is_none());
+    assert_eq!(history.base_value_asof.as_deref(), Some("2026-07-19"));
+    assert_eq!(history.timeframe, "1D");
+}

@@ -446,3 +446,36 @@ pub struct GetAccountActivitiesRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
 }
+
+/// Request to convert underlying equity into a tokenized asset.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TokenizationMintRequest {
+    pub underlying_symbol: String,
+    /// Underlying quantity to convert. May be fractional.
+    pub qty: String,
+    pub issuer: TokenizationIssuer,
+    pub network: TokenizationNetwork,
+    /// Wallet address that receives the tokenized asset.
+    pub wallet_address: String,
+    /// Optional correlation label, at most 128 characters.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub client_request_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct GetTokenizationRequestsRequest {
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub request_type: Option<TokenizationRequestType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<TokenizationRequestStatus>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub underlying_symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub issuer: Option<TokenizationIssuer>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub network: Option<TokenizationNetwork>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub after: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub before: Option<DateTime<Utc>>,
+}
