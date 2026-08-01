@@ -600,10 +600,16 @@ impl BrokerClient {
             .await
     }
 
-    pub async fn inactivate_portfolio_by_id(&self, portfolio_id: &Uuid) -> Result<(), AlpacaError> {
+    /// Archive (soft-delete) a portfolio.
+    ///
+    /// Only permitted when the portfolio has no active subscriptions. Archived
+    /// portfolios are hidden from default list responses and cannot be used for
+    /// new subscriptions, but may still be referenced as weights in other
+    /// portfolios.
+    pub async fn archive_portfolio_by_id(&self, portfolio_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
-            .post_void(
-                &format!("/rebalancing/portfolios/{}:inactivate", portfolio_id),
+            .delete_void(
+                &format!("/rebalancing/portfolios/{}", portfolio_id),
                 None::<&()>,
             )
             .await
