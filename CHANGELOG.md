@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **`TradingStream` delivered no trade updates on paper accounts.** Per Alpaca's "Websocket Streaming" doc, the paper stream (`wss://paper-api.alpaca.markets/stream`) sends `trade_updates` in binary frames; `TradingStream` handled only text frames and silently dropped binary ones. Binary frames are now decoded (JSON, with a MessagePack fallback) and handled like text frames.
+- `TradingStream` authenticated with the legacy `{"action": "authenticate", "data": {"key_id", "secret_key"}}` message; it now sends the documented `{"action": "auth", "key", "secret"}`.
+
+### Added
+- `#[doc(hidden)] TradingStream::new_with_url`, and the first end-to-end test of the trading stream.
+
 ## [0.6.1] - 2026-10-20
 
 Patch release: a reference audit of every remaining untested Broker area found 29 methods calling paths that do not exist or sending values the API rejects — all fixed, with no breaking changes. **If you close positions partially, upgrade**: `close_position` and `close_position_for_account` ignored `qty` / `percentage` and closed the whole position.
