@@ -739,11 +739,42 @@ impl BrokerClient {
             .await
     }
 
+    /// List subscriptions (`GET /v1/rebalancing/subscriptions`), following `next_page_token`
+    /// until every page has been fetched.
     pub async fn get_all_subscriptions(
         &self,
         filter: Option<&GetSubscriptionsRequest>,
     ) -> Result<Vec<Subscription>, AlpacaError> {
-        self.client.get("/rebalancing/subscriptions", filter).await
+        #[derive(serde::Serialize)]
+        struct Params<'a> {
+            #[serde(flatten)]
+            filter: Option<&'a GetSubscriptionsRequest>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            page_token: Option<String>,
+        }
+        #[derive(serde::Deserialize)]
+        struct Page {
+            subscriptions: Option<Vec<Subscription>>,
+            next_page_token: Option<String>,
+        }
+
+        let mut params = Params {
+            filter,
+            page_token: None,
+        };
+        let mut result = Vec::new();
+        loop {
+            let page: Page = self
+                .client
+                .get("/rebalancing/subscriptions", Some(&params))
+                .await?;
+            result.extend(page.subscriptions.unwrap_or_default());
+            match page.next_page_token {
+                Some(t) if !t.is_empty() => params.page_token = Some(t),
+                _ => break,
+            }
+        }
+        Ok(result)
     }
 
     pub async fn get_subscription_by_id(

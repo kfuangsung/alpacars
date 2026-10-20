@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Crate-level documentation, which is the docs.rs front page and was empty before: the clients, environments and auth, retry and pagination, examples for Trading, Broker, historical data and streaming, error handling, and forward compatibility. The examples compile as `no_run` doctests.
+- Tests for the last ten `BrokerClient` methods that had none (assets, clock, calendar, journal get/cancel, portfolio update, subscriptions list/get, run get), with fixtures from their references.
 - The README's Rust examples are compiled as `no_run` doctests too (`#[cfg(doctest)]`), so they can't drift from the API.
 
 ### Fixed
+- `BrokerClient::get_all_subscriptions` always failed: it parsed the response as an array, but `GET /v1/rebalancing/subscriptions` returns `{subscriptions, next_page_token}`. It now reads that shape and follows `next_page_token`, so one call returns every subscription. The return type is unchanged.
 - The README's live-streaming example read `trade.symbol` and `quote.symbol`, which don't exist: stream handlers receive the event without its symbol. The installation snippet now says `0.7`.
 
 ## [0.7.0] - 2026-10-20

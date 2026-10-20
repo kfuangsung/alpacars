@@ -209,3 +209,39 @@ async fn test_create_reverse_batch_journal_path() {
 
     assert_eq!(journals.len(), 1);
 }
+
+#[tokio::test]
+async fn test_get_journal_by_id() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path("/v1/journals/56f106e5-25a4-4eee-96fa-25bb05dc86bc"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(JNLC_JSON))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    let id: Uuid = "56f106e5-25a4-4eee-96fa-25bb05dc86bc".parse().unwrap();
+    let journal = client.get_journal_by_id(&id).await.unwrap();
+    assert_eq!(journal.id, id);
+    assert_eq!(journal.entry_type, Some(JournalEntryType::Cash));
+    assert_eq!(journal.status, Some(JournalStatus::Pending));
+}
+
+/// deletejournalbyid answers 204 No Content.
+#[tokio::test]
+async fn test_cancel_journal_by_id() {
+    let server = MockServer::start().await;
+    Mock::given(method("DELETE"))
+        .and(path("/v1/journals/56f106e5-25a4-4eee-96fa-25bb05dc86bc"))
+        .respond_with(ResponseTemplate::new(204))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    client
+        .cancel_journal_by_id(&"56f106e5-25a4-4eee-96fa-25bb05dc86bc".parse().unwrap())
+        .await
+        .unwrap();
+}

@@ -12,7 +12,7 @@ mod common;
 use alpacars::broker::enums::{PortfolioStatus, RunInitiatedFrom, RunType, WeightType};
 use alpacars::broker::requests::{
     CreatePortfolioRequest, CreateRunRequest, CreateSubscriptionRequest, GetPortfoliosRequest,
-    GetRunsRequest, PortfolioWeightRequest,
+    GetRunsRequest, GetSubscriptionsRequest, PortfolioWeightRequest,
 };
 use serde_json::json;
 use uuid::Uuid;
@@ -346,4 +346,114 @@ async fn test_cancel_run_by_id() {
 
     let client = common::broker_client(&server.uri());
     client.cancel_run_by_id(&uuid(RUN_ID)).await.unwrap();
+}
+
+/// patch-v1-rebalancing-portfolios-portfolio_id: `cooldown_days` is the one required field.
+#[tokio::test]
+async fn test_update_portfolio_by_id() {
+    let server = MockServer::start().await;
+    let body = json!({"cooldown_days": 7, "name": "Balanced", "description": "60/40"});
+    Mock::given(method("PATCH"))
+        .and(path(format!("/v1/rebalancing/portfolios/{PORTFOLIO_ID}")))
+        .and(body_json(&body))
+        .respond_with(ResponseTemplate::new(200).set_body_string(PORTFOLIO_JSON))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    let portfolio = client
+        .update_portfolio_by_id(&uuid(PORTFOLIO_ID), &body)
+        .await
+        .unwrap();
+    assert_eq!(portfolio.cooldown_days, Some(7));
+    assert_eq!(portfolio.status, Some(PortfolioStatus::Active));
+}
+
+const SUBSCRIPTION_JSON: &str = r#"{
+  "id": "3e5ab111-9d02-4c8e-8f77-1a2b3c4d5e6f",
+  "account_id": "b1f9c2d4-5e6a-4b7c-8d9e-0f1a2b3c4d5e",
+  "portfolio_id": "2d49d00e-ab1c-4f1a-9b3a-5f0e9c1d2a3b",
+  "created_at": "2026-07-20T10:00:00Z",
+  "last_rebalanced_at": "2026-07-21T14:30:00Z"
+}"#;
+
+/// get-v1-rebalancing-subscriptions answers `{subscriptions, next_page_token}`, not a bare
+/// array; the crate parsed an array and so could never list subscriptions. Every page is
+/// fetched, and the filter is sent on each.
+#[tokio::test]
+async fn test_get_all_subscriptions_is_paginated() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path("/v1/rebalancing/subscriptions"))
+        .and(query_param("account_id", ACCOUNT_ID))
+        .and(wiremock::matchers::query_param_is_missing("page_token"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!(
+            r#"{{"subscriptions": [{SUBSCRIPTION_JSON}], "next_page_token": "MTAwMA=="}}"#
+        )))
+        .expect(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/v1/rebalancing/subscriptions"))
+        .and(query_param("account_id", ACCOUNT_ID))
+        .and(query_param("page_token", "MTAwMA=="))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!(
+            r#"{{"subscriptions": [{SUBSCRIPTION_JSON}], "next_page_token": null}}"#
+        )))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    let filter = GetSubscriptionsRequest {
+        account_id: Some(uuid(ACCOUNT_ID)),
+        portfolio_id: None,
+    };
+    let subs = client.get_all_subscriptions(Some(&filter)).await.unwrap();
+    assert_eq!(subs.len(), 2);
+    assert_eq!(subs[0].id, uuid(SUBSCRIPTION_ID));
+}
+
+#[tokio::test]
+async fn test_get_subscription_by_id() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path(format!(
+            "/v1/rebalancing/subscriptions/{SUBSCRIPTION_ID}"
+        )))
+        .respond_with(ResponseTemplate::new(200).set_body_string(SUBSCRIPTION_JSON))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    let sub = client
+        .get_subscription_by_id(&uuid(SUBSCRIPTION_ID))
+        .await
+        .unwrap();
+    assert_eq!(sub.account_id, Some(uuid(ACCOUNT_ID)));
+}
+
+/// get-v1-rebalancing-runs-run_id, including a `skipped_orders` entry from its schema.
+#[tokio::test]
+async fn test_get_run_by_id() {
+    let server = MockServer::start().await;
+    let run = RUN_JSON.replace(
+        r#""skipped_orders": null"#,
+        r#""skipped_orders": [{"symbol": "AAPL", "side": "buy", "notional": "0.5",
+            "currency": "USD", "reason": "below minimum notional",
+            "reason_details": "notional 0.5 is below the minimum"}]"#,
+    );
+    Mock::given(method("GET"))
+        .and(path(format!("/v1/rebalancing/runs/{RUN_ID}")))
+        .respond_with(ResponseTemplate::new(200).set_body_string(run))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    let run = client.get_run_by_id(&uuid(RUN_ID)).await.unwrap();
+    assert_eq!(run.run_type, Some(RunType::FullRebalance));
+    assert_eq!(run.skipped_orders.map(|o| o.len()), Some(1));
 }
