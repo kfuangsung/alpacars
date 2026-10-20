@@ -365,3 +365,61 @@ pub enum RunInitiatedFrom {
     #[serde(other)]
     Unknown,
 }
+
+/// Agreement a party signs once, independent of any account (`POST /v1/agreements`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum PartyAgreementType {
+    MarginAgreement,
+    CertificationsAndResolutionsStatement,
+    NasdaqAgreement,
+    NyseAgreement,
+    OauthApiAgreement,
+    OpraAgreement,
+    TrustedContactConsent,
+    CustodianCustomerAgreement,
+}
+
+/// Agreement signed for a specific account (`POST /v1/agreements` with `account_id`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum PerAccountAgreementType {
+    AccountAgreement,
+    CustomerAgreement,
+    OptionsAgreement,
+    MasterSecuritiesLendingAgreement,
+    CryptoAgreement,
+    DvpCustomerAgreement,
+    EtcAgreement,
+    JointAccountAgreement,
+}
+
+/// Type of a [`SignedAgreement`](crate::broker::models::SignedAgreement): any party-level or
+/// per-account agreement type.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum SignedAgreementType {
+    MarginAgreement,
+    CertificationsAndResolutionsStatement,
+    NasdaqAgreement,
+    NyseAgreement,
+    OauthApiAgreement,
+    OpraAgreement,
+    TrustedContactConsent,
+    CustodianCustomerAgreement,
+    AccountAgreement,
+    CustomerAgreement,
+    OptionsAgreement,
+    MasterSecuritiesLendingAgreement,
+    CryptoAgreement,
+    DvpCustomerAgreement,
+    EtcAgreement,
+    JointAccountAgreement,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}

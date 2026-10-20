@@ -447,3 +447,40 @@ pub use crate::trading::requests::{
     ClosePositionRequest, CreateWatchlistRequest, GetAssetsRequest, GetCalendarRequest,
     OrderRequest, ReplaceOrderRequest, UpdateWatchlistRequest,
 };
+
+/// Sign a party-level agreement after the party was created.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreatePartyAgreementRequest {
+    pub party_id: Uuid,
+    pub agreement: PartyAgreementType,
+    pub signed_at: DateTime<Utc>,
+    pub ip_address: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub revision: Option<String>,
+    /// For a legal-entity party: the natural person signing on its behalf.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signer_party_id: Option<Uuid>,
+}
+
+/// Sign an agreement for one of a party's accounts.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateAccountAgreementRequest {
+    pub party_id: Uuid,
+    pub account_id: Uuid,
+    pub agreement: PerAccountAgreementType,
+    pub signed_at: DateTime<Utc>,
+    pub ip_address: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub revision: Option<String>,
+    /// For a legal-entity party: the natural person signing on its behalf.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signer_party_id: Option<Uuid>,
+}
+
+/// Body of `POST /v1/agreements`: a party-level or a per-account agreement.
+#[derive(Debug, Clone, Serialize)]
+#[serde(untagged)]
+pub enum CreateAgreementRequest {
+    Party(CreatePartyAgreementRequest),
+    Account(CreateAccountAgreementRequest),
+}
