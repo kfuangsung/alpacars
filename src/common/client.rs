@@ -184,6 +184,33 @@ impl RestClient {
         body: Option<serde_json::Value>,
         extra_headers: Option<&header::HeaderMap>,
     ) -> Result<serde_json::Value, AlpacaError> {
+        let resp = self
+            .send_with_retry(method, url, query, body, extra_headers)
+            .await?;
+
+        if resp.status() == StatusCode::NO_CONTENT {
+            return Ok(serde_json::Value::Null);
+        }
+
+        let text = resp.text().await?;
+        if text.is_empty() {
+            return Ok(serde_json::Value::Null);
+        }
+        Ok(serde_json::from_str(&text)?)
+    }
+
+    /// Sends a request with auth headers, retrying retryable statuses with exponential backoff.
+    /// Returns the response once it succeeds; a non-2xx status becomes [`AlpacaError::Api`].
+    /// Shared by the JSON verbs and [`Self::get_bytes`] so every request gets the same auth,
+    /// retry and error handling.
+    async fn send_with_retry(
+        &self,
+        method: Method,
+        url: &str,
+        query: Option<serde_json::Value>,
+        body: Option<serde_json::Value>,
+        extra_headers: Option<&header::HeaderMap>,
+    ) -> Result<reqwest::Response, AlpacaError> {
         let mut attempts = 0u32;
         loop {
             debug!(method = %method, url, attempt = attempts, "sending request");
@@ -218,13 +245,8 @@ impl RestClient {
                 continue;
             }
 
-            if status == StatusCode::NO_CONTENT {
-                return Ok(serde_json::Value::Null);
-            }
-
-            let text = resp.text().await?;
-
             if !status.is_success() {
+                let text = resp.text().await?;
                 let parsed: serde_json::Value =
                     serde_json::from_str(&text).unwrap_or(serde_json::Value::Null);
                 let message = parsed["message"].as_str().unwrap_or(&text).to_string();
@@ -237,12 +259,23 @@ impl RestClient {
                 });
             }
 
-            if text.is_empty() {
-                return Ok(serde_json::Value::Null);
-            }
-
-            return Ok(serde_json::from_str(&text)?);
+            return Ok(resp);
         }
+    }
+
+    /// `GET` returning the raw response body, for endpoints that serve files rather than JSON.
+    /// Redirects are followed; on a redirect to another host the HTTP client drops the
+    /// `Authorization` header, so Basic-auth credentials are not sent to the file host.
+    pub async fn get_bytes<Q>(&self, path: &str, query: Option<&Q>) -> Result<Vec<u8>, AlpacaError>
+    where
+        Q: Serialize,
+    {
+        let url = self.build_url(path);
+        let q = query.map(serde_json::to_value).transpose()?;
+        let resp = self
+            .send_with_retry(Method::GET, &url, q, None, None)
+            .await?;
+        Ok(resp.bytes().await?.to_vec())
     }
 
     pub async fn get<Q, R>(&self, path: &str, query: Option<&Q>) -> Result<R, AlpacaError>

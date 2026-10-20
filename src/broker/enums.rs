@@ -149,43 +149,110 @@ pub enum AgreementType {
     Unknown,
 }
 
+/// `document_type` of an owner document (`POST /v1/accounts/{account_id}/documents/upload`).
+///
+/// Variants without an explicit rename (`DriversLicense`, `Passport`, …) are not valid
+/// `document_type` values — values such as `passport` belong in `document_sub_type`. They will be
+/// removed in 0.7.0.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum DocumentType {
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     DriversLicense,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     NationalIdCard,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     Passport,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     PassportCard,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     VisaPermit,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     ResidencePermit,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     TaxReturn,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     FinancialStatement,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     BankStatement,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     FundSource,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     AccountTransferIn,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     LimitedPoa,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     Other,
+    #[serde(rename = "account_approval_letter")]
+    AccountApprovalLetter,
+    #[serde(rename = "address_verification")]
+    AddressVerification,
+    #[serde(rename = "cip_result")]
+    CipResult,
+    #[serde(rename = "company_formation")]
+    CompanyFormation,
+    #[serde(rename = "date_of_birth_verification")]
+    DateOfBirthVerification,
+    #[serde(rename = "entity_operating_document")]
+    EntityOperatingDocument,
+    #[serde(rename = "entity_registration")]
+    EntityRegistration,
+    #[serde(rename = "hio_declaration_form")]
+    HioDeclarationForm,
+    #[serde(rename = "identity_verification")]
+    IdentityVerification,
+    #[serde(rename = "limited_trading_authorization")]
+    LimitedTradingAuthorization,
+    #[serde(rename = "pep_declaration_form")]
+    PepDeclarationForm,
+    #[serde(rename = "tax_id_verification")]
+    TaxIdVerification,
+    #[serde(rename = "w8ben")]
+    W8ben,
+    #[serde(rename = "w9")]
+    W9,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
     Unknown,
 }
 
+/// Type of an account document (`type` on `GET /v1/accounts/{account_id}/documents`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum TradeDocumentType {
+    #[serde(rename = "account_statement")]
     AccountStatement,
+    #[serde(rename = "trade_confirmation")]
     TradeConfirmation,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099B,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099Div,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099Int,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099Misc,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099R,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxFormW8ben,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxFormW8bene,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxFormW9,
+    #[serde(rename = "account_application")]
+    AccountApplication,
+    #[serde(rename = "crypto_account_statement")]
+    CryptoAccountStatement,
+    #[serde(rename = "options_application")]
+    OptionsApplication,
+    #[serde(rename = "tax_statement")]
+    TaxStatement,
+    #[serde(rename = "trade_confirmation_json")]
+    TradeConfirmationJson,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
