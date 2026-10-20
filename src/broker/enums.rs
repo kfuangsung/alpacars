@@ -199,15 +199,17 @@ pub enum TransferDirection {
     Outgoing,
 }
 
+/// Journal kind. Alpaca's wire values are `JNLC` (cash) and `JNLS` (securities).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum JournalEntryType {
+    #[serde(rename = "JNLC")]
     Cash,
+    #[serde(rename = "JNLS")]
     Security,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "snake_case")]
 pub enum JournalStatus {
     Pending,
     ActivityCreated,
@@ -215,6 +217,8 @@ pub enum JournalStatus {
     Rejected,
     Canceled,
     Refused,
+    /// Wire value `correct`.
+    #[serde(rename = "correct")]
     Corrected,
 }
 

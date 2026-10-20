@@ -440,7 +440,7 @@ impl BrokerClient {
         &self,
         data: &CreateBatchJournalRequest,
     ) -> Result<Vec<Journal>, AlpacaError> {
-        self.client.post("/journals:batch", Some(data)).await
+        self.client.post("/journals/batch", Some(data)).await
     }
 
     pub async fn create_reverse_batch_journal(
@@ -448,7 +448,7 @@ impl BrokerClient {
         data: &CreateReverseBatchJournalRequest,
     ) -> Result<Vec<Journal>, AlpacaError> {
         self.client
-            .post("/journals:batch_reverse", Some(data))
+            .post("/journals/reverse_batch", Some(data))
             .await
     }
 

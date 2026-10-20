@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Broker journals were non-functional. All of these were verified against the `docs.alpaca.markets/us/reference` pages, and none of them changes the Rust API:
+  - `JournalEntryType` was serialized as `CASH`/`SECURITY`; Alpaca uses `JNLC`/`JNLS`. Every journal response failed to deserialize and every journal request sent an invalid `entry_type`.
+  - `JournalStatus` was serialized in SCREAMING_SNAKE_CASE (`PENDING`); Alpaca uses lowercase (`pending`), and `Corrected` is `correct` on the wire.
+  - `create_batch_journal` posted to `/v1/journals:batch` instead of `/v1/journals/batch`.
+  - `create_reverse_batch_journal` posted to `/v1/journals:batch_reverse` instead of `/v1/journals/reverse_batch`.
+
 ### Security
 - Bumped `h2` to 0.4.20 in `Cargo.lock` to fix [RUSTSEC-2026-0258](https://rustsec.org/advisories/RUSTSEC-2026-0258) (unbounded queueing of empty DATA frames). This only changes the lockfile — downstream crates pick up the fix with their own `cargo update -p h2`.
 
