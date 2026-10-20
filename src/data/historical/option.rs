@@ -1,4 +1,5 @@
 use crate::common::client::{base_url, RestClient, DATA_V2_MAX_LIMIT};
+use crate::common::enums::Sort;
 use crate::data::enums::{OptionsFeed, TimeFrame};
 use crate::data::models::*;
 use crate::error::AlpacaError;
@@ -22,7 +23,7 @@ struct OptionBarsParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub currency: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
 }
@@ -41,7 +42,7 @@ struct OptionTradesParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub currency: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
 }
@@ -89,7 +90,7 @@ pub struct OptionBarsRequest {
     pub limit: Option<u32>,
     pub feed: Option<OptionsFeed>,
     pub currency: Option<String>,
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
 }
 
 #[derive(Default)]
@@ -100,7 +101,7 @@ pub struct OptionTradesRequest {
     pub limit: Option<u32>,
     pub feed: Option<OptionsFeed>,
     pub currency: Option<String>,
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
 }
 
 #[derive(Default)]

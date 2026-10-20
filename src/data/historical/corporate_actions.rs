@@ -1,4 +1,5 @@
 use crate::common::client::{base_url, RestClient};
+use crate::common::enums::Sort;
 use crate::data::models::CorporateActionsSet;
 use crate::error::AlpacaError;
 use chrono::NaiveDate;
@@ -31,7 +32,7 @@ pub struct CorporateActionsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
 }

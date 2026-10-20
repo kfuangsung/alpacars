@@ -283,7 +283,6 @@ pub struct Subscription {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
     pub portfolio_id: Option<Uuid>,
-    pub status: Option<String>,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
     pub last_rebalanced_at: Option<DateTime<Utc>>,
@@ -299,7 +298,7 @@ pub struct RebalancingRun {
     #[serde(rename = "type")]
     pub run_type: Option<RunType>,
     pub initiated_from: Option<RunInitiatedFrom>,
-    pub status: Option<String>,
+    pub status: Option<RunStatus>,
     pub reason: Option<String>,
     pub weights: Option<Vec<PortfolioWeight>>,
     pub created_at: Option<DateTime<Utc>>,

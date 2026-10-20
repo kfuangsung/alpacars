@@ -1,7 +1,7 @@
 mod common;
 
 use alpacars::broker::requests::GetAccountActivitiesRequest as BrokerActivitiesRequest;
-use alpacars::trading::enums::ActivityType;
+use alpacars::trading::enums::{ActivityCategory, ActivityType};
 use alpacars::trading::models::AccountActivity;
 use alpacars::trading::requests::GetAccountActivitiesRequest;
 use serde_json::json;
@@ -126,7 +126,7 @@ async fn test_broker_get_account_activities_path_and_query() {
     let filter = BrokerActivitiesRequest {
         account_id: Some(ACCOUNT_ID.parse().unwrap()),
         activity_types: Some(vec![ActivityType::Fill]),
-        category: Some("trade_activity".to_string()),
+        category: Some(ActivityCategory::TradeActivity),
         ..Default::default()
     };
     let activities = client.get_account_activities(Some(&filter)).await.unwrap();

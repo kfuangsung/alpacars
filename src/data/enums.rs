@@ -96,6 +96,10 @@ pub enum MostActivesBy {
 pub enum MarketType {
     Stocks,
     Crypto,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

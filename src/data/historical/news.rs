@@ -1,4 +1,5 @@
 use crate::common::client::{base_url, RestClient};
+use crate::common::enums::Sort;
 use crate::data::models::{News, NewsSet};
 use crate::error::AlpacaError;
 use chrono::{DateTime, Utc};
@@ -15,7 +16,7 @@ pub struct NewsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub include_content: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]

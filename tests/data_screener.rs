@@ -99,4 +99,5 @@ async fn test_get_market_movers_defaults_to_stocks() {
         .await
         .unwrap();
     assert!(!movers.gainers.is_empty());
+    assert_eq!(movers.market_type, Some(MarketType::Stocks));
 }

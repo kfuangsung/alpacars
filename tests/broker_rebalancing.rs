@@ -9,7 +9,7 @@
 
 mod common;
 
-use alpacars::broker::enums::{PortfolioStatus, RunInitiatedFrom, RunType, WeightType};
+use alpacars::broker::enums::{PortfolioStatus, RunInitiatedFrom, RunStatus, RunType, WeightType};
 use alpacars::broker::requests::{
     CreatePortfolioRequest, CreateRunRequest, CreateSubscriptionRequest, GetPortfoliosRequest,
     GetRunsRequest, GetSubscriptionsRequest, PortfolioWeightRequest,
@@ -455,5 +455,6 @@ async fn test_get_run_by_id() {
     let client = common::broker_client(&server.uri());
     let run = client.get_run_by_id(&uuid(RUN_ID)).await.unwrap();
     assert_eq!(run.run_type, Some(RunType::FullRebalance));
+    assert_eq!(run.status, Some(RunStatus::CompletedSuccess));
     assert_eq!(run.skipped_orders.map(|o| o.len()), Some(1));
 }

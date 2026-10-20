@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `CorporateActionType` used lowercase wire values (`dividend`), but the API's are capitalized (`Dividend`, `Merger`, `Spinoff`, `Split`, and the missing `Reorg`). Every announcement's `ca_type` parsed as `Unknown`, and the `ca_types` filter sent values the API does not list.
+- `CorporateActionAnnouncement` required `id`, `corporate_action_id`, `ca_type`, `ca_sub_type` and `initiating_symbol`, though the reference marks none of them required and its own examples omit some. Neither reference example parsed. They are now `Option`, and the example's `corporate_actions_id` spelling is accepted as an alias. **Breaking** (field types).
+
 ### Changed
+- **Breaking:** `String` fields the reference defines as enums are typed:
+  - `sort` / `direction` on every list request is `common::enums::Sort`. The affected requests are Trading and Broker orders, account activities, `ListAccountsRequest`, `NewsRequest`, `CorporateActionsRequest`, and the stock, crypto and option bars / quotes / trades requests.
+  - `ListAccountsRequest`: `status` is `AccountStatus`, `entities` is `Vec<AccountEntity>`.
+  - `category` on both `GetAccountActivitiesRequest`s is `ActivityCategory`.
+  - `GetPortfolioHistoryRequest`: `intraday_reporting` is `IntradayReporting`, `pnl_reset` is `PnlReset`. `period` and `timeframe` stay free-form strings, as in the reference.
+  - `GetAssetsRequest.attributes` and `Asset.attributes` are `Vec<AssetAttribute>`.
+  - `GetCalendarRequest.date_type` is `CalendarDateType`.
+  - `GetCorporateAnnouncementsRequest.ca_types` is `Vec<CorporateActionType>`.
+  - `GetRunsRequest.status` and `RebalancingRun.status` are `RunStatus`.
+  - `Movers.market_type` is `MarketType`, which gains `Unknown`.
+  - `Vec` filters are still sent comma-separated. `CorporateActionsRequest.types` stays a `String`, because the reference lists its values only in prose.
+- **Breaking:** `Subscription.status` is removed; the reference's subscription has no such field.
+- `DocumentType` and `TradeDocumentType` no longer carry a `rename_all` that every variant overrode. The wire values are unchanged.
 - **Breaking:** `OptionHistoricalDataClient::get_option_chain` takes an `&OptionChainRequest` and returns a typed `OptionsSnapshotSet`, keyed by contract symbol, with every page fetched. It used to take `(underlying_symbol, feed)`, return raw JSON and stop at the first page, so a large chain came back truncated. `OptionChainRequest` has the reference's filters (`optionchain`): `feed`, `limit`, `updated_since`, `type` (`ContractType`), `strike_price_gte` / `strike_price_lte`, `expiration_date` / `expiration_date_gte` / `expiration_date_lte` and `root_symbol`.
 - **Breaking:** every response model struct (in `trading::models`, `broker::models` and `data::models`) is `#[non_exhaustive]`. Fields Alpaca adds to a response can now ship in patch releases instead of forcing a breaking one. You can still read every field and match with `Model { field, .. }`, but you can't build a model with a struct literal: deserialize it from JSON instead (for example in test mocks). `AccountConfiguration` stays constructible because it is also the body of `update_account_configurations`. `BankExtraFields` moved to `broker::requests` (it is a request field too) and is still re-exported from `broker::models`.
 - **Breaking:** `Trade`, `Quote`, `Bar` and `Orderbook` have a `symbol: String`, so a stream handler subscribed to several symbols can tell their events apart (`trade.symbol`), as in alpaca-py. Streams fill it from the message's `S`. Historical methods fill it from the response's map key, so it is set there too, including on the trades, quotes and bars nested in `Snapshot` and `OptionsSnapshot`. `Snapshot` gains `symbol` as well, and `OptionsSnapshot.symbol` is now a `String` (was `Option<String>`).

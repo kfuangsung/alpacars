@@ -151,7 +151,6 @@ pub enum AgreementType {
 
 /// `document_type` of an owner document (`POST /v1/accounts/{account_id}/documents/upload`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum DocumentType {
     #[serde(rename = "account_approval_letter")]
@@ -190,7 +189,6 @@ pub enum DocumentType {
 
 /// Type of an account document (`type` on `GET /v1/accounts/{account_id}/documents`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum TradeDocumentType {
     #[serde(rename = "account_statement")]
@@ -829,4 +827,37 @@ pub enum AcatsSortBy {
     TransferType,
     #[serde(rename = "updated_at")]
     UpdatedAt,
+}
+
+/// Entities `list_accounts` can include in each account (`entities`); omit for all of them.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum AccountEntity {
+    Agreements,
+    Contact,
+    Disclosures,
+    Documents,
+    Identity,
+    TradingConfigurations,
+    TrustedContact,
+}
+
+/// Status of a rebalancing run.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum RunStatus {
+    Queued,
+    InProgress,
+    Canceled,
+    CanceledMidRun,
+    Error,
+    Timeout,
+    CompletedAdjusted,
+    CompletedSuccess,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }

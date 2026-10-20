@@ -1,3 +1,4 @@
+use crate::common::enums::Sort;
 use crate::trading::enums::*;
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
@@ -247,7 +248,7 @@ pub struct GetOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub until: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub direction: Option<String>,
+    pub direction: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nested: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -307,13 +308,13 @@ pub struct GetPortfolioHistoryRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timeframe: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub intraday_reporting: Option<String>,
+    pub intraday_reporting: Option<IntradayReporting>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub end: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pnl_reset: Option<String>,
+    pub pnl_reset: Option<PnlReset>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -325,7 +326,8 @@ pub struct GetAssetsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exchange: Option<AssetExchange>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attributes: Option<String>,
+    /// Assets with any of these attributes, sent comma-separated.
+    pub attributes: Option<Vec<AssetAttribute>>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -335,7 +337,7 @@ pub struct GetCalendarRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub end: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub date_type: Option<String>,
+    pub date_type: Option<CalendarDateType>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -355,7 +357,8 @@ pub struct UpdateWatchlistRequest {
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetCorporateAnnouncementsRequest {
-    pub ca_types: String,
+    /// Sent comma-separated.
+    pub ca_types: Vec<CorporateActionType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub since: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -466,7 +469,7 @@ pub struct GetAccountActivitiesRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub after: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub direction: Option<String>,
+    pub direction: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_size: Option<u32>,
     /// The `id` of the last activity on the previous page (`"<timestamp>::<uuid>"` format).
@@ -474,7 +477,7 @@ pub struct GetAccountActivitiesRequest {
     pub page_token: Option<String>,
     /// `trade_activity` or `non_trade_activity`. Mutually exclusive with `activity_types`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub category: Option<String>,
+    pub category: Option<ActivityCategory>,
 }
 
 /// Request to convert underlying equity into a tokenized asset.
