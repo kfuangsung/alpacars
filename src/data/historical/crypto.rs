@@ -18,7 +18,7 @@ struct CryptoBarsParams {
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip)]
     pub loc: Option<CryptoFeed>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
@@ -42,14 +42,14 @@ struct CryptoQuotesParams {
 #[derive(Debug, Clone, Serialize, Default)]
 struct CryptoLatestParams {
     pub symbols: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip)]
     pub loc: Option<CryptoFeed>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
 struct CryptoSnapshotParams {
     pub symbols: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip)]
     pub loc: Option<CryptoFeed>,
 }
 
@@ -150,8 +150,38 @@ impl CryptoHistoricalDataClient {
         })
     }
 
+    /// Create a client pointed at a custom base URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(
+        api_key: &str,
+        secret_key: &str,
+        base_url: &str,
+    ) -> Result<Self, AlpacaError> {
+        Ok(Self {
+            client: RestClient::new(
+                Some(api_key.to_string()),
+                Some(secret_key.to_string()),
+                None,
+                base_url.to_string(),
+                "v1beta3".to_string(),
+                false,
+            )?,
+        })
+    }
+
     fn syms(symbols: &[String]) -> String {
         symbols.join(",")
+    }
+
+    /// The location is a path segment (`/v1beta3/crypto/{loc}/...`); defaults to `us`.
+    fn loc_segment(loc: &Option<CryptoFeed>) -> &'static str {
+        match loc {
+            Some(CryptoFeed::Us1) => "us-1",
+            Some(CryptoFeed::Us2) => "us-2",
+            Some(CryptoFeed::Eu1) => "eu-1",
+            Some(CryptoFeed::Bs1) => "bs-1",
+            _ => "us",
+        }
     }
 
     pub async fn get_crypto_bars(&self, req: &CryptoBarsRequest) -> Result<BarSet, AlpacaError> {
@@ -169,7 +199,13 @@ impl CryptoHistoricalDataClient {
 
         let mut result: BarSet = HashMap::new();
         loop {
-            let resp: PagedBars = self.client.get("/crypto/us/bars", Some(&params)).await?;
+            let resp: PagedBars = self
+                .client
+                .get(
+                    &format!("/crypto/{}/bars", Self::loc_segment(&params.loc)),
+                    Some(&params),
+                )
+                .await?;
             if let Some(bars) = resp.bars {
                 for (sym, b) in bars {
                     result.entry(sym).or_default().extend(b);
@@ -251,7 +287,10 @@ impl CryptoHistoricalDataClient {
         };
         let resp: LatestTradesResp = self
             .client
-            .get("/crypto/us/latest/trades", Some(&params))
+            .get(
+                &format!("/crypto/{}/latest/trades", Self::loc_segment(&params.loc)),
+                Some(&params),
+            )
             .await?;
         Ok(resp.trades.unwrap_or_default())
     }
@@ -266,7 +305,10 @@ impl CryptoHistoricalDataClient {
         };
         let resp: LatestQuotesResp = self
             .client
-            .get("/crypto/us/latest/quotes", Some(&params))
+            .get(
+                &format!("/crypto/{}/latest/quotes", Self::loc_segment(&params.loc)),
+                Some(&params),
+            )
             .await?;
         Ok(resp.quotes.unwrap_or_default())
     }
@@ -281,7 +323,10 @@ impl CryptoHistoricalDataClient {
         };
         let resp: LatestBarsResp = self
             .client
-            .get("/crypto/us/latest/bars", Some(&params))
+            .get(
+                &format!("/crypto/{}/latest/bars", Self::loc_segment(&params.loc)),
+                Some(&params),
+            )
             .await?;
         Ok(resp.bars.unwrap_or_default())
     }
@@ -296,7 +341,13 @@ impl CryptoHistoricalDataClient {
         };
         let resp: LatestOrderbooksResp = self
             .client
-            .get("/crypto/us/latest/orderbooks", Some(&params))
+            .get(
+                &format!(
+                    "/crypto/{}/latest/orderbooks",
+                    Self::loc_segment(&params.loc)
+                ),
+                Some(&params),
+            )
             .await?;
         Ok(resp.orderbooks.unwrap_or_default())
     }
@@ -311,7 +362,10 @@ impl CryptoHistoricalDataClient {
         };
         let resp: CryptoSnapshotsResp = self
             .client
-            .get("/crypto/us/snapshots", Some(&params))
+            .get(
+                &format!("/crypto/{}/snapshots", Self::loc_segment(&params.loc)),
+                Some(&params),
+            )
             .await?;
         Ok(resp.snapshots.or(resp.direct).unwrap_or_default())
     }
