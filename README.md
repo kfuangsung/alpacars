@@ -60,7 +60,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-alpacars = "0.6"
+alpacars = "0.7"
 ```
 
 > **Minimum Rust version:** 1.89 — enforced by a dedicated CI job.
@@ -88,7 +88,7 @@ Obtain API keys from the [Alpaca dashboard](https://app.alpaca.markets). 🖥️
 
 ### Trading API
 
-```rust
+```rust,no_run
 use alpacars::trading::client::TradingClient;
 use alpacars::trading::enums::{OrderSide, TimeInForce};
 use alpacars::trading::requests::OrderRequest;
@@ -128,7 +128,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ### Broker API
 
-```rust
+```rust,no_run
 use alpacars::broker::client::BrokerClient;
 use alpacars::broker::requests::ListAccountsRequest;
 
@@ -146,7 +146,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ### Market Data — Historical
 
-```rust
+```rust,no_run
 use alpacars::data::historical::stock::{StockBarsRequest, StockHistoricalDataClient};
 use alpacars::data::historical::crypto::{CryptoBarsRequest, CryptoHistoricalDataClient};
 
@@ -187,7 +187,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ### Market Data — Live Streaming
 
-```rust
+```rust,no_run
 use alpacars::data::live::stock::StockDataStream;
 use alpacars::data::enums::DataFeed;
 
@@ -196,12 +196,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 📡 Connect to live stock stream
     let mut stream = StockDataStream::new("API_KEY", "SECRET_KEY", DataFeed::Iex);
 
-    stream.subscribe_trades(["AAPL", "TSLA"], |trade| {
-        println!("🔔 Trade: {} @ ${} x {}", trade.symbol, trade.price, trade.size);
+    // Handlers receive the event without its symbol, so subscribe one symbol per handler
+    // when you need to tell them apart.
+    stream.subscribe_trades(["AAPL"], |trade| {
+        println!("🔔 AAPL trade @ ${} x {}", trade.price, trade.size);
     });
 
     stream.subscribe_quotes(["AAPL"], |quote| {
-        println!("💬 Quote: {} bid={} ask={}", quote.symbol, quote.bid_price, quote.ask_price);
+        println!("💬 AAPL bid={} ask={}", quote.bid_price, quote.ask_price);
     });
 
     stream.run().await?; // blocks until stream ends or error
@@ -212,7 +214,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 Real-time trade updates (fills, order status changes):
 
-```rust
+```rust,no_run
 use alpacars::trading::stream::TradingStream;
 
 #[tokio::main]
