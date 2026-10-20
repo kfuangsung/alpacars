@@ -254,6 +254,18 @@ pub struct GetOrdersRequest {
     pub symbols: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub side: Option<OrderSide>,
+    /// Only orders in these asset classes, sent comma-separated. Omit for all classes. With
+    /// `us_option`, `symbols` filters option orders by underlying.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub asset_class: Option<Vec<AssetClass>>,
+    /// Orders submitted before this order (exclusive). Do not combine with `after_order_id`,
+    /// `after` or `until`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub before_order_id: Option<Uuid>,
+    /// Orders submitted after this order (exclusive). Do not combine with `before_order_id`,
+    /// `after` or `until`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub after_order_id: Option<Uuid>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]

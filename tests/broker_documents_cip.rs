@@ -39,6 +39,7 @@ async fn test_get_trade_documents_for_account() {
     Mock::given(method("GET"))
         .and(path(format!("/v1/accounts/{ACCOUNT_ID}/documents")))
         .and(query_param("start", "2019-01-01"))
+        .and(query_param("type", "account_statement"))
         .respond_with(ResponseTemplate::new(200).set_body_string(
             r#"[{"date": "2019-09-30", "id": "0d18ae51-3c94-4511-b209-101e1666416b",
                  "sub_type": "1099-Comp", "type": "account_statement"}]"#,
@@ -51,6 +52,7 @@ async fn test_get_trade_documents_for_account() {
     let filter = alpacars::broker::requests::GetTradeDocumentsRequest {
         start: Some(chrono::NaiveDate::from_ymd_opt(2019, 1, 1).unwrap()),
         end: None,
+        r#type: Some(TradeDocumentType::AccountStatement),
     };
     let docs = client
         .get_trade_documents_for_account(&account(), Some(&filter))

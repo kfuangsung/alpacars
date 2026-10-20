@@ -35,6 +35,8 @@ struct CryptoQuotesParams {
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<String>,
+    #[serde(skip)]
+    pub loc: Option<CryptoFeed>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
 }
@@ -66,6 +68,7 @@ pub struct CryptoBarsRequest {
     pub loc: Option<CryptoFeed>,
 }
 
+/// Request for crypto quotes or trades.
 #[derive(Default)]
 pub struct CryptoQuotesRequest {
     pub symbols: Vec<String>,
@@ -73,6 +76,7 @@ pub struct CryptoQuotesRequest {
     pub end: Option<DateTime<Utc>>,
     pub limit: Option<u32>,
     pub sort: Option<String>,
+    pub loc: Option<CryptoFeed>,
 }
 
 #[derive(Default)]
@@ -229,12 +233,19 @@ impl CryptoHistoricalDataClient {
             end: req.end,
             limit: Some(req.limit.unwrap_or(DATA_V2_MAX_LIMIT)),
             sort: req.sort.clone(),
+            loc: req.loc.clone(),
             page_token: None,
         };
 
         let mut result: QuoteSet = HashMap::new();
         loop {
-            let resp: PagedQuotes = self.client.get("/crypto/us/quotes", Some(&params)).await?;
+            let resp: PagedQuotes = self
+                .client
+                .get(
+                    &format!("/crypto/{}/quotes", Self::loc_segment(&params.loc)),
+                    Some(&params),
+                )
+                .await?;
             if let Some(quotes) = resp.quotes {
                 for (sym, q) in quotes {
                     result.entry(sym).or_default().extend(q);
@@ -258,12 +269,19 @@ impl CryptoHistoricalDataClient {
             end: req.end,
             limit: Some(req.limit.unwrap_or(DATA_V2_MAX_LIMIT)),
             sort: req.sort.clone(),
+            loc: req.loc.clone(),
             page_token: None,
         };
 
         let mut result: TradeSet = HashMap::new();
         loop {
-            let resp: PagedTrades = self.client.get("/crypto/us/trades", Some(&params)).await?;
+            let resp: PagedTrades = self
+                .client
+                .get(
+                    &format!("/crypto/{}/trades", Self::loc_segment(&params.loc)),
+                    Some(&params),
+                )
+                .await?;
             if let Some(trades) = resp.trades {
                 for (sym, t) in trades {
                     result.entry(sym).or_default().extend(t);

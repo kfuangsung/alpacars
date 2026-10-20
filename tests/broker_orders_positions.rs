@@ -6,7 +6,7 @@
 mod common;
 
 use alpacars::broker::requests::GetOrdersForAccountRequest;
-use alpacars::trading::enums::{OrderSide, QueryOrderStatus};
+use alpacars::trading::enums::{AssetClass, OrderSide, QueryOrderStatus};
 use alpacars::trading::requests::{ClosePositionRequest, OrderRequest, ReplaceOrderRequest};
 use uuid::Uuid;
 use wiremock::matchers::{body_partial_json, method, path, query_param, query_param_is_missing};
@@ -131,6 +131,36 @@ async fn test_get_orders_for_account() {
     let client = common::broker_client(&server.uri());
     let filter = GetOrdersForAccountRequest {
         status: Some(QueryOrderStatus::Open),
+        ..Default::default()
+    };
+    let orders = client
+        .get_orders_for_account(&account(), Some(&filter))
+        .await
+        .unwrap();
+    assert_eq!(orders.len(), 1);
+}
+
+/// getallordersforaccount: asset_class (comma-separated array), qty_above / qty_below, subtag.
+#[tokio::test]
+async fn test_get_orders_for_account_filters() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path(format!("{}/orders", base())))
+        .and(query_param("asset_class", "us_equity,us_option"))
+        .and(query_param("qty_above", "1"))
+        .and(query_param("qty_below", "100"))
+        .and(query_param("subtag", "desk-7"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{ORDER_JSON}]")))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    let filter = GetOrdersForAccountRequest {
+        asset_class: Some(vec![AssetClass::UsEquity, AssetClass::UsOption]),
+        qty_above: Some("1".to_string()),
+        qty_below: Some("100".to_string()),
+        subtag: Some("desk-7".to_string()),
         ..Default::default()
     };
     let orders = client

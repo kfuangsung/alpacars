@@ -1,7 +1,7 @@
 mod common;
 
 use alpacars::trading::enums::{
-    AdvancedAlgorithm, OrderDestination, OrderSide, OrderStatus, TimeInForce,
+    AdvancedAlgorithm, AssetClass, OrderDestination, OrderSide, OrderStatus, TimeInForce,
 };
 use alpacars::trading::models::{CancelOrderResponse, Order};
 use alpacars::trading::requests::{
@@ -9,7 +9,7 @@ use alpacars::trading::requests::{
 };
 
 use uuid::Uuid;
-use wiremock::matchers::{method, path};
+use wiremock::matchers::{method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 const ORDER_JSON: &str = r#"{
@@ -105,6 +105,32 @@ async fn test_get_orders() {
     assert_eq!(orders.len(), 1);
     assert!(matches!(orders[0], Order { .. }));
     assert_eq!(orders[0].symbol.as_deref(), Some("AAPL"));
+}
+
+/// getallorders-1: `asset_class` is a comma-separated array; `before_order_id` pages by order.
+#[tokio::test]
+async fn test_get_orders_asset_class_and_order_cursor() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path("/v2/orders"))
+        .and(query_param("asset_class", "us_option,crypto"))
+        .and(query_param(
+            "before_order_id",
+            "61e69015-8549-4bfd-b9c3-01e75843f47d",
+        ))
+        .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{}]", ORDER_JSON)))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    let req = GetOrdersRequest {
+        asset_class: Some(vec![AssetClass::UsOption, AssetClass::Crypto]),
+        before_order_id: Some("61e69015-8549-4bfd-b9c3-01e75843f47d".parse().unwrap()),
+        ..Default::default()
+    };
+    let orders = client.get_orders(Some(&req)).await.unwrap();
+    assert_eq!(orders.len(), 1);
 }
 
 #[tokio::test]
