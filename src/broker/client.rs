@@ -82,15 +82,25 @@ impl BrokerClient {
             .await
     }
 
+    /// The Broker API has no `DELETE /v1/accounts/{account_id}` endpoint, so this call cannot
+    /// succeed. Use [`close_account`](Self::close_account).
+    #[deprecated(
+        since = "0.6.1",
+        note = "the Broker API has no account DELETE endpoint; use close_account"
+    )]
     pub async fn delete_account(&self, account_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
             .delete_void(&format!("/accounts/{}", account_id), None::<&()>)
             .await
     }
 
+    /// Close an account (`POST /v1/accounts/{account_id}/actions/close`).
     pub async fn close_account(&self, account_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
-            .post_void(&format!("/accounts/{}:close", account_id), None::<&()>)
+            .post_void(
+                &format!("/accounts/{}/actions/close", account_id),
+                None::<&()>,
+            )
             .await
     }
 
@@ -101,20 +111,32 @@ impl BrokerClient {
         self.client.get("/accounts", filter).await
     }
 
-    pub async fn get_trade_account_by_id(
+    /// Trading details (balances, buying power, configuration) for an account
+    /// (`GET /v1/trading/accounts/{account_id}/account`).
+    pub async fn get_trading_account(
         &self,
         account_id: &Uuid,
-        trading_account_id: &Uuid,
     ) -> Result<TradeAccount, AlpacaError> {
         self.client
             .get(
-                &format!(
-                    "/accounts/{}/trading_accounts/{}",
-                    account_id, trading_account_id
-                ),
+                &format!("/trading/accounts/{}/account", account_id),
                 None::<&()>,
             )
             .await
+    }
+
+    /// Calls [`get_trading_account`](Self::get_trading_account). The endpoint takes only the
+    /// account id; `trading_account_id` is ignored.
+    #[deprecated(
+        since = "0.6.1",
+        note = "use get_trading_account; the endpoint takes no trading_account_id"
+    )]
+    pub async fn get_trade_account_by_id(
+        &self,
+        account_id: &Uuid,
+        _trading_account_id: &Uuid,
+    ) -> Result<TradeAccount, AlpacaError> {
+        self.get_trading_account(account_id).await
     }
 
     // ── Agreements ────────────────────────────────────────────────────────────
