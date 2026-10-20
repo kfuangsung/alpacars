@@ -149,47 +149,118 @@ pub enum AgreementType {
     Unknown,
 }
 
+/// `document_type` of an owner document (`POST /v1/accounts/{account_id}/documents/upload`).
+///
+/// Variants without an explicit rename (`DriversLicense`, `Passport`, …) are not valid
+/// `document_type` values — values such as `passport` belong in `document_sub_type`. They will be
+/// removed in 0.7.0.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum DocumentType {
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     DriversLicense,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     NationalIdCard,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     Passport,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     PassportCard,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     VisaPermit,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     ResidencePermit,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     TaxReturn,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     FinancialStatement,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     BankStatement,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     FundSource,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     AccountTransferIn,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     LimitedPoa,
+    /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     Other,
+    // Added in 0.6.1. Explicit discriminants keep every pre-existing variant, including
+    // `Unknown` (which serde requires to stay last), at its 0.6.0 value.
+    #[serde(rename = "account_approval_letter")]
+    AccountApprovalLetter = 14,
+    #[serde(rename = "address_verification")]
+    AddressVerification = 15,
+    #[serde(rename = "cip_result")]
+    CipResult = 16,
+    #[serde(rename = "company_formation")]
+    CompanyFormation = 17,
+    #[serde(rename = "date_of_birth_verification")]
+    DateOfBirthVerification = 18,
+    #[serde(rename = "entity_operating_document")]
+    EntityOperatingDocument = 19,
+    #[serde(rename = "entity_registration")]
+    EntityRegistration = 20,
+    #[serde(rename = "hio_declaration_form")]
+    HioDeclarationForm = 21,
+    #[serde(rename = "identity_verification")]
+    IdentityVerification = 22,
+    #[serde(rename = "limited_trading_authorization")]
+    LimitedTradingAuthorization = 23,
+    #[serde(rename = "pep_declaration_form")]
+    PepDeclarationForm = 24,
+    #[serde(rename = "tax_id_verification")]
+    TaxIdVerification = 25,
+    #[serde(rename = "w8ben")]
+    W8ben = 26,
+    #[serde(rename = "w9")]
+    W9 = 27,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
-    Unknown,
+    Unknown = 13,
 }
 
+/// Type of an account document (`type` on `GET /v1/accounts/{account_id}/documents`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum TradeDocumentType {
+    #[serde(rename = "account_statement")]
     AccountStatement,
+    #[serde(rename = "trade_confirmation")]
     TradeConfirmation,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099B,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099Div,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099Int,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099Misc,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxForm1099R,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxFormW8ben,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxFormW8bene,
+    /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxFormW9,
+    // Added in 0.6.1. Explicit discriminants keep every pre-existing variant, including
+    // `Unknown` (which serde requires to stay last), at its 0.6.0 value.
+    #[serde(rename = "account_application")]
+    AccountApplication = 11,
+    #[serde(rename = "crypto_account_statement")]
+    CryptoAccountStatement = 12,
+    #[serde(rename = "options_application")]
+    OptionsApplication = 13,
+    #[serde(rename = "tax_statement")]
+    TaxStatement = 14,
+    #[serde(rename = "trade_confirmation_json")]
+    TradeConfirmationJson = 15,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
-    Unknown,
+    Unknown = 10,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

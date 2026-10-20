@@ -180,6 +180,34 @@ impl BrokerClient {
             .await
     }
 
+    /// Download an account document's PDF (`GET /v1/accounts/{account_id}/documents/{document_id}/download`).
+    ///
+    /// The API answers with a redirect to a pre-signed link, which is followed; the API's
+    /// `Authorization` header is not forwarded to the file host.
+    pub async fn download_trade_document_for_account(
+        &self,
+        account_id: &Uuid,
+        document_id: &Uuid,
+    ) -> Result<Vec<u8>, AlpacaError> {
+        self.client
+            .get_bytes(
+                &format!(
+                    "/accounts/{}/documents/{}/download",
+                    account_id, document_id
+                ),
+                None::<&()>,
+            )
+            .await
+    }
+
+    /// The Broker API has no JSON endpoint for a single account document, so this call cannot
+    /// succeed. Find the document with
+    /// [`get_trade_documents_for_account`](Self::get_trade_documents_for_account) and fetch its
+    /// file with [`download_trade_document_for_account`](Self::download_trade_document_for_account).
+    #[deprecated(
+        since = "0.6.1",
+        note = "no such endpoint; use get_trade_documents_for_account and download_trade_document_for_account"
+    )]
     pub async fn get_trade_document_for_account_by_id(
         &self,
         account_id: &Uuid,
@@ -200,17 +228,22 @@ impl BrokerClient {
         account_id: &Uuid,
     ) -> Result<CIPInfo, AlpacaError> {
         self.client
-            .get(&format!("/accounts/{}/cip_data", account_id), None::<&()>)
+            .get(&format!("/accounts/{}/cip", account_id), None::<&()>)
             .await
     }
 
+    /// Submit CIP results from your KYC provider (`POST /v1/accounts/{account_id}/cip`).
+    ///
+    /// The API reference documents a `200` response without specifying its body. If Alpaca
+    /// returns an empty body, this method reports a deserialization error even though the
+    /// upload succeeded.
     pub async fn upload_cip_data_for_account_by_id(
         &self,
         account_id: &Uuid,
         data: &serde_json::Value,
     ) -> Result<CIPInfo, AlpacaError> {
         self.client
-            .post(&format!("/accounts/{}/cip_data", account_id), Some(data))
+            .post(&format!("/accounts/{}/cip", account_id), Some(data))
             .await
     }
 

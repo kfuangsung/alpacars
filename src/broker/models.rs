@@ -124,7 +124,11 @@ pub struct Account {
 pub struct TradeDocument {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
+    /// The API's key is `type`; `document_type` is still accepted.
+    #[serde(alias = "type")]
     pub document_type: Option<TradeDocumentType>,
+    /// The API's key is `sub_type` (e.g. `1099-Comp`); `document_sub_type` is still accepted.
+    #[serde(alias = "sub_type")]
     pub document_sub_type: Option<String>,
     pub name: Option<String>,
     pub date: Option<NaiveDate>,
