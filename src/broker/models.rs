@@ -197,9 +197,13 @@ pub struct BatchJournalResponse {
     pub journals: Vec<Journal>,
 }
 
+/// One allocation in a portfolio or run, as returned by the API.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PortfolioAsset {
-    pub symbol: String,
+pub struct PortfolioWeight {
+    #[serde(rename = "type")]
+    pub weight_type: WeightType,
+    /// `None` for a cash weight.
+    pub symbol: Option<String>,
     pub percent: String,
 }
 
@@ -212,7 +216,9 @@ pub struct Portfolio {
     pub cooldown_days: Option<u32>,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
-    pub assets: Option<Vec<PortfolioAsset>>,
+    pub weights: Option<Vec<PortfolioWeight>>,
+    /// The reference leaves this shape loosely specified, so it is kept as raw JSON.
+    pub rebalancing_conditions: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -223,17 +229,25 @@ pub struct Subscription {
     pub status: Option<String>,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
+    pub last_rebalanced_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RebalancingRun {
     pub id: Uuid,
+    pub account_id: Option<Uuid>,
+    /// `None` for a manual (one-off) run, which carries its own `weights`.
     pub portfolio_id: Option<Uuid>,
+    #[serde(rename = "type")]
+    pub run_type: Option<RunType>,
+    pub initiated_from: Option<RunInitiatedFrom>,
     pub status: Option<String>,
     pub reason: Option<String>,
+    pub weights: Option<Vec<PortfolioWeight>>,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
     pub completed_at: Option<DateTime<Utc>>,
+    pub canceled_at: Option<DateTime<Utc>>,
     pub orders: Option<Vec<Order>>,
     pub failed_orders: Option<Vec<serde_json::Value>>,
     pub skipped_orders: Option<Vec<serde_json::Value>>,

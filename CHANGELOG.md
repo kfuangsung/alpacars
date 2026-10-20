@@ -29,6 +29,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ActivityType` was serialized in snake_case (`fill`, `jnlc`); Alpaca's values are uppercase (`FILL`, `JNLC`). Activity filters were sent with values the API does not recognize, and `TradeActivity`/`NonTradeActivity` failed to deserialize any real activity.
 - `BrokerClient::get_account_activities` called `/v1/accounts/{account_id}/account_activities`, which does not exist; the endpoint is `/v1/accounts/activities` with `account_id` as a query parameter.
 - `AccountActivity` was `#[serde(untagged)]` with `Trade` tried first, and both shapes only require `id` and `activity_type`, so every activity — dividends, journals, fees — deserialized as `Trade`. It now selects the variant from `activity_type` (`FILL` is the only trade activity).
+- **Breaking**: Broker rebalancing request bodies did not match the API, so `create_portfolio` and `create_manual_run` were rejected. Verified against the Create Portfolio / Create Run / Portfolio / List Runs references:
+  - `CreatePortfolioRequest.assets: Vec<serde_json::Value>` → `weights: Vec<PortfolioWeightRequest>` (`type`, optional `symbol`, `percent`).
+  - `CreateRunRequest { portfolio_id, account_id? }` → `{ account_id, run_type, amount?, weights? }`. The API has no `portfolio_id` on this request and requires `type` (`RunType::FullRebalance` / `InvestCash`). Omit `weights` for a subscription-driven run; pass them for a manual one-off run.
+  - `Portfolio.assets` (and `PortfolioAsset`) → `weights: Option<Vec<PortfolioWeight>>`; the old field never matched the response and was always `None`. `Portfolio` also gains `rebalancing_conditions`.
+  - `RebalancingRun` gains `account_id`, `run_type`, `initiated_from`, `weights`, `canceled_at`; `Subscription` gains `last_rebalanced_at`; `GetRunsRequest.run_type` is now `Option<RunType>`.
+  - New enums `WeightType`, `RunType`, `RunInitiatedFrom`.
+- **Breaking**: Broker batch journal request shapes, per the Create Batch Journal / Reverse Batch Journal references:
+  - `CreateReverseBatchJournalRequest` takes a single top-level `to_account`, and `ReverseBatchJournalEntry` is now `{ from_account, amount, description? }` — previously each entry carried a `to_account`, which the many-to-one endpoint does not accept.
+  - `BatchJournalEntryRequest.amount` is `Option<String>` (the API allows `null`), and the entry gains `currency`, `symbol`, `qty` and the `transmitter_*` travel-rule fields. `CreateBatchJournalRequest` gains `correspondent`.
 
 ## [0.5.1] - 2026-10-20
 

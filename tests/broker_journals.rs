@@ -7,7 +7,7 @@ use alpacars::broker::requests::{
 };
 use serde_json::json;
 use uuid::Uuid;
-use wiremock::matchers::{body_partial_json, method, path, query_param};
+use wiremock::matchers::{body_json, body_partial_json, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 const FROM_ACCOUNT: &str = "8f8c8cee-2591-4f83-be12-82c659b5e748";
@@ -140,7 +140,13 @@ async fn test_create_batch_journal_path() {
 
     Mock::given(method("POST"))
         .and(path("/v1/journals/batch"))
-        .and(body_partial_json(json!({"entry_type": "JNLC"})))
+        // Shape per the BatchJournalRequest schema (createbatchjournal reference).
+        .and(body_json(json!({
+            "entry_type": "JNLC",
+            "from_account": FROM_ACCOUNT,
+            "correspondent": "ABCD",
+            "entries": [{"to_account": TO_ACCOUNT, "amount": "1000", "currency": "USD"}]
+        })))
         .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{JNLC_JSON}]")))
         .expect(1)
         .mount(&server)
@@ -152,9 +158,18 @@ async fn test_create_batch_journal_path() {
         entry_type: JournalEntryType::Cash,
         entries: vec![BatchJournalEntryRequest {
             to_account: uuid(TO_ACCOUNT),
-            amount: "1000".to_string(),
+            amount: Some("1000".to_string()),
+            currency: Some("USD".to_string()),
+            symbol: None,
+            qty: None,
             description: None,
+            transmitter_name: None,
+            transmitter_account_number: None,
+            transmitter_address: None,
+            transmitter_financial_institution: None,
+            transmitter_timestamp: None,
         }],
+        correspondent: Some("ABCD".to_string()),
     };
     let journals = client.create_batch_journal(&req).await.unwrap();
 
@@ -168,7 +183,13 @@ async fn test_create_reverse_batch_journal_path() {
 
     Mock::given(method("POST"))
         .and(path("/v1/journals/reverse_batch"))
-        .and(body_partial_json(json!({"entry_type": "JNLC"})))
+        // Many-to-one: one top-level to_account, each entry carries its from_account
+        // (post-v1-journals-reverse_batch reference).
+        .and(body_json(json!({
+            "entry_type": "JNLC",
+            "to_account": TO_ACCOUNT,
+            "entries": [{"from_account": FROM_ACCOUNT, "amount": "1000"}]
+        })))
         .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{JNLC_JSON}]")))
         .expect(1)
         .mount(&server)
@@ -177,10 +198,11 @@ async fn test_create_reverse_batch_journal_path() {
     let client = common::broker_client(&server.uri());
     let req = CreateReverseBatchJournalRequest {
         entry_type: JournalEntryType::Cash,
+        to_account: uuid(TO_ACCOUNT),
         entries: vec![ReverseBatchJournalEntry {
-            to_account: uuid(TO_ACCOUNT),
             from_account: uuid(FROM_ACCOUNT),
             amount: "1000".to_string(),
+            description: None,
         }],
     };
     let journals = client.create_reverse_batch_journal(&req).await.unwrap();
