@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Endpoints the crate lacked, checked against the Trading spec and Broker references:
+  - `TradingClient`: `get_account_activities_by_type` (`/v2/account/activities/{activity_type}`), `do_not_exercise_options_position`, `get_watchlist_by_name` / `add_asset_to_watchlist_by_name` / `update_watchlist_by_name` / `delete_watchlist_by_name` (`/v2/watchlists:by_name`), and `get_market_calendar(market, …)` (`GET /v3/calendar/{market}`: pre-, core- and post-market sessions; `market` is a MIC, BIC or acronym such as `XNYS`) with new `MarketCalendar`, `Market`, `MarketCalendarDay` and `GetMarketCalendarRequest`.
+  - `BrokerClient`: `get_account_activities_by_type`, `do_not_exercise_options_position_for_account`, `get_order_for_account_by_client_order_id`, and `estimate_order_for_account` with `EstimateOrderRequest`.
+- `RestClient::post_with_query` / `put_with_query`, for endpoints that take both a query string and a body.
 - `CryptoFeed::{Us1, Us2, Eu1, Bs1}` — the other crypto market data locations in the reference (`us-1`, `us-2`, `eu-1`, `bs-1`).
 - `#[doc(hidden)] new_with_url` on `CryptoHistoricalDataClient`, `NewsClient` and `ScreenerClient`, so every historical data client can now be tested; tests for all four of crypto, news, screener and options.
 - `#[doc(hidden)] TradingStream::new_with_url`, and the first end-to-end test of the trading stream.
