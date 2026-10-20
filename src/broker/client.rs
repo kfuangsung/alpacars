@@ -518,7 +518,10 @@ impl BrokerClient {
         account_id: &Uuid,
     ) -> Result<Vec<Watchlist>, AlpacaError> {
         self.client
-            .get(&format!("/accounts/{}/watchlists", account_id), None::<&()>)
+            .get(
+                &format!("/trading/accounts/{}/watchlists", account_id),
+                None::<&()>,
+            )
             .await
     }
 
@@ -529,22 +532,31 @@ impl BrokerClient {
     ) -> Result<Watchlist, AlpacaError> {
         self.client
             .get(
-                &format!("/accounts/{}/watchlists/{}", account_id, watchlist_id),
+                &format!(
+                    "/trading/accounts/{}/watchlists/{}",
+                    account_id, watchlist_id
+                ),
                 None::<&()>,
             )
             .await
     }
 
+    /// The Broker API requires `symbols` (it may be empty) as well as `name`.
     pub async fn create_watchlist_for_account(
         &self,
         account_id: &Uuid,
         data: &CreateWatchlistRequest,
     ) -> Result<Watchlist, AlpacaError> {
         self.client
-            .post(&format!("/accounts/{}/watchlists", account_id), Some(data))
+            .post(
+                &format!("/trading/accounts/{}/watchlists", account_id),
+                Some(data),
+            )
             .await
     }
 
+    /// Replaces the watchlist: the Broker API requires both `name` and `symbols`, so set both
+    /// on the request even when only one changes.
     pub async fn update_watchlist_for_account_by_id(
         &self,
         account_id: &Uuid,
@@ -553,7 +565,10 @@ impl BrokerClient {
     ) -> Result<Watchlist, AlpacaError> {
         self.client
             .put(
-                &format!("/accounts/{}/watchlists/{}", account_id, watchlist_id),
+                &format!(
+                    "/trading/accounts/{}/watchlists/{}",
+                    account_id, watchlist_id
+                ),
                 Some(data),
             )
             .await
@@ -566,7 +581,10 @@ impl BrokerClient {
     ) -> Result<(), AlpacaError> {
         self.client
             .delete_void(
-                &format!("/accounts/{}/watchlists/{}", account_id, watchlist_id),
+                &format!(
+                    "/trading/accounts/{}/watchlists/{}",
+                    account_id, watchlist_id
+                ),
                 None::<&()>,
             )
             .await

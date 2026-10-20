@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Broker per-account watchlists called `/v1/accounts/{account_id}/watchlists…`, which does not exist; the endpoints are `/v1/trading/accounts/{account_id}/watchlists…`. All five methods were failing: `get_watchlists_for_account`, `get_watchlist_for_account_by_id`, `create_watchlist_for_account`, `update_watchlist_for_account_by_id`, `delete_watchlist_from_account_by_id`. Their docs now note that the Broker API requires `symbols` on create and both `name` and `symbols` on update (a full replace).
+
 ## [0.6.0] - 2026-10-20
 
 Catch-up with the Alpaca changelog for 2026-07-29 through 2026-10-19, forward-compatible enums, and an audit of the Broker API against its reference pages that found several call paths broken outright — account activities, rebalancing request bodies, batch journals and corporate actions now work. Breaking: see *Upgrading from 0.5* first.
