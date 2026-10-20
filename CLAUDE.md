@@ -78,9 +78,9 @@ New client methods should be thin wrappers calling one of these verbs — don't 
 
 ### Every client has a `new_with_url` test-only constructor
 
-Alongside the public `new(api_key, secret_key, paper/sandbox)` constructor, clients expose a `#[doc(hidden)] new_with_url(...)` that points at an arbitrary base URL. This exists purely so tests can point the client at a `wiremock::MockServer`. `tests/common/mod.rs` has thin factory functions (`trading_client`, `broker_client`, `stock_client`, `corporate_actions_client`) built on top of it — extend that file rather than constructing clients ad hoc in each test.
+Alongside the public `new(api_key, secret_key, paper/sandbox)` constructor, clients expose a `#[doc(hidden)] new_with_url(...)` that points at an arbitrary base URL. This exists purely so tests can point the client at a `wiremock::MockServer`. `tests/common/mod.rs` has thin factory functions (`trading_client`, `broker_client`, `stock_client`, `corporate_actions_client`, `crypto_client`, `news_client`, `screener_client`, `option_client`) built on top of it — extend that file rather than constructing clients ad hoc in each test.
 
-A client without this constructor cannot be tested at all, and every time one was added it surfaced bugs: `BrokerClient` gained it in v0.5.0 (the rebalancing bugs below), `CorporateActionsClient` in v0.6.0 (it had been calling `/v1beta1/corporate-actions` instead of `/v1/corporate-actions`). **`CryptoHistoricalDataClient`, `NewsClient` and `ScreenerClient` still lack it** — add it before trusting or changing them.
+A client without this constructor cannot be tested at all, and every time one was added it surfaced bugs: `BrokerClient` gained it in v0.5.0 (the rebalancing bugs below), `CorporateActionsClient` in v0.6.0 (it had been calling `/v1beta1/corporate-actions` instead of `/v1/corporate-actions`), and the crypto / news / screener clients in v0.6.2 (crypto movers returned stock movers; the option chain called the wrong endpoint; crypto `loc` was ignored). Every REST client now has one, and `TradingStream` does too. Give any new client one from the start.
 
 ### Two independent WebSocket stacks
 

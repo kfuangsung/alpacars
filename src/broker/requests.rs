@@ -617,3 +617,18 @@ pub struct ListAcatsTransfersForAccountRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
 }
+
+/// Body of `POST /v1/trading/accounts/{account_id}/orders/estimation`: estimate how a notional
+/// order would fill without placing it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EstimateOrderRequest {
+    pub symbol: String,
+    pub side: crate::trading::enums::OrderSide,
+    #[serde(rename = "type")]
+    pub order_type: crate::trading::enums::OrderType,
+    pub time_in_force: crate::trading::enums::TimeInForce,
+    /// Dollar amount to estimate for.
+    pub notional: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub swap_fee_bps: Option<u32>,
+}

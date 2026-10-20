@@ -1,5 +1,6 @@
 use crate::common::client::{base_url, RestClient};
 use crate::error::AlpacaError;
+use crate::trading::enums::ActivityType;
 use crate::trading::models::*;
 use crate::trading::requests::*;
 use uuid::Uuid;
@@ -106,6 +107,25 @@ impl TradingClient {
         filter: Option<&GetAccountActivitiesRequest>,
     ) -> Result<Vec<serde_json::Value>, AlpacaError> {
         self.client.get("/account/activities", filter).await
+    }
+
+    /// Account activities of one type (`GET /v2/account/activities/{activity_type}`).
+    /// `filter.activity_types` and `filter.category` do not apply to this endpoint.
+    pub async fn get_account_activities_by_type(
+        &self,
+        activity_type: &ActivityType,
+        filter: Option<&GetAccountActivitiesRequest>,
+    ) -> Result<Vec<serde_json::Value>, AlpacaError> {
+        let activity_type = serde_json::to_value(activity_type)?;
+        self.client
+            .get(
+                &format!(
+                    "/account/activities/{}",
+                    activity_type.as_str().unwrap_or_default()
+                ),
+                filter,
+            )
+            .await
     }
 
     // ── Orders ────────────────────────────────────────────────────────────────
@@ -218,6 +238,20 @@ impl TradingClient {
             .await
     }
 
+    /// Submit a do-not-exercise instruction for a held option contract, preventing automatic
+    /// exercise at expiry (`POST /v2/positions/{symbol_or_contract_id}/do-not-exercise`).
+    pub async fn do_not_exercise_options_position(
+        &self,
+        symbol_or_contract_id: &str,
+    ) -> Result<(), AlpacaError> {
+        self.client
+            .post_void(
+                &format!("/positions/{}/do-not-exercise", symbol_or_contract_id),
+                None::<&()>,
+            )
+            .await
+    }
+
     // ── Assets ────────────────────────────────────────────────────────────────
 
     pub async fn get_all_assets(
@@ -244,6 +278,20 @@ impl TradingClient {
         filters: Option<&GetCalendarRequest>,
     ) -> Result<Vec<Calendar>, AlpacaError> {
         self.client.get("/calendar", filters).await
+    }
+
+    /// Trading calendar for a market (`GET /v3/calendar/{market}`), with pre-, core- and
+    /// post-market sessions. `market` is a MIC, BIC or acronym such as `XNYS`, `NYSE` or `XNAS`;
+    /// see the Trading API reference for the full list.
+    pub async fn get_market_calendar(
+        &self,
+        market: &str,
+        filter: Option<&GetMarketCalendarRequest>,
+    ) -> Result<MarketCalendar, AlpacaError> {
+        self.client
+            .with_api_version("v3")
+            .get(&format!("/calendar/{}", market), filter)
+            .await
     }
 
     // ── Watchlists ────────────────────────────────────────────────────────────
@@ -304,6 +352,53 @@ impl TradingClient {
                 &format!("/watchlists/{}/{}", watchlist_id, symbol),
                 None::<&()>,
             )
+            .await
+    }
+
+    /// Get a watchlist by its name (`GET /v2/watchlists:by_name?name=…`).
+    pub async fn get_watchlist_by_name(&self, name: &str) -> Result<Watchlist, AlpacaError> {
+        self.client
+            .get("/watchlists:by_name", Some(&WatchlistName { name }))
+            .await
+    }
+
+    /// Add an asset to the watchlist with this name.
+    pub async fn add_asset_to_watchlist_by_name(
+        &self,
+        name: &str,
+        symbol: &str,
+    ) -> Result<Watchlist, AlpacaError> {
+        let body = AddSymbolToWatchlistRequest {
+            symbol: symbol.to_string(),
+        };
+        self.client
+            .post_with_query(
+                "/watchlists:by_name",
+                Some(&WatchlistName { name }),
+                Some(&body),
+            )
+            .await
+    }
+
+    /// Replace the name and/or symbols of the watchlist with this name.
+    pub async fn update_watchlist_by_name(
+        &self,
+        name: &str,
+        data: &UpdateWatchlistRequest,
+    ) -> Result<Watchlist, AlpacaError> {
+        self.client
+            .put_with_query(
+                "/watchlists:by_name",
+                Some(&WatchlistName { name }),
+                Some(data),
+            )
+            .await
+    }
+
+    /// Delete the watchlist with this name.
+    pub async fn delete_watchlist_by_name(&self, name: &str) -> Result<(), AlpacaError> {
+        self.client
+            .delete_void("/watchlists:by_name", Some(&WatchlistName { name }))
             .await
     }
 
@@ -464,4 +559,10 @@ impl TradingClient {
             )
             .await
     }
+}
+
+/// `?name=…` for the `/v2/watchlists:by_name` endpoints.
+#[derive(serde::Serialize)]
+struct WatchlistName<'a> {
+    name: &'a str,
 }

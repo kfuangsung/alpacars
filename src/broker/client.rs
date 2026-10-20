@@ -2,6 +2,7 @@ use crate::broker::models::*;
 use crate::broker::requests::*;
 use crate::common::client::{base_url, RestClient};
 use crate::error::AlpacaError;
+use crate::trading::enums::ActivityType;
 use crate::trading::models::{
     Asset, Calendar, Clock, ClosePositionResponse, Order, Position, TradeAccount, Watchlist,
 };
@@ -258,6 +259,25 @@ impl BrokerClient {
         self.client.get("/accounts/activities", filter).await
     }
 
+    /// Account activities of one type (`GET /v1/accounts/activities/{activity_type}`).
+    /// `filter.activity_types` and `filter.category` do not apply to this endpoint.
+    pub async fn get_account_activities_by_type(
+        &self,
+        activity_type: &ActivityType,
+        filter: Option<&GetAccountActivitiesRequest>,
+    ) -> Result<Vec<serde_json::Value>, AlpacaError> {
+        let activity_type = serde_json::to_value(activity_type)?;
+        self.client
+            .get(
+                &format!(
+                    "/accounts/activities/{}",
+                    activity_type.as_str().unwrap_or_default()
+                ),
+                filter,
+            )
+            .await
+    }
+
     // ── ACH Relationships ─────────────────────────────────────────────────────
 
     pub async fn create_ach_relationship_for_account(
@@ -473,6 +493,40 @@ impl BrokerClient {
             .get(
                 &format!("/trading/accounts/{}/orders/{}", account_id, order_id),
                 None::<&()>,
+            )
+            .await
+    }
+
+    /// Look up an order by the `client_order_id` you assigned
+    /// (`GET /v1/trading/accounts/{account_id}/orders:by_client_order_id`).
+    pub async fn get_order_for_account_by_client_order_id(
+        &self,
+        account_id: &Uuid,
+        client_order_id: &str,
+    ) -> Result<Order, AlpacaError> {
+        #[derive(serde::Serialize)]
+        struct Params<'a> {
+            client_order_id: &'a str,
+        }
+        self.client
+            .get(
+                &format!("/trading/accounts/{}/orders:by_client_order_id", account_id),
+                Some(&Params { client_order_id }),
+            )
+            .await
+    }
+
+    /// Estimate a notional order without placing it
+    /// (`POST /v1/trading/accounts/{account_id}/orders/estimation`).
+    pub async fn estimate_order_for_account(
+        &self,
+        account_id: &Uuid,
+        data: &EstimateOrderRequest,
+    ) -> Result<Order, AlpacaError> {
+        self.client
+            .post(
+                &format!("/trading/accounts/{}/orders/estimation", account_id),
+                Some(data),
             )
             .await
     }
@@ -800,6 +854,25 @@ impl BrokerClient {
             .post_void(
                 &format!(
                     "/trading/accounts/{}/positions/{}/exercise",
+                    account_id, symbol_or_contract_id
+                ),
+                None::<&()>,
+            )
+            .await
+    }
+
+    /// Submit a do-not-exercise instruction for an account's option position, preventing
+    /// automatic exercise at expiry
+    /// (`POST /v1/trading/accounts/{account_id}/positions/{symbol_or_contract_id}/do-not-exercise`).
+    pub async fn do_not_exercise_options_position_for_account(
+        &self,
+        account_id: &Uuid,
+        symbol_or_contract_id: &str,
+    ) -> Result<(), AlpacaError> {
+        self.client
+            .post_void(
+                &format!(
+                    "/trading/accounts/{}/positions/{}/do-not-exercise",
                     account_id, symbol_or_contract_id
                 ),
                 None::<&()>,

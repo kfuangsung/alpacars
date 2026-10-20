@@ -313,6 +313,44 @@ impl RestClient {
         Ok(serde_json::from_value(val)?)
     }
 
+    /// POST with both a query string and a JSON body (e.g. `POST /v2/watchlists:by_name?name=…`).
+    pub async fn post_with_query<Q, B, R>(
+        &self,
+        path: &str,
+        query: Option<&Q>,
+        body: Option<&B>,
+    ) -> Result<R, AlpacaError>
+    where
+        Q: Serialize,
+        B: Serialize,
+        R: DeserializeOwned,
+    {
+        let url = self.build_url(path);
+        let q = query.map(serde_json::to_value).transpose()?;
+        let b = body.map(serde_json::to_value).transpose()?;
+        let val = self.execute_raw(Method::POST, &url, q, b).await?;
+        Ok(serde_json::from_value(val)?)
+    }
+
+    /// PUT with both a query string and a JSON body.
+    pub async fn put_with_query<Q, B, R>(
+        &self,
+        path: &str,
+        query: Option<&Q>,
+        body: Option<&B>,
+    ) -> Result<R, AlpacaError>
+    where
+        Q: Serialize,
+        B: Serialize,
+        R: DeserializeOwned,
+    {
+        let url = self.build_url(path);
+        let q = query.map(serde_json::to_value).transpose()?;
+        let b = body.map(serde_json::to_value).transpose()?;
+        let val = self.execute_raw(Method::PUT, &url, q, b).await?;
+        Ok(serde_json::from_value(val)?)
+    }
+
     /// POST with additional request headers merged on top of the auth headers.
     ///
     /// Header names or values that are not valid HTTP headers are skipped.
