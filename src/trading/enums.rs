@@ -2,23 +2,34 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum OrderType {
     Market,
     Limit,
     Stop,
     StopLimit,
     TrailingStop,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum OrderSide {
     Buy,
     Sell,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum OrderStatus {
     New,
     PartiallyFilled,
@@ -38,10 +49,15 @@ pub enum OrderStatus {
     Suspended,
     Calculated,
     Held,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum OrderClass {
     Simple,
     Mleg,
@@ -50,10 +66,15 @@ pub enum OrderClass {
     Oto,
     #[serde(rename = "")]
     Empty,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TimeInForce {
     Day,
     Gtc,
@@ -61,10 +82,15 @@ pub enum TimeInForce {
     Cls,
     Ioc,
     Fok,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum AssetClass {
     UsEquity,
     UsOption,
@@ -76,23 +102,38 @@ pub enum AssetClass {
     GlobalEquity,
     UsEquityChain,
     Ipo,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum AssetStatus {
     Active,
     Inactive,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum BorrowStatus {
     EasyToBorrow,
     HardToBorrow,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum AssetExchange {
     #[serde(rename = "AMEX")]
     Amex,
@@ -122,26 +163,41 @@ pub enum AssetExchange {
     Crypto,
     #[serde(rename = "")]
     Empty,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum PositionSide {
     Long,
     Short,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum CorporateActionType {
     Dividend,
     Merger,
     Spinoff,
     Split,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum CorporateActionSubType {
     Cash,
     Stock,
@@ -152,10 +208,15 @@ pub enum CorporateActionSubType {
     UnitSplit,
     ReverseSplit,
     Recapitalization,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
 pub enum AccountStatus {
     AccountClosed,
     AccountClosedPending,
@@ -179,10 +240,15 @@ pub enum AccountStatus {
     SignedUp,
     SubmissionFailed,
     Submitted,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum CorporateActionDateType {
     DeclarationDate,
     ExDate,
@@ -192,6 +258,7 @@ pub enum CorporateActionDateType {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum TradeEvent {
     Accepted,
     Canceled,
@@ -205,10 +272,15 @@ pub enum TradeEvent {
     Rejected,
     Replaced,
     Restated,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum QueryOrderStatus {
     Open,
     Closed,
@@ -217,28 +289,44 @@ pub enum QueryOrderStatus {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TradeConfirmationEmail {
     All,
     None,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum ContractType {
     Call,
     Put,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum ExerciseStyle {
     American,
     European,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 /// Account activity type. Wire values are uppercase (`FILL`, `JNLC`, `DIVCGL`, ...).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
 pub enum ActivityType {
     /// Order fill — the only trade activity type; every other value is a non-trade activity.
     Fill,
@@ -295,40 +383,61 @@ pub enum ActivityType {
     Trans,
     Vof,
     Wh,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum TradeActivityType {
     PartialFill,
     Fill,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum NonTradeActivityStatus {
     Executed,
     Correct,
     Canceled,
     Pending,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum LocateStatus {
     Active,
     Expired,
     Rejected,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
 pub enum AdvancedAlgorithm {
     Dma,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
 pub enum OrderDestination {
     Nyse,
     Nasdaq,
@@ -339,31 +448,47 @@ pub enum OrderDestination {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum PositionIntent {
     BuyToOpen,
     BuyToClose,
     SellToOpen,
     SellToClose,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TokenizationRequestStatus {
     Pending,
     Rejected,
     Completed,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TokenizationRequestType {
     Mint,
     Redeem,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 /// Blockchain network a tokenized asset is issued on.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TokenizationNetwork {
     Solana,
     Arbitrum,
@@ -373,12 +498,21 @@ pub enum TokenizationNetwork {
     Ton,
     Tron,
     Mantle,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 /// Issuer of a tokenized asset.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TokenizationIssuer {
     Xstocks,
     St0x,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }

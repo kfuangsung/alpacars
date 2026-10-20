@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum Exchange {
     Z,
     I,
@@ -24,10 +25,15 @@ pub enum Exchange {
     C,
     H,
     K,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum DataFeed {
     Iex,
     Sip,
@@ -36,10 +42,15 @@ pub enum DataFeed {
     Otc,
     Boats,
     Overnight,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum Adjustment {
     Raw,
     Split,
@@ -49,12 +60,14 @@ pub enum Adjustment {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum CryptoFeed {
     Us,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum OptionsFeed {
     Opra,
     Indicative,
@@ -62,6 +75,7 @@ pub enum OptionsFeed {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum MostActivesBy {
     Volume,
     Trades,
@@ -69,6 +83,7 @@ pub enum MostActivesBy {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum MarketType {
     Stocks,
     Crypto,
@@ -76,6 +91,7 @@ pub enum MarketType {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum NewsImageSize {
     Thumb,
     Small,
@@ -84,6 +100,7 @@ pub enum NewsImageSize {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum CorporateActionsType {
     ReverseSplit,
     ForwardSplit,
@@ -101,6 +118,7 @@ pub enum CorporateActionsType {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum TimeFrameUnit {
     #[serde(rename = "Min")]
     Minute,
