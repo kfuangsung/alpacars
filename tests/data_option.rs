@@ -4,9 +4,13 @@
 
 mod common;
 
+use alpacars::data::enums::OptionsFeed;
 use alpacars::data::historical::option::{
-    OptionBarsRequest, OptionLatestRequest, OptionSnapshotRequest, OptionTradesRequest,
+    OptionBarsRequest, OptionChainRequest, OptionLatestRequest, OptionSnapshotRequest,
+    OptionTradesRequest,
 };
+use alpacars::trading::enums::ContractType;
+use chrono::NaiveDate;
 use wiremock::matchers::{method, path, query_param, query_param_is_missing};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -309,17 +313,30 @@ async fn test_get_option_snapshot_paginates() {
     assert!(snaps.contains_key("AAPL240426C00162500"));
 }
 
-/// The chain endpoint is `/options/snapshots/{underlying_symbol}`. The crate called
-/// `/options/snapshots?underlying_symbols=…`, an endpoint that requires contract `symbols`.
+/// optionchain: `/options/snapshots/{underlying_symbol}` (the crate once called
+/// `/options/snapshots?underlying_symbols=…`, an endpoint that requires contract `symbols`).
+/// Every filter in the reference is sent, and every page is fetched and merged.
 #[tokio::test]
-async fn test_get_option_chain_path() {
+async fn test_get_option_chain_filters_and_pages() {
     let server = MockServer::start().await;
-    Mock::given(method("GET"))
-        .and(path("/v1beta1/options/snapshots/AAPL"))
-        .and(query_param_is_missing("underlying_symbols"))
+    let filtered = || {
+        Mock::given(method("GET"))
+            .and(path("/v1beta1/options/snapshots/AAPL"))
+            .and(query_param_is_missing("underlying_symbols"))
+            .and(query_param("feed", "indicative"))
+            .and(query_param("limit", "1"))
+            .and(query_param("type", "call"))
+            .and(query_param("strike_price_gte", "160.0"))
+            .and(query_param("strike_price_lte", "170.5"))
+            .and(query_param("expiration_date_gte", "2024-04-26"))
+            .and(query_param("expiration_date_lte", "2024-05-03"))
+            .and(query_param("root_symbol", "AAPL"))
+    };
+    filtered()
+        .and(query_param_is_missing("page_token"))
         .respond_with(ResponseTemplate::new(200).set_body_string(
             r#"{
-  "next_page_token": null,
+  "next_page_token": "QUFQTDI0MDQyNkMwMDE2MjUwMA==",
   "snapshots": {
     "AAPL240426C00162500": {
       "greeks": {
@@ -354,9 +371,65 @@ async fn test_get_option_chain_path() {
         .expect(1)
         .mount(&server)
         .await;
+    filtered()
+        .and(query_param("page_token", "QUFQTDI0MDQyNkMwMDE2MjUwMA=="))
+        .respond_with(ResponseTemplate::new(200).set_body_string(
+            r#"{
+  "next_page_token": null,
+  "snapshots": {
+    "AAPL240426C00165000": {
+      "greeks": {
+        "delta": 0.7521304109871954,
+        "gamma": 0.06241426404871288,
+        "rho": 0.009910739032549095,
+        "theta": -0.2847623059595503,
+        "vega": 0.047540520834498785
+      },
+      "impliedVolatility": 0.3372405712050441,
+      "latestQuote": {
+        "ap": 4.3,
+        "as": 91,
+        "ax": "B",
+        "bp": 4.15,
+        "bs": 16,
+        "bx": "C",
+        "c": "A",
+        "t": "2024-04-22T19:59:59.992734208Z"
+      },
+      "latestTrade": {
+        "c": "I",
+        "p": 4.1,
+        "s": 1,
+        "t": "2024-04-22T19:57:32.589554432Z",
+        "x": "A"
+      }
+    }
+  }
+}"#,
+        ))
+        .expect(1)
+        .mount(&server)
+        .await;
+
     let client = common::option_client(&server.uri());
-    let chain = client.get_option_chain("AAPL", None).await.unwrap();
-    assert!(chain["snapshots"].is_object());
+    let req = OptionChainRequest {
+        underlying_symbol: "AAPL".to_string(),
+        feed: Some(OptionsFeed::Indicative),
+        limit: Some(1),
+        r#type: Some(ContractType::Call),
+        strike_price_gte: Some(160.0),
+        strike_price_lte: Some(170.5),
+        expiration_date_gte: NaiveDate::from_ymd_opt(2024, 4, 26),
+        expiration_date_lte: NaiveDate::from_ymd_opt(2024, 5, 3),
+        root_symbol: Some("AAPL".to_string()),
+        ..Default::default()
+    };
+    let chain = client.get_option_chain(&req).await.unwrap();
+    assert_eq!(chain.len(), 2);
+    let snap = &chain["AAPL240426C00162500"];
+    assert_eq!(snap.symbol, "AAPL240426C00162500");
+    assert!(snap.greeks.is_some());
+    assert_eq!(chain["AAPL240426C00165000"].symbol, "AAPL240426C00165000");
 }
 
 #[tokio::test]
@@ -371,4 +444,29 @@ async fn test_get_option_exchange_codes() {
     let client = common::option_client(&server.uri());
     let codes = client.get_option_exchange_codes().await.unwrap();
     assert_eq!(codes["C"], "CBOE");
+}
+
+#[tokio::test]
+async fn test_get_option_chain_expiration_date_and_updated_since() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path("/v1beta1/options/snapshots/AAPL"))
+        .and(query_param("expiration_date", "2024-04-26"))
+        .and(query_param("updated_since", "2024-04-22T19:00:00Z"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_string(r#"{"next_page_token": null, "snapshots": {}}"#),
+        )
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::option_client(&server.uri());
+    let req = OptionChainRequest {
+        underlying_symbol: "AAPL".to_string(),
+        expiration_date: NaiveDate::from_ymd_opt(2024, 4, 26),
+        updated_since: Some("2024-04-22T19:00:00Z".parse().unwrap()),
+        ..Default::default()
+    };
+    assert!(client.get_option_chain(&req).await.unwrap().is_empty());
 }
