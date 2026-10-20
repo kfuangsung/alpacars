@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-20
+
+Patch release: a reference audit of every remaining untested Broker area found 29 methods calling paths that do not exist or sending values the API rejects — all fixed, with no breaking changes. **If you close positions partially, upgrade**: `close_position` and `close_position_for_account` ignored `qty` / `percentage` and closed the whole position.
+
 ### Added
 - `BrokerClient::get_trading_account(account_id)` (`GET /v1/trading/accounts/{account_id}/account`): balances, buying power and trading configuration for an account.
 - `BrokerClient::download_trade_document_for_account(account_id, document_id) -> Vec<u8>` (`GET …/documents/{document_id}/download`). The API redirects to a pre-signed link, which is followed; the Basic-auth `Authorization` header is not forwarded to the file host (covered by a test).
@@ -217,7 +221,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/kfuangsung/alpacars/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/kfuangsung/alpacars/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/kfuangsung/alpacars/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kfuangsung/alpacars/compare/v0.4.1...v0.5.0
