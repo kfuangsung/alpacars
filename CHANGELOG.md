@@ -34,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Broker `AccountType`: `Trust`, `OmnibusNonDisclosed`, `OmnibusSub`, `Joint` (returned on reads; not creatable through the API).
   - `JournalStatus`: `Queued`, `SentToClearing`, `Deleted`.
 
+### Removed
+- **Breaking**: fields Alpaca has stopped returning, which were therefore always `None`:
+  - `Asset.easy_to_borrow` (removed by Alpaca 2026-09-22) — use `borrow_status`.
+  - `TokenizationRequest.account` and `TokenizationRequest.issuer_account` (removed 2026-10-15) — use `client_account_id` and `client_external_account_id`.
+
+  Responses that still include these keys continue to parse.
+
 ### Fixed
 - `CorporateActionsClient` called `/v1beta1/corporate-actions`; the endpoint is `/v1/corporate-actions`.
 - **Breaking**: `TradeAccount.account_number` is now `Option<String>`. The Trading API reference types it `string | null`, and a `null` made `get_account` fail.

@@ -24,8 +24,8 @@ const TOKENIZATION_REQUEST_JSON: &str = r#"{
   "issuer_request_id": "iss-req-778",
   "fees": "0.25",
   "tx_hash": "5xY7...abc",
-  "account": null,
-  "issuer_account": null
+  "account": "legacy-field-alpaca-no-longer-sends",
+  "issuer_account": "legacy-field-alpaca-no-longer-sends"
 }"#;
 
 #[tokio::test]
@@ -123,8 +123,12 @@ async fn test_get_tokenization_request_by_id() {
         req.client_external_account_id.as_deref(),
         Some("issuer-acct-42")
     );
-    // Deprecated fields (sunset 2026-10-15) may be omitted entirely.
-    assert!(req.account.is_none());
+    // `account` / `issuer_account` were removed from the crate after Alpaca dropped them on
+    // 2026-10-15; the fixture still carries them to prove a stale response parses.
+    assert_eq!(
+        req.client_account_id,
+        Some("b1f9c2d4-5e6a-4b7c-8d9e-0f1a2b3c4d5e".parse().unwrap())
+    );
 }
 
 #[tokio::test]
