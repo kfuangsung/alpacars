@@ -699,17 +699,26 @@ impl BrokerClient {
     // ── Tokenization ──────────────────────────────────────────────────────────
 
     /// Convert an account's underlying equity securities into a tokenized asset.
+    ///
+    /// With an `idempotency_key`, retries carrying the same key and an identical body return
+    /// the original request instead of minting twice; the same key with a different body is
+    /// rejected with 422. Use a fresh UUIDv4 or UUIDv7 per logical request — Alpaca is moving
+    /// to a 36-character maximum.
     pub async fn mint_tokenized_asset_for_account(
         &self,
         account_id: &Uuid,
         data: &TokenizationMintRequest,
+        idempotency_key: Option<&str>,
     ) -> Result<TokenizationMintResponse, AlpacaError> {
-        self.client
-            .post(
-                &format!("/accounts/{}/tokenization/mint", account_id),
-                Some(data),
-            )
-            .await
+        let path = format!("/accounts/{}/tokenization/mint", account_id);
+        match idempotency_key {
+            Some(key) => {
+                self.client
+                    .post_with_headers(&path, Some(data), &[("Idempotency-Key", key)])
+                    .await
+            }
+            None => self.client.post(&path, Some(data)).await,
+        }
     }
 
     pub async fn get_tokenization_requests_for_account(

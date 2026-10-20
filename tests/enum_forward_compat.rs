@@ -67,6 +67,7 @@ fn test_every_response_enum_has_unknown_fallback() {
         alpacars::trading::enums::NonTradeActivityStatus,
         alpacars::trading::enums::LocateStatus,
         alpacars::trading::enums::PositionIntent,
+        alpacars::trading::enums::OrderGroupRole,
         alpacars::trading::enums::TokenizationRequestStatus,
         alpacars::trading::enums::TokenizationRequestType,
         alpacars::trading::enums::TokenizationNetwork,

@@ -4,7 +4,7 @@ use alpacars::trading::enums::{
     TokenizationIssuer, TokenizationNetwork, TokenizationRequestStatus, TokenizationRequestType,
 };
 use alpacars::trading::requests::{GetTokenizationRequestsRequest, TokenizationMintRequest};
-use wiremock::matchers::{method, path, query_param};
+use wiremock::matchers::{header, header_exists, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 const TOKENIZATION_REQUEST_JSON: &str = r#"{
@@ -58,7 +58,7 @@ async fn test_mint_tokenized_asset() {
         wallet_address: "9xQe...wallet".to_string(),
         client_request_id: Some("ap-request-2026-07-16-001".to_string()),
     };
-    let resp = client.mint_tokenized_asset(&req).await.unwrap();
+    let resp = client.mint_tokenized_asset(&req, None).await.unwrap();
 
     assert_eq!(resp.token_symbol, "AAPLx");
     assert_eq!(resp.status, TokenizationRequestStatus::Pending);
@@ -151,4 +151,76 @@ async fn test_get_tokenization_request_by_client_request_id() {
         req.client_request_id.as_deref(),
         Some("ap-request-2026-07-16-001")
     );
+}
+
+const MINT_RESPONSE: &str = r#"{
+  "tokenization_request_id": "6c3f8f2e-1a44-4c9b-9d21-3e7a5b8c0d11",
+  "status": "pending",
+  "underlying_symbol": "AAPL",
+  "token_symbol": "AAPLx",
+  "qty": "10.5",
+  "created_at": "2026-07-16T10:00:00Z",
+  "issuer": "xstocks",
+  "network": "solana"
+}"#;
+
+fn mint_request() -> TokenizationMintRequest {
+    TokenizationMintRequest {
+        underlying_symbol: "AAPL".to_string(),
+        qty: "10.5".to_string(),
+        issuer: TokenizationIssuer::Xstocks,
+        network: TokenizationNetwork::Solana,
+        wallet_address: "9xQe...wallet".to_string(),
+        client_request_id: None,
+    }
+}
+
+#[tokio::test]
+async fn test_mint_tokenized_asset_sends_idempotency_key() {
+    let server = MockServer::start().await;
+
+    Mock::given(method("POST"))
+        .and(path("/v2/tokenization/mint"))
+        .and(header(
+            "Idempotency-Key",
+            "0192f5c4-7d1e-7a3b-9c2d-1e4f5a6b7c8d",
+        ))
+        .respond_with(ResponseTemplate::new(200).set_body_string(MINT_RESPONSE))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    client
+        .mint_tokenized_asset(
+            &mint_request(),
+            Some("0192f5c4-7d1e-7a3b-9c2d-1e4f5a6b7c8d"),
+        )
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn test_mint_tokenized_asset_omits_idempotency_key_when_none() {
+    let server = MockServer::start().await;
+
+    // Only matches when an Idempotency-Key header is present at all.
+    Mock::given(method("POST"))
+        .and(path("/v2/tokenization/mint"))
+        .and(header_exists("Idempotency-Key"))
+        .respond_with(ResponseTemplate::new(500))
+        .mount(&server)
+        .await;
+
+    Mock::given(method("POST"))
+        .and(path("/v2/tokenization/mint"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(MINT_RESPONSE))
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    assert!(client
+        .mint_tokenized_asset(&mint_request(), None)
+        .await
+        .is_ok());
 }

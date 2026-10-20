@@ -115,6 +115,9 @@ pub enum CorporateActionsType {
     NameChange,
     WorthlessRemoval,
     RightsDistribution,
+    CapitalGainsDistribution,
+    PartialCall,
+    Reorganization,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -5,7 +5,7 @@ use alpacars::trading::enums::{
     TokenizationIssuer, TokenizationNetwork, TokenizationRequestStatus, TokenizationRequestType,
 };
 use uuid::Uuid;
-use wiremock::matchers::{method, path, query_param};
+use wiremock::matchers::{header, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 const ACCOUNT_ID: &str = "b1f9c2d4-5e6a-4b7c-8d9e-0f1a2b3c4d5e";
@@ -44,6 +44,10 @@ async fn test_mint_tokenized_asset_for_account() {
             "/v1/accounts/{}/tokenization/mint",
             ACCOUNT_ID
         )))
+        .and(header(
+            "Idempotency-Key",
+            "0192f5c4-7d1e-7a3b-9c2d-1e4f5a6b7c8d",
+        ))
         .respond_with(ResponseTemplate::new(200).set_body_string(
             r#"{
               "tokenization_request_id": "6c3f8f2e-1a44-4c9b-9d21-3e7a5b8c0d11",
@@ -69,7 +73,11 @@ async fn test_mint_tokenized_asset_for_account() {
         client_request_id: None,
     };
     let resp = client
-        .mint_tokenized_asset_for_account(&account_id(), &req)
+        .mint_tokenized_asset_for_account(
+            &account_id(),
+            &req,
+            Some("0192f5c4-7d1e-7a3b-9c2d-1e4f5a6b7c8d"),
+        )
         .await
         .unwrap();
 

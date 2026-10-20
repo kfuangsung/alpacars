@@ -22,7 +22,12 @@ pub struct Asset {
     pub min_order_size: Option<f64>,
     pub min_trade_increment: Option<f64>,
     pub price_increment: Option<f64>,
+    /// Deprecated by Alpaca in favor of `margin_requirement_long` / `margin_requirement_short`.
     pub maintenance_margin_requirement: Option<f64>,
+    /// Margin requirement percentage for long positions (equities only), as a decimal string.
+    pub margin_requirement_long: Option<String>,
+    /// Margin requirement percentage for short positions (equities only), as a decimal string.
+    pub margin_requirement_short: Option<String>,
     pub attributes: Option<Vec<String>>,
 }
 
@@ -117,6 +122,12 @@ pub struct Order {
     pub subtag: Option<String>,
     pub source: Option<String>,
     pub position_intent: Option<PositionIntent>,
+    /// Shared by every order in the same `bracket`, `oto` or `oco` order, including legs and
+    /// replacements. Use it to associate legs on the trade-updates stream, where `legs` is
+    /// not populated. `None` for other orders.
+    pub group_id: Option<Uuid>,
+    /// This order's role within its group; `None` whenever `group_id` is.
+    pub group_role: Option<OrderGroupRole>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -336,6 +347,8 @@ pub struct OptionContract {
     pub open_interest_date: Option<NaiveDate>,
     pub close_price: Option<String>,
     pub close_price_date: Option<NaiveDate>,
+    /// Penny Program Indicator: whether the contract is eligible for penny price increments.
+    pub ppind: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -69,12 +69,38 @@ pub struct CreateTrustedContactRequest {
     pub phone_number: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Request body for `POST /v1/accounts`.
+///
+/// Which fields are required depends on `account_type` (default `trading`): trading accounts
+/// need `contact` and `identity` (or `primary_account_holder_id` for an existing holder),
+/// custodial accounts also need `minor_identity`, IRA accounts need `account_sub_type`, and
+/// donor-advised accounts need `entity_id`. The server enforces these, so every one of them
+/// is optional here.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CreateAccountRequest {
-    pub contact: CreateContactRequest,
-    pub identity: CreateIdentityRequest,
-    pub disclosures: CreateDisclosuresRequest,
-    pub agreements: Vec<AgreementRequest>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account_type: Option<AccountType>,
+    /// Required for IRA accounts.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account_sub_type: Option<AccountSubType>,
+    /// Open the account for an existing holder instead of supplying `contact` / `identity`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_account_holder_id: Option<Uuid>,
+    /// Required for donor-advised accounts.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entity_id: Option<String>,
+    /// The minor's identity, required for custodial accounts. Kept as raw JSON; see the
+    /// Create an Account reference for its shape.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub minor_identity: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contact: Option<CreateContactRequest>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub identity: Option<CreateIdentityRequest>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disclosures: Option<CreateDisclosuresRequest>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub agreements: Option<Vec<AgreementRequest>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub documents: Option<Vec<serde_json::Value>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -384,10 +410,18 @@ pub struct GetEventsRequest {
     pub since: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub until: Option<DateTime<Utc>>,
+    /// Deprecated by Alpaca, removed on 2027-02-15; use `since_ulid`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub since_id: Option<u64>,
+    /// Deprecated by Alpaca, removed on 2027-02-15; use `until_ulid`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub until_id: Option<u64>,
+    /// Mutually exclusive with `since` and `since_id`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub since_ulid: Option<String>,
+    /// Requires `since_ulid`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub until_ulid: Option<String>,
 }
 
 // Broker-scoped order/position request types

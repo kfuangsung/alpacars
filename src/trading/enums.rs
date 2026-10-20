@@ -446,6 +446,23 @@ pub enum OrderDestination {
     Memx,
 }
 
+/// An order's role within its `bracket`, `oto` or `oco` group (see `Order::group_id`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum OrderGroupRole {
+    /// The entry order of a `bracket` or `oto` order.
+    Entry,
+    /// The take-profit limit order; for an `oco` order, the top-level order.
+    TakeProfit,
+    /// The stop-loss stop or stop-limit order.
+    StopLoss,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[non_exhaustive]

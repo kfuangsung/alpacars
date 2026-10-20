@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `JournalStatus`: `Queued`, `SentToClearing`, `Deleted`.
 
 ### Fixed
+- `CorporateActionsClient` called `/v1beta1/corporate-actions`; the endpoint is `/v1/corporate-actions`.
 - **Breaking**: `TradeAccount.account_number` is now `Option<String>`. The Trading API reference types it `string | null`, and a `null` made `get_account` fail.
 - `ActivityType` was serialized in snake_case (`fill`, `jnlc`); Alpaca's values are uppercase (`FILL`, `JNLC`). Activity filters were sent with values the API does not recognize, and `TradeActivity`/`NonTradeActivity` failed to deserialize any real activity.
 - `BrokerClient::get_account_activities` called `/v1/accounts/{account_id}/account_activities`, which does not exist; the endpoint is `/v1/accounts/activities` with `account_id` as a query parameter.
