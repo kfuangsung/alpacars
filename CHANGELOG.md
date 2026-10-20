@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-10-20
+
+Patch release: the stock stream's trading-status events now reach their handler, and trade cancels and corrections carry their symbol. No breaking changes. **If you use `StockDataStream::subscribe_trading_statuses`, upgrade.**
+
 ### Fixed
 - **`StockDataStream` never delivered trading-status events,** and trade cancels and corrections always had `symbol: None`. The stream's raw event takes the message's `S` (symbol) into its own field, so the typed models never saw it, and `TradingStatus` (whose `symbol` is required) failed to parse every time. The symbol is now passed through to every typed event on the stock, crypto, option and news streams.
 
@@ -294,7 +298,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/kfuangsung/alpacars/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/kfuangsung/alpacars/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/kfuangsung/alpacars/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/kfuangsung/alpacars/compare/v0.6.1...v0.6.2
