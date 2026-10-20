@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-20
+
+Breaking release that finishes the 0.6.x Broker audit. It removes the methods and enum variants deprecated in 0.6.1, and it makes the funding and watchlist request types match the API reference, so a request the API would reject no longer compiles. It also adds the documented query filters the request types lacked. Each removal or rename below names its replacement; most code needs only mechanical changes:
+- `get_banks_for_account(id)` → `get_banks_for_account(id, None)`;
+- `get_ach_relationships_for_account(id)` → `get_ach_relationships_for_account(id, None)`;
+- `CreateBankRequest { routing_number, bank_code: Some(..), bank_code_type: Some("ABA".into()), .. }` → `{ bank_code, bank_code_type: BankCodeType::Aba, .. }`.
+
 ### Added
 - Request filters from the references. Adding a field to these structs is breaking for code that builds them without `..Default::default()`:
   - `GetOrdersRequest` (Trading, `getallorders-1`): `asset_class` (comma-separated `Vec<AssetClass>`), `before_order_id`, `after_order_id`.
@@ -268,7 +275,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/kfuangsung/alpacars/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/kfuangsung/alpacars/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/kfuangsung/alpacars/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/kfuangsung/alpacars/compare/v0.5.1...v0.6.0
