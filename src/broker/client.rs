@@ -624,7 +624,6 @@ impl BrokerClient {
             .await
     }
 
-    /// The Broker API requires `symbols` (it may be empty) as well as `name`.
     pub async fn create_watchlist_for_account(
         &self,
         account_id: &Uuid,
@@ -638,8 +637,7 @@ impl BrokerClient {
             .await
     }
 
-    /// Replaces the watchlist: the Broker API requires both `name` and `symbols`, so set both
-    /// on the request even when only one changes.
+    /// Replaces the watchlist's name and symbols.
     pub async fn update_watchlist_for_account_by_id(
         &self,
         account_id: &Uuid,

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Breaking:** `BrokerClient::create_watchlist_for_account` and `update_watchlist_for_account_by_id` take new Broker-specific `broker::requests::{CreateWatchlistRequest, UpdateWatchlistRequest}` with required `name: String` and `symbols: Vec<String>`. The Broker reference (`createwatchlistforaccount`, `replacewatchlistforaccountbyid`) requires both fields on both calls, while the Trading API's create needs only `name` and its update neither, so the Trading types the Broker methods used to share are unchanged. `broker::models` no longer re-exports the two Trading watchlist request types.
 - **Breaking:** `BrokerClient::upload_cip_data_for_account_by_id` returns `()`. The reference documents its `200` without a body, so the old `CIPInfo` return reported a deserialization error on an empty body even though the upload succeeded.
 
 ### Removed
