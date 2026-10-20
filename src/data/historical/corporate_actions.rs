@@ -8,8 +8,22 @@ use serde::Serialize;
 pub struct CorporateActionsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbols: Option<String>,
+    /// Comma-separated CUSIPs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cusips: Option<String>,
+    /// Comma-separated corporate action types, e.g. `cash_dividend,capital_gains_distribution`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub types: Option<String>,
+    /// `us`, `non_us` or `all`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub region: Option<String>,
+    /// Comma-separated corporate action IDs. Mutually exclusive with every other filter.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ids: Option<String>,
+    /// `complete` (the API default) excludes corporate actions that are still incomplete and
+    /// unprocessed; `all` also returns those early records.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data_quality: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -36,7 +50,26 @@ impl CorporateActionsClient {
                 secret_key.map(str::to_string),
                 None,
                 base_url::DATA.to_string(),
-                "v1beta1".to_string(),
+                "v1".to_string(),
+                false,
+            )?,
+        })
+    }
+
+    /// Create a client pointed at a custom base URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(
+        api_key: &str,
+        secret_key: &str,
+        base_url: &str,
+    ) -> Result<Self, AlpacaError> {
+        Ok(Self {
+            client: RestClient::new(
+                Some(api_key.to_string()),
+                Some(secret_key.to_string()),
+                None,
+                base_url.to_string(),
+                "v1".to_string(),
                 false,
             )?,
         })
@@ -62,6 +95,9 @@ impl CorporateActionsClient {
             name_changes: None,
             worthless_removals: None,
             rights_distributions: None,
+            capital_gains_distributions: None,
+            partial_calls: None,
+            reorganizations: None,
             next_page_token: None,
         };
 
@@ -96,6 +132,9 @@ impl CorporateActionsClient {
                 merge_vec!(name_changes);
                 merge_vec!(worthless_removals);
                 merge_vec!(rights_distributions);
+                merge_vec!(capital_gains_distributions);
+                merge_vec!(partial_calls);
+                merge_vec!(reorganizations);
             }
 
             match resp.next_page_token {

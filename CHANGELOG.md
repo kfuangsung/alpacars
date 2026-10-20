@@ -14,8 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking**: `BrokerClient::get_account_activities(account_id, filter)` is now `get_account_activities(filter)`; set `account_id` on the filter, or leave it unset to query across all accounts.
 - **Breaking**: every public enum is now `#[non_exhaustive]`, so `match`es on them need a `_ =>` arm. In exchange, Alpaca adding a value is no longer a breaking change for this crate, so future additions can ship in minor releases.
 - **Breaking**: the 44 enums that appear in API responses gained an `Unknown` variant (`#[serde(other)]`). A value this version does not recognize now parses as `Unknown` instead of failing the entire response — previously, for example, one record with a new tokenization issuer made `get_tokenization_requests` return an error. `Unknown` is not meaningful in requests; it serializes as `"unknown"`. Request-only enums (`QueryOrderStatus`, `OrderDestination`, `Adjustment`, …) are `#[non_exhaustive]` but have no `Unknown`.
+- **Breaking**: `TradingClient::mint_tokenized_asset` and `BrokerClient::mint_tokenized_asset_for_account` take a new `idempotency_key: Option<&str>`, sent as the `Idempotency-Key` header (and replayed on retries). Pass `None` for the previous behavior.
+- **Breaking**: `CreateAccountRequest` fields `contact`, `identity`, `disclosures` and `agreements` are now `Option`, because requirements vary by account type (an existing-holder IRA or donor-advised account sends none of them). The struct now implements `Default`.
 
 ### Added
+- `Order.group_id` / `Order.group_role` (new enum `OrderGroupRole`: `Entry`, `TakeProfit`, `StopLoss`), identifying the members of a `bracket`, `oto` or `oco` order — useful on the trade-updates stream, where `legs` is not populated.
+- `OptionContract.ppind` (Penny Program Indicator).
+- `Asset.margin_requirement_long` / `margin_requirement_short` (decimal strings), which replace the deprecated `maintenance_margin_requirement`.
+- `CreateAccountRequest.account_type`, `account_sub_type`, `primary_account_holder_id`, `entity_id`, `minor_identity`, covering custodial, IRA, donor-advised and existing-holder account creation.
+- Corporate actions: `CorporateActionsRequest.data_quality` (`complete` / `all`), `cusips`, `region`, `ids`; `CorporateActionsSet.capital_gains_distributions`, `partial_calls`, `reorganizations` (merged across pages like the other types); `CorporateActionsType::CapitalGainsDistribution`, `PartialCall`, `Reorganization`. `CorporateActionsClient::new_with_url` (`#[doc(hidden)]`) for tests.
+- `GetEventsRequest.since_ulid` / `until_ulid`; `since_id` / `until_id` are deprecated by Alpaca and removed on 2027-02-15.
 - `order_id` filter on both `GetAccountActivitiesRequest`s; `activity_types` and `category` on the Broker one.
 - `ActivityType` variants `Cgd`, `Divfee`, `Divft`, `Divtw`, `Fopt`, `Intnra`, `Inttw`, `Jnl`, `Misc`, `Opca`, `Ptr`, `Reo`, `Trans`, completing the set in the Trading and Broker API references. **Breaking** for exhaustive `match`es.
 - Enum values Alpaca added since the last sync, each checked against the API reference:
@@ -25,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `JournalStatus`: `Queued`, `SentToClearing`, `Deleted`.
 
 ### Fixed
+- `CorporateActionsClient` called `/v1beta1/corporate-actions`; the endpoint is `/v1/corporate-actions`.
 - **Breaking**: `TradeAccount.account_number` is now `Option<String>`. The Trading API reference types it `string | null`, and a `null` made `get_account` fail.
 - `ActivityType` was serialized in snake_case (`fill`, `jnlc`); Alpaca's values are uppercase (`FILL`, `JNLC`). Activity filters were sent with values the API does not recognize, and `TradeActivity`/`NonTradeActivity` failed to deserialize any real activity.
 - `BrokerClient::get_account_activities` called `/v1/accounts/{account_id}/account_activities`, which does not exist; the endpoint is `/v1/accounts/activities` with `account_id` as a query parameter.

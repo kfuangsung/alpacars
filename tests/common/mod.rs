@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use alpacars::broker::client::BrokerClient;
+use alpacars::data::historical::corporate_actions::CorporateActionsClient;
 use alpacars::data::historical::stock::StockHistoricalDataClient;
 use alpacars::trading::client::TradingClient;
 
@@ -14,4 +15,8 @@ pub fn broker_client(base_url: &str) -> BrokerClient {
 
 pub fn stock_client(base_url: &str) -> StockHistoricalDataClient {
     StockHistoricalDataClient::new_with_url("test-key", "test-secret", base_url).unwrap()
+}
+
+pub fn corporate_actions_client(base_url: &str) -> CorporateActionsClient {
+    CorporateActionsClient::new_with_url("test-key", "test-secret", base_url).unwrap()
 }

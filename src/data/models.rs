@@ -401,5 +401,8 @@ pub struct CorporateActionsSet {
     pub name_changes: Option<Vec<serde_json::Value>>,
     pub worthless_removals: Option<Vec<serde_json::Value>>,
     pub rights_distributions: Option<Vec<serde_json::Value>>,
+    pub capital_gains_distributions: Option<Vec<serde_json::Value>>,
+    pub partial_calls: Option<Vec<serde_json::Value>>,
+    pub reorganizations: Option<Vec<serde_json::Value>>,
     pub next_page_token: Option<String>,
 }

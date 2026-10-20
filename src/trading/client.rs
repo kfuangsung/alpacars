@@ -350,11 +350,12 @@ impl TradingClient {
     // ── Locates (hard-to-borrow) ──────────────────────────────────────────────
     // Served under /v1, unlike the rest of the Trading API.
 
-    /// Create a locate.
+    /// Create a locate. Not available in paper trading.
     ///
     /// Pass an `idempotency_key` to make retries safe: reusing a key returns
     /// the original result instead of creating a second locate. Reusing a key
     /// with a different payload fails with an `idempotency_key_conflict` error.
+    /// Use a UUIDv4 or UUIDv7 — Alpaca is moving to a 36-character maximum.
     pub async fn create_locate(
         &self,
         request: &CreateLocateRequest,
@@ -401,11 +402,28 @@ impl TradingClient {
     // ── Tokenization ──────────────────────────────────────────────────────────
 
     /// Convert underlying equity securities into a tokenized asset.
+    ///
+    /// With an `idempotency_key`, retries carrying the same key and an identical body return
+    /// the original request instead of minting twice; the same key with a different body is
+    /// rejected with 422. Use a fresh UUIDv4 or UUIDv7 per logical request — Alpaca is moving
+    /// to a 36-character maximum.
     pub async fn mint_tokenized_asset(
         &self,
         request: &TokenizationMintRequest,
+        idempotency_key: Option<&str>,
     ) -> Result<TokenizationMintResponse, AlpacaError> {
-        self.client.post("/tokenization/mint", Some(request)).await
+        match idempotency_key {
+            Some(key) => {
+                self.client
+                    .post_with_headers(
+                        "/tokenization/mint",
+                        Some(request),
+                        &[("Idempotency-Key", key)],
+                    )
+                    .await
+            }
+            None => self.client.post("/tokenization/mint", Some(request)).await,
+        }
     }
 
     pub async fn get_tokenization_requests(
