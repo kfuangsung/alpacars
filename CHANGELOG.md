@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `BrokerClient::get_trading_account(account_id)` (`GET /v1/trading/accounts/{account_id}/account`): balances, buying power and trading configuration for an account.
+
+### Deprecated
+- `BrokerClient::get_trade_account_by_id(account_id, trading_account_id)`: the endpoint takes no trading account id. It now calls `get_trading_account` and ignores the second argument.
+- `BrokerClient::delete_account`: the Broker API has no `DELETE /v1/accounts/{account_id}` endpoint, so it can never succeed. Use `close_account`.
+
+Both will be removed in 0.7.0.
+
 ### Fixed
+- `BrokerClient::close_account` called `POST /v1/accounts/{account_id}:close`; the endpoint is `POST /v1/accounts/{account_id}/actions/close`.
+- `BrokerClient::get_trade_account_by_id` called `/v1/accounts/{account_id}/trading_accounts/{id}`, which does not exist (see Deprecated).
 - **`close_position` / `close_position_for_account` closed the entire position when asked for a partial close.** `ClosePositionRequest.qty` / `percentage` were sent as a `DELETE` request body, which the API ignores; they are query parameters (Trading spec; Broker `closepositionforaccountbysymbol` reference). They are now sent as query parameters. Affects both `TradingClient` and `BrokerClient`.
 - Broker per-account orders, positions and options exercise called `/v1/accounts/{account_id}/…`, which does not exist; the endpoints are `/v1/trading/accounts/{account_id}/…`. All eleven methods were failing: `submit_order_for_account`, `get_orders_for_account`, `get_order_for_account_by_id`, `replace_order_for_account_by_id`, `cancel_orders_for_account`, `cancel_order_for_account_by_id`, `get_all_positions_for_account`, `get_open_position_for_account`, `close_all_positions_for_account`, `close_position_for_account`, `exercise_options_position_for_account_by_id`.
 - Broker per-account watchlists called `/v1/accounts/{account_id}/watchlists…`, which does not exist; the endpoints are `/v1/trading/accounts/{account_id}/watchlists…`. All five methods were failing: `get_watchlists_for_account`, `get_watchlist_for_account_by_id`, `create_watchlist_for_account`, `update_watchlist_for_account_by_id`, `delete_watchlist_from_account_by_id`. Their docs now note that the Broker API requires `symbols` on create and both `name` and `symbols` on update (a full replace).
