@@ -427,6 +427,18 @@ pub struct AddSymbolToWatchlistRequest {
     pub symbol: String,
 }
 
+/// Date range and display timezone for [`get_market_calendar`](crate::trading::client::TradingClient::get_market_calendar).
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct GetMarketCalendarRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start: Option<NaiveDate>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end: Option<NaiveDate>,
+    /// IANA timezone the session times are expressed in (they are parsed to UTC either way).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timezone: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetAccountActivitiesRequest {
     /// Sent as a comma-separated `activity_types` query parameter.

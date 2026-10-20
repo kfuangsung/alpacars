@@ -183,6 +183,40 @@ pub struct Clock {
     pub next_close: DateTime<Utc>,
 }
 
+/// Market calendar for one market (`GET /v3/calendar/{market}`).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MarketCalendar {
+    pub market: Market,
+    pub calendar: Vec<MarketCalendarDay>,
+}
+
+/// A market, identified by acronym, MIC and/or BIC.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Market {
+    pub acronym: String,
+    pub name: String,
+    /// IANA timezone, e.g. `America/New_York`.
+    pub timezone: String,
+    pub mic: Option<String>,
+    pub bic: Option<String>,
+}
+
+/// One trading day. Session times are absolute instants; pre-, post-market and lunch sessions
+/// are `None` where the market has none.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MarketCalendarDay {
+    pub date: NaiveDate,
+    pub core_start: DateTime<Utc>,
+    pub core_end: DateTime<Utc>,
+    pub pre_start: Option<DateTime<Utc>>,
+    pub pre_end: Option<DateTime<Utc>>,
+    pub post_start: Option<DateTime<Utc>>,
+    pub post_end: Option<DateTime<Utc>>,
+    pub lunch_start: Option<DateTime<Utc>>,
+    pub lunch_end: Option<DateTime<Utc>>,
+    pub settlement_date: Option<NaiveDate>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Calendar {
     pub date: NaiveDate,
