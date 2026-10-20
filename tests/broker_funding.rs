@@ -163,7 +163,10 @@ async fn test_create_bank() {
         city: None,
         street_address: None,
     };
-    let bank = client.create_bank_for_account(&account(), &req).await.unwrap();
+    let bank = client
+        .create_bank_for_account(&account(), &req)
+        .await
+        .unwrap();
     assert_eq!(bank.name.as_deref(), Some("Bank of America"));
 }
 
