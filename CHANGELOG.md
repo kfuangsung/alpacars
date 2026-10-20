@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-20
+
+Patch release. The docs.rs front page now has an overview and examples, every `BrokerClient` method is tested, and `get_all_subscriptions` works for the first time. No breaking changes.
+
 ### Added
 - Crate-level documentation, which is the docs.rs front page and was empty before: the clients, environments and auth, retry and pagination, examples for Trading, Broker, historical data and streaming, error handling, and forward compatibility. The examples compile as `no_run` doctests.
 - Tests for the last ten `BrokerClient` methods that had none (assets, clock, calendar, journal get/cancel, portfolio update, subscriptions list/get, run get), with fixtures from their references.
@@ -284,7 +288,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/kfuangsung/alpacars/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/kfuangsung/alpacars/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/kfuangsung/alpacars/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/kfuangsung/alpacars/compare/v0.6.0...v0.6.1
