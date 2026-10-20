@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - MSRV raised from 1.88 to 1.89, required by `uuid` ≥ 1.27.
 - Dependency updates: `tokio` 1.53.3, `serde_json` 1.0.154, `thiserror` 2.0.21, `uuid` 1.28.0, `base64` 0.23.1, `futures-util` 0.3.34.
+- `tokio-tungstenite` 0.24 → 0.30. No public API change: WebSocket errors were already surfaced as `AlpacaError::WebSocket(String)`.
+
+### Added
+- `tests/data_stream.rs`, the first runtime test of a WebSocket stack. It drives `DataStreamConnection` against a local server through auth, subscribe, JSON text frames, msgpack binary frames, ping/pong and close.
 
 ### Fixed
 - Broker journals were non-functional. All of these were verified against the `docs.alpaca.markets/us/reference` pages, and none of them changes the Rust API:
