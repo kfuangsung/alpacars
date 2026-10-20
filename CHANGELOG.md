@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-10-20
+
+Patch release: every client is now testable and tested, which found three more broken paths and a `TradingStream` that dropped every trade update on paper accounts — plus the Trading and Broker endpoints the crate was missing. No breaking changes. **If you use `TradingStream` against paper trading, upgrade.**
+
 ### Added
 - Endpoints the crate lacked, checked against the Trading spec and Broker references:
   - `TradingClient`: `get_account_activities_by_type` (`/v2/account/activities/{activity_type}`), `do_not_exercise_options_position`, `get_watchlist_by_name` / `add_asset_to_watchlist_by_name` / `update_watchlist_by_name` / `delete_watchlist_by_name` (`/v2/watchlists:by_name`), and `get_market_calendar(market, …)` (`GET /v3/calendar/{market}`: pre-, core- and post-market sessions; `market` is a MIC, BIC or acronym such as `XNYS`) with new `MarketCalendar`, `Market`, `MarketCalendarDay` and `GetMarketCalendarRequest`.
@@ -237,7 +241,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/kfuangsung/alpacars/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/kfuangsung/alpacars/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/kfuangsung/alpacars/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/kfuangsung/alpacars/compare/v0.5.0...v0.5.1
