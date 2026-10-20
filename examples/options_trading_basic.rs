@@ -4,7 +4,8 @@
 //!   APCA_API_KEY_ID=<key> APCA_API_SECRET_KEY=<secret> cargo run --example options_trading_basic
 
 use alpacars::data::historical::option::{
-    OptionBarsRequest, OptionHistoricalDataClient, OptionLatestRequest, OptionSnapshotRequest,
+    OptionBarsRequest, OptionChainRequest, OptionHistoricalDataClient, OptionLatestRequest,
+    OptionSnapshotRequest,
 };
 use alpacars::trading::client::TradingClient;
 use alpacars::trading::enums::{AssetStatus, ContractType, ExerciseStyle, OrderSide};
@@ -175,9 +176,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Option chain for SPY (all contracts for the underlying)
-    let chain = data_client.get_option_chain("SPY", None).await?;
-    let chain_count = chain.as_object().map(|m| m.len()).unwrap_or(0);
-    println!("SPY option chain entries: {}", chain_count);
+    let chain = data_client
+        .get_option_chain(&OptionChainRequest {
+            underlying_symbol: "SPY".to_string(),
+            r#type: Some(ContractType::Call),
+            ..Default::default()
+        })
+        .await?;
+    println!("SPY call contracts in the chain: {}", chain.len());
 
     Ok(())
 }

@@ -2,6 +2,7 @@ use crate::common::client::{base_url, RestClient, DATA_V2_MAX_LIMIT};
 use crate::data::enums::{OptionsFeed, TimeFrame};
 use crate::data::models::*;
 use crate::error::AlpacaError;
+use crate::trading::enums::ContractType;
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -117,6 +118,52 @@ pub struct OptionSnapshotRequest {
     pub updated_since: Option<DateTime<Utc>>,
     pub limit: Option<u32>,
     pub expiration_date: Option<NaiveDate>,
+}
+
+/// Snapshots of every contract on an underlying (`GET /v1beta1/options/snapshots/{underlying}`),
+/// narrowed by the optional filters. Results are paginated for you.
+#[derive(Debug, Clone, Default)]
+pub struct OptionChainRequest {
+    pub underlying_symbol: String,
+    pub feed: Option<OptionsFeed>,
+    /// Page size; every page is fetched regardless.
+    pub limit: Option<u32>,
+    pub updated_since: Option<DateTime<Utc>>,
+    /// Only calls or only puts.
+    pub r#type: Option<ContractType>,
+    pub strike_price_gte: Option<f64>,
+    pub strike_price_lte: Option<f64>,
+    pub expiration_date: Option<NaiveDate>,
+    pub expiration_date_gte: Option<NaiveDate>,
+    pub expiration_date_lte: Option<NaiveDate>,
+    /// e.g. `AAPL1` for adjusted contracts.
+    pub root_symbol: Option<String>,
+}
+
+#[derive(Serialize)]
+struct OptionChainParams<'a> {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    feed: Option<&'a OptionsFeed>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    limit: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    updated_since: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    r#type: Option<&'a ContractType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    strike_price_gte: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    strike_price_lte: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    expiration_date: Option<NaiveDate>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    expiration_date_gte: Option<NaiveDate>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    expiration_date_lte: Option<NaiveDate>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    root_symbol: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    page_token: Option<String>,
 }
 
 // Paged response types
@@ -321,24 +368,38 @@ impl OptionHistoricalDataClient {
             .await
     }
 
+    /// Snapshots of every contract on `req.underlying_symbol`, keyed by contract symbol,
+    /// following `next_page_token` until all pages are fetched.
     pub async fn get_option_chain(
         &self,
-        underlying_symbol: &str,
-        feed: Option<OptionsFeed>,
-    ) -> Result<serde_json::Value, AlpacaError> {
-        // The chain endpoint takes the underlying as a path segment
-        // (`/v1beta1/options/snapshots/{underlying_symbol}`); the plain `/options/snapshots`
-        // endpoint requires contract `symbols` instead.
-        #[derive(serde::Serialize)]
-        struct Params {
-            #[serde(skip_serializing_if = "Option::is_none")]
-            feed: Option<OptionsFeed>,
+        req: &OptionChainRequest,
+    ) -> Result<OptionsSnapshotSet, AlpacaError> {
+        // The chain endpoint takes the underlying as a path segment; the plain
+        // `/options/snapshots` endpoint requires contract `symbols` instead.
+        let path = format!("/options/snapshots/{}", req.underlying_symbol);
+        let mut params = OptionChainParams {
+            feed: req.feed.as_ref(),
+            limit: req.limit,
+            updated_since: req.updated_since,
+            r#type: req.r#type.as_ref(),
+            strike_price_gte: req.strike_price_gte,
+            strike_price_lte: req.strike_price_lte,
+            expiration_date: req.expiration_date,
+            expiration_date_gte: req.expiration_date_gte,
+            expiration_date_lte: req.expiration_date_lte,
+            root_symbol: req.root_symbol.as_deref(),
+            page_token: None,
+        };
+
+        let mut result: OptionsSnapshotSet = HashMap::new();
+        loop {
+            let resp: OptionSnapshotsResp = self.client.get(&path, Some(&params)).await?;
+            result.extend(resp.snapshots.or(resp.direct).unwrap_or_default());
+            match resp.next_page_token {
+                Some(t) if !t.is_empty() => params.page_token = Some(t),
+                _ => break,
+            }
         }
-        self.client
-            .get_raw(
-                &format!("/options/snapshots/{}", underlying_symbol),
-                Some(&Params { feed }),
-            )
-            .await
+        Ok(with_symbols(result))
     }
 }
