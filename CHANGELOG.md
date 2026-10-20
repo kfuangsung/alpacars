@@ -7,11 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-20
+
+Breaking release. Live market-data events now carry their symbol. Response models can gain fields in future patch releases. The option chain is typed and fully paginated, and string filters the API defines as enums are typed. It also fixes corporate action announcements, which never parsed correctly. Migrating is mostly mechanical:
+- `trade.symbol` / `quote.symbol` / `bar.symbol` now exist. `OptionsSnapshot.symbol` is now a `String` rather than an `Option<String>`.
+- Models are `#[non_exhaustive]`. Build them by deserializing JSON (for example `serde_json::from_str`), not with struct literals. `AccountConfiguration` is the exception.
+- `get_option_chain("SPY", None)` → `get_option_chain(&OptionChainRequest { underlying_symbol: "SPY".into(), ..Default::default() })`. It returns snapshots keyed by contract.
+- `sort: Some("desc".into())` → `sort: Some(Sort::Desc)` (`alpacars::common::enums::Sort`). Likewise `direction`, `category`, `status`, `entities`, `attributes`, `ca_types`, `date_type`, `intraday_reporting` and `pnl_reset` take enums.
+
 ### Fixed
 - `CorporateActionType` used lowercase wire values (`dividend`), but the API's are capitalized (`Dividend`, `Merger`, `Spinoff`, `Split`, and the missing `Reorg`). Every announcement's `ca_type` parsed as `Unknown`, and the `ca_types` filter sent values the API does not list.
 - `CorporateActionAnnouncement` required `id`, `corporate_action_id`, `ca_type`, `ca_sub_type` and `initiating_symbol`, though the reference marks none of them required and its own examples omit some. Neither reference example parsed. They are now `Option`, and the example's `corporate_actions_id` spelling is accepted as an alias. **Breaking** (field types).
 
 ### Changed
+- **Breaking:** `Trade`, `Quote`, `Bar` and `Orderbook` have a `symbol: String`, so a stream handler subscribed to several symbols can tell their events apart (`trade.symbol`), as in alpaca-py. Streams fill it from the message's `S`. Historical methods fill it from the response's map key, so it is set there too, including on the trades, quotes and bars nested in `Snapshot` and `OptionsSnapshot`. `Snapshot` gains `symbol` as well, and `OptionsSnapshot.symbol` is now a `String` (was `Option<String>`).
+- **Breaking:** every response model struct (in `trading::models`, `broker::models` and `data::models`) is `#[non_exhaustive]`. Fields Alpaca adds to a response can now ship in patch releases instead of forcing a breaking one. You can still read every field and match with `Model { field, .. }`, but you can't build a model with a struct literal: deserialize it from JSON instead (for example in test mocks). `AccountConfiguration` stays constructible because it is also the body of `update_account_configurations`. `BankExtraFields` moved to `broker::requests` (it is a request field too) and is still re-exported from `broker::models`.
+- **Breaking:** `OptionHistoricalDataClient::get_option_chain` takes an `&OptionChainRequest` and returns a typed `OptionsSnapshotSet`, keyed by contract symbol, with every page fetched. It used to take `(underlying_symbol, feed)`, return raw JSON and stop at the first page, so a large chain came back truncated. `OptionChainRequest` has the reference's filters (`optionchain`): `feed`, `limit`, `updated_since`, `type` (`ContractType`), `strike_price_gte` / `strike_price_lte`, `expiration_date` / `expiration_date_gte` / `expiration_date_lte` and `root_symbol`.
 - **Breaking:** `String` fields the reference defines as enums are typed:
   - `sort` / `direction` on every list request is `common::enums::Sort`. The affected requests are Trading and Broker orders, account activities, `ListAccountsRequest`, `NewsRequest`, `CorporateActionsRequest`, and the stock, crypto and option bars / quotes / trades requests.
   - `ListAccountsRequest`: `status` is `AccountStatus`, `entities` is `Vec<AccountEntity>`.
@@ -25,9 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Vec` filters are still sent comma-separated. `CorporateActionsRequest.types` stays a `String`, because the reference lists its values only in prose.
 - **Breaking:** `Subscription.status` is removed; the reference's subscription has no such field.
 - `DocumentType` and `TradeDocumentType` no longer carry a `rename_all` that every variant overrode. The wire values are unchanged.
-- **Breaking:** `OptionHistoricalDataClient::get_option_chain` takes an `&OptionChainRequest` and returns a typed `OptionsSnapshotSet`, keyed by contract symbol, with every page fetched. It used to take `(underlying_symbol, feed)`, return raw JSON and stop at the first page, so a large chain came back truncated. `OptionChainRequest` has the reference's filters (`optionchain`): `feed`, `limit`, `updated_since`, `type` (`ContractType`), `strike_price_gte` / `strike_price_lte`, `expiration_date` / `expiration_date_gte` / `expiration_date_lte` and `root_symbol`.
-- **Breaking:** every response model struct (in `trading::models`, `broker::models` and `data::models`) is `#[non_exhaustive]`. Fields Alpaca adds to a response can now ship in patch releases instead of forcing a breaking one. You can still read every field and match with `Model { field, .. }`, but you can't build a model with a struct literal: deserialize it from JSON instead (for example in test mocks). `AccountConfiguration` stays constructible because it is also the body of `update_account_configurations`. `BankExtraFields` moved to `broker::requests` (it is a request field too) and is still re-exported from `broker::models`.
-- **Breaking:** `Trade`, `Quote`, `Bar` and `Orderbook` have a `symbol: String`, so a stream handler subscribed to several symbols can tell their events apart (`trade.symbol`), as in alpaca-py. Streams fill it from the message's `S`. Historical methods fill it from the response's map key, so it is set there too, including on the trades, quotes and bars nested in `Snapshot` and `OptionsSnapshot`. `Snapshot` gains `symbol` as well, and `OptionsSnapshot.symbol` is now a `String` (was `Option<String>`).
 
 ## [0.7.2] - 2026-10-20
 
@@ -320,7 +328,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/kfuangsung/alpacars/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/kfuangsung/alpacars/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/kfuangsung/alpacars/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/kfuangsung/alpacars/compare/v0.6.2...v0.7.0
