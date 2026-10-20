@@ -2,7 +2,9 @@
 //! and serialize back to the same string. The lists are copied from docs.alpaca.markets/us/reference,
 //! not derived from the crate.
 
-use alpacars::broker::enums::{AccountType, JournalStatus};
+use alpacars::broker::enums::{
+    AccountType, JournalStatus, PartyAgreementType, PerAccountAgreementType, SignedAgreementType,
+};
 use alpacars::trading::enums::{TokenizationIssuer, TokenizationNetwork};
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::json;
@@ -19,6 +21,18 @@ where
             parsed, unknown,
             "{wire:?} is in the reference but parsed as Unknown"
         );
+        assert_eq!(serde_json::to_value(&parsed).unwrap(), json!(wire));
+    }
+}
+
+/// For request-only enums, which have no `Unknown`: every reference value must round-trip.
+fn assert_round_trips_strict<E>(reference_values: &[&str])
+where
+    E: DeserializeOwned + Serialize + Debug,
+{
+    for &wire in reference_values {
+        let parsed: E = serde_json::from_value(json!(wire))
+            .unwrap_or_else(|e| panic!("{wire:?} failed to parse: {e}"));
         assert_eq!(serde_json::to_value(&parsed).unwrap(), json!(wire));
     }
 }
@@ -91,4 +105,39 @@ fn test_journal_status_matches_reference() {
         ],
         JournalStatus::Unknown,
     );
+}
+
+// createagreement: PartyAgreementType / PerAccountAgreementType / SignedAgreementType
+const PARTY_AGREEMENTS: &[&str] = &[
+    "margin_agreement",
+    "certifications_and_resolutions_statement",
+    "nasdaq_agreement",
+    "nyse_agreement",
+    "oauth_api_agreement",
+    "opra_agreement",
+    "trusted_contact_consent",
+    "custodian_customer_agreement",
+];
+const ACCOUNT_AGREEMENTS: &[&str] = &[
+    "account_agreement",
+    "customer_agreement",
+    "options_agreement",
+    "master_securities_lending_agreement",
+    "crypto_agreement",
+    "dvp_customer_agreement",
+    "etc_agreement",
+    "joint_account_agreement",
+];
+
+#[test]
+fn test_agreement_types_match_reference() {
+    assert_round_trips_strict::<PartyAgreementType>(PARTY_AGREEMENTS);
+    assert_round_trips_strict::<PerAccountAgreementType>(ACCOUNT_AGREEMENTS);
+    // SignedAgreementType is exactly the union of the two.
+    let all: Vec<&str> = PARTY_AGREEMENTS
+        .iter()
+        .chain(ACCOUNT_AGREEMENTS)
+        .copied()
+        .collect();
+    assert_round_trips(&all, SignedAgreementType::Unknown);
 }

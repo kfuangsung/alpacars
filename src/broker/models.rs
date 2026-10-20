@@ -63,6 +63,19 @@ pub struct Agreement {
     pub revision: Option<String>,
 }
 
+/// An agreement recorded through `POST /v1/agreements`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SignedAgreement {
+    pub party_id: Uuid,
+    pub agreement: SignedAgreementType,
+    pub signed_at: DateTime<Utc>,
+    pub ip_address: String,
+    /// Set for per-account agreements.
+    pub account_id: Option<Uuid>,
+    pub revision: Option<String>,
+    pub signer_party_id: Option<Uuid>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrustedContact {
     pub given_name: Option<String>,

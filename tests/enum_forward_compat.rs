@@ -43,6 +43,7 @@ fn test_every_response_enum_has_unknown_fallback() {
         alpacars::broker::enums::WeightType,
         alpacars::broker::enums::RunType,
         alpacars::broker::enums::RunInitiatedFrom,
+        alpacars::broker::enums::SignedAgreementType,
         alpacars::data::enums::Exchange,
         alpacars::data::enums::DataFeed,
         alpacars::trading::enums::OrderType,

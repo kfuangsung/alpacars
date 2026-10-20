@@ -117,6 +117,22 @@ impl BrokerClient {
             .await
     }
 
+    // ── Agreements ────────────────────────────────────────────────────────────
+
+    /// Sign a party-level or per-account agreement for an existing party
+    /// (`POST /v1/agreements`), e.g. a `certifications_and_resolutions_statement` that was
+    /// not included at party creation.
+    ///
+    /// Errors from this endpoint use `{error, error_description}` (e.g. `party_not_found`)
+    /// rather than `{code, message}`, so they surface as [`AlpacaError::Api`] with `code: 0`
+    /// and the raw response body as `message`.
+    pub async fn create_agreement(
+        &self,
+        data: &CreateAgreementRequest,
+    ) -> Result<SignedAgreement, AlpacaError> {
+        self.client.post("/agreements", Some(data)).await
+    }
+
     // ── Documents ─────────────────────────────────────────────────────────────
 
     pub async fn upload_documents_to_account(
