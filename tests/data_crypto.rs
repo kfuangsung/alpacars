@@ -485,3 +485,24 @@ async fn test_get_crypto_snapshot() {
     let set = client.get_crypto_snapshot(&req).await.unwrap();
     assert!(set.contains_key("BTC/USD"));
 }
+
+/// cryptoquotes-1 / cryptotrades-1: `loc` is a path segment, as for bars.
+#[tokio::test]
+async fn test_get_crypto_quotes_and_trades_use_loc() {
+    let server = MockServer::start().await;
+    mount_one(&server, "/v1beta3/crypto/us-1/quotes", r#"{"quotes": {}}"#).await;
+    mount_one(&server, "/v1beta3/crypto/eu-1/trades", r#"{"trades": {}}"#).await;
+    let client = common::crypto_client(&server.uri());
+    let quotes = CryptoQuotesRequest {
+        symbols: syms(&["BTC/USD"]),
+        loc: Some(CryptoFeed::Us1),
+        ..Default::default()
+    };
+    client.get_crypto_quotes(&quotes).await.unwrap();
+    let trades = CryptoQuotesRequest {
+        symbols: syms(&["BTC/USD"]),
+        loc: Some(CryptoFeed::Eu1),
+        ..Default::default()
+    };
+    client.get_crypto_trades(&trades).await.unwrap();
+}

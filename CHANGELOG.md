@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Request filters from the references. Adding a field to these structs is breaking for code that builds them without `..Default::default()`:
+  - `GetOrdersRequest` (Trading, `getallorders-1`): `asset_class` (comma-separated `Vec<AssetClass>`), `before_order_id`, `after_order_id`.
+  - `GetOrdersForAccountRequest` (Broker, `getallordersforaccount`): `asset_class`, `qty_above`, `qty_below`, `subtag`.
+  - `GetTradeDocumentsRequest` (`getdocsforaccount`): `type`.
+  - `CryptoQuotesRequest`: `loc`, which selects the path segment for `get_crypto_quotes` and `get_crypto_trades` the way it already did for bars. Both always used `us` before.
 - Broker funding fields from the references (`createrecipientbank`, `createachrelationshipforaccount`, `createtransferforaccount`, `gettransfersforaccount`):
   - `Bank`: `bank_code`, `bank_code_type`, `extra_fields` (intermediary bank BICs).
   - `Transfer`: `requested_amount`, `fee`, `fee_payment_method`, `instant_amount`, `ira` (`TransferIraDetails`).

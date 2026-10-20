@@ -1,6 +1,6 @@
 use crate::broker::enums::*;
 use crate::broker::models::BankExtraFields;
-use crate::trading::enums::{ActivityType, QueryOrderStatus};
+use crate::trading::enums::{ActivityType, AssetClass, QueryOrderStatus};
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -183,6 +183,9 @@ pub struct GetTradeDocumentsRequest {
     pub start: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub end: Option<NaiveDate>,
+    /// Only documents of this type.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<TradeDocumentType>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -500,6 +503,16 @@ pub struct GetOrdersForAccountRequest {
     pub nested: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbols: Option<String>,
+    /// Only orders in these asset classes, sent comma-separated. Omit for all classes. With
+    /// `us_option`, `symbols` filters option orders by underlying.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub asset_class: Option<Vec<AssetClass>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub qty_above: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub qty_below: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subtag: Option<String>,
 }
 
 pub use crate::trading::requests::{
