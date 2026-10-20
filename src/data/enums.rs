@@ -63,6 +63,15 @@ pub enum Adjustment {
 #[non_exhaustive]
 pub enum CryptoFeed {
     Us,
+    /// Location values from the crypto market data reference (`crypto_historical_loc`).
+    #[serde(rename = "us-1")]
+    Us1,
+    #[serde(rename = "us-2")]
+    Us2,
+    #[serde(rename = "eu-1")]
+    Eu1,
+    #[serde(rename = "bs-1")]
+    Bs1,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

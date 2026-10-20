@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `CryptoFeed::{Us1, Us2, Eu1, Bs1}` — the other crypto market data locations in the reference (`us-1`, `us-2`, `eu-1`, `bs-1`).
+- `#[doc(hidden)] new_with_url` on `CryptoHistoricalDataClient`, `NewsClient` and `ScreenerClient`, so every historical data client can now be tested; tests for all four of crypto, news, screener and options.
+
+### Fixed
+- `ScreenerClient::get_market_movers` always called `/v1beta1/screener/stocks/movers` and sent `market_type` as a query parameter the API does not read, so `MarketType::Crypto` returned stock movers. `market_type` now selects the path (`/screener/{market_type}/movers`).
+- `OptionHistoricalDataClient::get_option_chain` called `/v1beta1/options/snapshots?underlying_symbols=…`, an endpoint that requires contract `symbols`; the chain endpoint is `/v1beta1/options/snapshots/{underlying_symbol}`.
+- Crypto bars, latest bars / quotes / trades / orderbooks and snapshots always used the `us` location: `loc` was sent as an ignored query parameter while the path was hardcoded to `/crypto/us/…`. `loc` now selects the path segment. (Quotes and trades still use `us`: their request type has no `loc` field, and adding one is breaking.)
+
 ## [0.6.1] - 2026-10-20
 
 Patch release: a reference audit of every remaining untested Broker area found 29 methods calling paths that do not exist or sending values the API rejects — all fixed, with no breaking changes. **If you close positions partially, upgrade**: `close_position` and `close_position_for_account` ignored `qty` / `percentage` and closed the whole position.

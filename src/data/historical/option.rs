@@ -331,19 +331,18 @@ impl OptionHistoricalDataClient {
         underlying_symbol: &str,
         feed: Option<OptionsFeed>,
     ) -> Result<serde_json::Value, AlpacaError> {
+        // The chain endpoint takes the underlying as a path segment
+        // (`/v1beta1/options/snapshots/{underlying_symbol}`); the plain `/options/snapshots`
+        // endpoint requires contract `symbols` instead.
         #[derive(serde::Serialize)]
         struct Params {
-            underlying_symbols: String,
             #[serde(skip_serializing_if = "Option::is_none")]
             feed: Option<OptionsFeed>,
         }
         self.client
             .get_raw(
-                "/options/snapshots",
-                Some(&Params {
-                    underlying_symbols: underlying_symbol.to_string(),
-                    feed,
-                }),
+                &format!("/options/snapshots/{}", underlying_symbol),
+                Some(&Params { feed }),
             )
             .await
     }
