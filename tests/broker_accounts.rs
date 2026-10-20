@@ -6,7 +6,6 @@ use alpacars::broker::requests::{
 };
 use chrono::{TimeZone, Utc};
 use serde_json::json;
-use uuid::Uuid;
 use wiremock::matchers::{body_json, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -315,7 +314,7 @@ async fn test_get_trading_account() {
             "/v1/trading/accounts/c8f1ef5d-edc0-4f23-9ee4-378f19cb92a4/account",
         ))
         .respond_with(ResponseTemplate::new(200).set_body_string(TRADE_ACCOUNT_JSON))
-        .expect(2)
+        .expect(1)
         .mount(&server)
         .await;
 
@@ -324,12 +323,4 @@ async fn test_get_trading_account() {
     let account = client.get_trading_account(&id).await.unwrap();
     assert_eq!(account.account_number.as_deref(), Some("927584925"));
     assert_eq!(account.buying_power.as_deref(), Some("103556.8572572922"));
-
-    // The deprecated two-id form hits the same endpoint and ignores its second id.
-    #[allow(deprecated)]
-    let same = client
-        .get_trade_account_by_id(&id, &Uuid::nil())
-        .await
-        .unwrap();
-    assert_eq!(same.id, account.id);
 }

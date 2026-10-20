@@ -83,18 +83,6 @@ impl BrokerClient {
             .await
     }
 
-    /// The Broker API has no `DELETE /v1/accounts/{account_id}` endpoint, so this call cannot
-    /// succeed. Use [`close_account`](Self::close_account).
-    #[deprecated(
-        since = "0.6.1",
-        note = "the Broker API has no account DELETE endpoint; use close_account"
-    )]
-    pub async fn delete_account(&self, account_id: &Uuid) -> Result<(), AlpacaError> {
-        self.client
-            .delete_void(&format!("/accounts/{}", account_id), None::<&()>)
-            .await
-    }
-
     /// Close an account (`POST /v1/accounts/{account_id}/actions/close`).
     pub async fn close_account(&self, account_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
@@ -124,20 +112,6 @@ impl BrokerClient {
                 None::<&()>,
             )
             .await
-    }
-
-    /// Calls [`get_trading_account`](Self::get_trading_account). The endpoint takes only the
-    /// account id; `trading_account_id` is ignored.
-    #[deprecated(
-        since = "0.6.1",
-        note = "use get_trading_account; the endpoint takes no trading_account_id"
-    )]
-    pub async fn get_trade_account_by_id(
-        &self,
-        account_id: &Uuid,
-        _trading_account_id: &Uuid,
-    ) -> Result<TradeAccount, AlpacaError> {
-        self.get_trading_account(account_id).await
     }
 
     // ── Agreements ────────────────────────────────────────────────────────────
@@ -201,27 +175,6 @@ impl BrokerClient {
             .await
     }
 
-    /// The Broker API has no JSON endpoint for a single account document, so this call cannot
-    /// succeed. Find the document with
-    /// [`get_trade_documents_for_account`](Self::get_trade_documents_for_account) and fetch its
-    /// file with [`download_trade_document_for_account`](Self::download_trade_document_for_account).
-    #[deprecated(
-        since = "0.6.1",
-        note = "no such endpoint; use get_trade_documents_for_account and download_trade_document_for_account"
-    )]
-    pub async fn get_trade_document_for_account_by_id(
-        &self,
-        account_id: &Uuid,
-        document_id: &Uuid,
-    ) -> Result<TradeDocument, AlpacaError> {
-        self.client
-            .get(
-                &format!("/accounts/{}/documents/{}", account_id, document_id),
-                None::<&()>,
-            )
-            .await
-    }
-
     // ── CIP Data ──────────────────────────────────────────────────────────────
 
     pub async fn get_cip_data_for_account_by_id(
@@ -235,16 +188,15 @@ impl BrokerClient {
 
     /// Submit CIP results from your KYC provider (`POST /v1/accounts/{account_id}/cip`).
     ///
-    /// The API reference documents a `200` response without specifying its body. If Alpaca
-    /// returns an empty body, this method reports a deserialization error even though the
-    /// upload succeeded.
+    /// The API reference documents a `200` response without specifying its body, so any body
+    /// is discarded.
     pub async fn upload_cip_data_for_account_by_id(
         &self,
         account_id: &Uuid,
         data: &serde_json::Value,
-    ) -> Result<CIPInfo, AlpacaError> {
+    ) -> Result<(), AlpacaError> {
         self.client
-            .post(&format!("/accounts/{}/cip", account_id), Some(data))
+            .post_void(&format!("/accounts/{}/cip", account_id), Some(data))
             .await
     }
 
