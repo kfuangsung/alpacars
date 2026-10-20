@@ -178,17 +178,13 @@ impl BrokerClient {
 
     // ── Activities ────────────────────────────────────────────────────────────
 
+    /// List account activities. Set `account_id` on the filter to restrict to one account;
+    /// leave it unset to query across all accounts.
     pub async fn get_account_activities(
         &self,
-        account_id: &Uuid,
         filter: Option<&GetAccountActivitiesRequest>,
     ) -> Result<Vec<serde_json::Value>, AlpacaError> {
-        self.client
-            .get(
-                &format!("/accounts/{}/account_activities", account_id),
-                filter,
-            )
-            .await
+        self.client.get("/accounts/activities", filter).await
     }
 
     // ── ACH Relationships ─────────────────────────────────────────────────────

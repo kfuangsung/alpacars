@@ -1,5 +1,5 @@
 use crate::broker::enums::*;
-use crate::trading::enums::QueryOrderStatus;
+use crate::trading::enums::{ActivityType, QueryOrderStatus};
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -115,6 +115,18 @@ pub struct ListAccountsRequest {
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetAccountActivitiesRequest {
+    /// Restrict to one account. Omit to list activities across all accounts.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account_id: Option<Uuid>,
+    /// Sent as a comma-separated `activity_types` query parameter.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_types: Option<Vec<ActivityType>>,
+    /// `trade_activity` or `non_trade_activity`. Mutually exclusive with `activity_types`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
+    /// Only return activities (such as fills) belonging to this order.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -123,8 +135,6 @@ pub struct GetAccountActivitiesRequest {
     pub after: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direction: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub account_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_size: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]

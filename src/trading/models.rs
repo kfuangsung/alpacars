@@ -259,11 +259,29 @@ pub struct NonTradeActivity {
     pub currency: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// One account activity: a fill (`activity_type: FILL`) or any other, non-trade, activity.
+///
+/// Deserialization picks the variant from `activity_type`. Both activity shapes have only
+/// `id` and `activity_type` as required fields, so trying them in order (`#[serde(untagged)]`)
+/// would classify every activity as a trade.
+#[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum AccountActivity {
     Trade(TradeActivity),
     NonTrade(NonTradeActivity),
+}
+
+impl<'de> Deserialize<'de> for AccountActivity {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+        let value = serde_json::Value::deserialize(deserializer)?;
+        let activity = if value.get("activity_type").and_then(|t| t.as_str()) == Some("FILL") {
+            serde_json::from_value(value).map(AccountActivity::Trade)
+        } else {
+            serde_json::from_value(value).map(AccountActivity::NonTrade)
+        };
+        activity.map_err(D::Error::custom)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

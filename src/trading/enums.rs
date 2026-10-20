@@ -236,44 +236,63 @@ pub enum ExerciseStyle {
     European,
 }
 
+/// Account activity type. Wire values are uppercase (`FILL`, `JNLC`, `DIVCGL`, ...).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "UPPERCASE")]
 pub enum ActivityType {
+    /// Order fill — the only trade activity type; every other value is a non-trade activity.
     Fill,
     Acatc,
     Acats,
     Cfee,
+    /// Capital gains distribution (sub-types `LTCG`, `STCG`).
+    Cgd,
     Cil,
     Csd,
     Csw,
     Div,
     Divcgl,
     Divcgs,
+    Divfee,
+    Divft,
     Divnra,
     Divroc,
+    Divtw,
     Divtxex,
     Divwh,
     Extrd,
     Fee,
+    Fopt,
     Fxtrd,
     Int,
+    Intnra,
     Intpnl,
+    Inttw,
+    Jnl,
     Jnlc,
     Jnls,
     Ma,
     Mem,
+    Misc,
     Nc,
+    /// On-chain transaction (blockchain deposit or withdrawal).
     Oct,
     Opasn,
+    Opca,
     Opcsh,
     Opexc,
     Opexp,
     Optrd,
     Ptc,
+    Ptr,
+    /// Reorganization (sub-types `REOS`, `REOC`, `REOSC`).
+    Reo,
+    /// Worthless removal (sub-type `WRM`); broader reorganizations are `REO`.
     Reorg,
     Spin,
     Split,
     Swp,
+    Trans,
     Vof,
     Wh,
 }
