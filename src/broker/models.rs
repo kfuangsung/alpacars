@@ -156,11 +156,12 @@ pub struct Bank {
     pub account_id: Option<Uuid>,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
-    pub status: Option<String>,
+    pub status: Option<BankStatus>,
     pub name: Option<String>,
+    pub bank_code: Option<String>,
+    pub bank_code_type: Option<BankCodeType>,
     pub account_number: Option<String>,
-    pub routing_number: Option<String>,
-    pub swift_code: Option<String>,
+    pub extra_fields: Option<BankExtraFields>,
     pub country: Option<String>,
     pub state_province: Option<String>,
     pub postal_code: Option<String>,
@@ -184,6 +185,36 @@ pub struct Transfer {
     pub reason: Option<String>,
     pub hold_until: Option<DateTime<Utc>>,
     pub additional_information: Option<String>,
+    /// Wire transfers only.
+    pub requested_amount: Option<String>,
+    pub fee: Option<String>,
+    /// Wire transfers only.
+    pub fee_payment_method: Option<FeePaymentMethod>,
+    pub instant_amount: Option<String>,
+    /// IRA accounts only.
+    pub ira: Option<TransferIraDetails>,
+}
+
+/// Intermediary banks for a recipient bank (`extra_fields`).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct BankExtraFields {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub intermediary_bank1_bic: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub intermediary_bank2_bic: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub intermediary_bank3_bic: Option<String>,
+}
+
+/// IRA distribution details of a transfer.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TransferIraDetails {
+    pub distribution_reason: Option<String>,
+    pub tax_year: Option<String>,
+    pub fed_withholding_pct: Option<String>,
+    pub fed_withholding_amount: Option<String>,
+    pub state_withholding_pct: Option<String>,
+    pub state_withholding_amount: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

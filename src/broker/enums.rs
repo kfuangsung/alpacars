@@ -298,6 +298,57 @@ pub enum TransferDirection {
     Unknown,
 }
 
+/// How a recipient bank is identified: an `ABA` routing number or a `BIC` (SWIFT) code.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
+pub enum BankCodeType {
+    Aba,
+    Bic,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// `status` of a recipient bank.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum BankStatus {
+    Queued,
+    SentToClearing,
+    Approved,
+    Rejected,
+    Canceled,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// `status` filter on `GET /v1/accounts/{account_id}/recipient_banks`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
+pub enum BankStatusFilter {
+    Active,
+    Inactive,
+}
+
+/// Who pays a wire transfer's fees: the end `user`, or the broker via the monthly `invoice`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+#[non_exhaustive]
+pub enum FeePaymentMethod {
+    User,
+    Invoice,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
 /// Journal kind. Alpaca's wire values are `JNLC` (cash) and `JNLS` (securities).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[non_exhaustive]

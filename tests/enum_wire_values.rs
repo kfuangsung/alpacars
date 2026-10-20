@@ -277,3 +277,23 @@ fn test_acats_enums_match_reference() {
         "updated_at",
     ]);
 }
+
+#[test]
+fn test_funding_enums_match_reference() {
+    use alpacars::broker::enums::{BankCodeType, BankStatus, BankStatusFilter, FeePaymentMethod};
+    // createrecipientbank / getrecipientbanks.
+    assert_round_trips(&["ABA", "BIC"], BankCodeType::Unknown);
+    assert_round_trips(
+        &[
+            "QUEUED",
+            "SENT_TO_CLEARING",
+            "APPROVED",
+            "REJECTED",
+            "CANCELED",
+        ],
+        BankStatus::Unknown,
+    );
+    assert_round_trips_strict::<BankStatusFilter>(&["ACTIVE", "INACTIVE"]);
+    // createtransferforaccount: FeePaymentMethod is "user" or "invoice".
+    assert_round_trips(&["user", "invoice"], FeePaymentMethod::Unknown);
+}

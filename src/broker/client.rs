@@ -248,11 +248,12 @@ impl BrokerClient {
     pub async fn get_ach_relationships_for_account(
         &self,
         account_id: &Uuid,
+        filter: Option<&GetACHRelationshipsRequest>,
     ) -> Result<Vec<ACHRelationship>, AlpacaError> {
         self.client
             .get(
                 &format!("/accounts/{}/ach_relationships", account_id),
-                None::<&()>,
+                filter,
             )
             .await
     }
@@ -288,12 +289,13 @@ impl BrokerClient {
             .await
     }
 
-    pub async fn get_banks_for_account(&self, account_id: &Uuid) -> Result<Vec<Bank>, AlpacaError> {
+    pub async fn get_banks_for_account(
+        &self,
+        account_id: &Uuid,
+        filter: Option<&GetBanksRequest>,
+    ) -> Result<Vec<Bank>, AlpacaError> {
         self.client
-            .get(
-                &format!("/accounts/{}/recipient_banks", account_id),
-                None::<&()>,
-            )
+            .get(&format!("/accounts/{}/recipient_banks", account_id), filter)
             .await
     }
 
