@@ -14,7 +14,9 @@ pub struct MostActivesRequest {
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct MarketMoversRequest {
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Selects the endpoint (`/screener/{market_type}/movers`); defaults to `Stocks`. It is a
+    /// path segment, not a query parameter.
+    #[serde(skip)]
     pub market_type: Option<MarketType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top: Option<u32>,
@@ -40,6 +42,25 @@ impl ScreenerClient {
         })
     }
 
+    /// Create a client pointed at a custom base URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(
+        api_key: &str,
+        secret_key: &str,
+        base_url: &str,
+    ) -> Result<Self, AlpacaError> {
+        Ok(Self {
+            client: RestClient::new(
+                Some(api_key.to_string()),
+                Some(secret_key.to_string()),
+                None,
+                base_url.to_string(),
+                "v1beta1".to_string(),
+                false,
+            )?,
+        })
+    }
+
     pub async fn get_most_actives(
         &self,
         req: &MostActivesRequest,
@@ -53,6 +74,12 @@ impl ScreenerClient {
         &self,
         req: &MarketMoversRequest,
     ) -> Result<Movers, AlpacaError> {
-        self.client.get("/screener/stocks/movers", Some(req)).await
+        let market = match req.market_type {
+            Some(MarketType::Crypto) => "crypto",
+            _ => "stocks",
+        };
+        self.client
+            .get(&format!("/screener/{}/movers", market), Some(req))
+            .await
     }
 }

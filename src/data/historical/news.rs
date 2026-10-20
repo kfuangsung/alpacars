@@ -50,6 +50,25 @@ impl NewsClient {
         })
     }
 
+    /// Create a client pointed at a custom base URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(
+        api_key: &str,
+        secret_key: &str,
+        base_url: &str,
+    ) -> Result<Self, AlpacaError> {
+        Ok(Self {
+            client: RestClient::new(
+                Some(api_key.to_string()),
+                Some(secret_key.to_string()),
+                None,
+                base_url.to_string(),
+                "v1beta1".to_string(),
+                false,
+            )?,
+        })
+    }
+
     /// Fetch news articles (auto-paginated).
     pub async fn get_news(&self, req: &NewsRequest) -> Result<NewsSet, AlpacaError> {
         let mut params = req.clone();
