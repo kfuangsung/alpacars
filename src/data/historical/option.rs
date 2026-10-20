@@ -119,11 +119,6 @@ pub struct OptionSnapshotRequest {
     pub expiration_date: Option<NaiveDate>,
 }
 
-pub struct OptionChainRequest {
-    pub underlying_symbol: String,
-    pub feed: Option<OptionsFeed>,
-}
-
 // Paged response types
 
 #[derive(serde::Deserialize)]

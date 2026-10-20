@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Breaking:** `BrokerClient::upload_cip_data_for_account_by_id` returns `()`. The reference documents its `200` without a body, so the old `CIPInfo` return reported a deserialization error on an empty body even though the upload succeeded.
+
+### Removed
+- **Breaking:** the methods deprecated in 0.6.1, none of which could succeed: `BrokerClient::delete_account` (use `close_account`), `get_trade_account_by_id` (use `get_trading_account`) and `get_trade_document_for_account_by_id` (use `get_trade_documents_for_account` and `download_trade_document_for_account`).
+- **Breaking:** the invalid enum variants documented in 0.6.1: `DocumentType::{DriversLicense, NationalIdCard, Passport, PassportCard, VisaPermit, ResidencePermit, TaxReturn, FinancialStatement, BankStatement, FundSource, AccountTransferIn, LimitedPoa, Other}` (sub-type values, not document types) and `TradeDocumentType::TaxForm*` (not in the reference). Those values now parse as `Unknown`. The explicit discriminants pinned in 0.6.1 are gone.
+- **Breaking:** `RestClient::delete_with_body`. Alpaca ignores DELETE bodies, which is how `close_position` closed whole positions before 0.6.1; use `delete` with a query.
+- **Breaking:** `OptionChainRequest`, which no method took (`get_option_chain` takes its arguments directly).
+
 ## [0.6.2] - 2026-10-20
 
 Patch release: every client is now testable and tested, which found three more broken paths and a `TradingStream` that dropped every trade update on paper accounts — plus the Trading and Broker endpoints the crate was missing. No breaking changes. **If you use `TradingStream` against paper trading, upgrade.**

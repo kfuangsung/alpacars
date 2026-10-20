@@ -433,19 +433,4 @@ impl RestClient {
         let val = self.execute_raw(Method::DELETE, &url, q, None).await?;
         Ok(serde_json::from_value(val)?)
     }
-
-    pub async fn delete_with_body<B, R>(
-        &self,
-        path: &str,
-        body: Option<&B>,
-    ) -> Result<R, AlpacaError>
-    where
-        B: Serialize,
-        R: DeserializeOwned,
-    {
-        let url = self.build_url(path);
-        let b = body.map(serde_json::to_value).transpose()?;
-        let val = self.execute_raw(Method::DELETE, &url, None, b).await?;
-        Ok(serde_json::from_value(val)?)
-    }
 }

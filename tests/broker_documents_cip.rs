@@ -158,7 +158,8 @@ async fn test_upload_cip_data() {
     Mock::given(method("POST"))
         .and(path(format!("/v1/accounts/{ACCOUNT_ID}/cip")))
         .and(body_json(json!({"provider_name": ["onfido"]})))
-        .respond_with(ResponseTemplate::new(200).set_body_string(CIP_JSON))
+        // The reference documents the 200 without a body; an empty one must not be an error.
+        .respond_with(ResponseTemplate::new(200))
         .expect(1)
         .mount(&server)
         .await;
@@ -206,17 +207,13 @@ fn test_document_type_wire_values() {
         assert_ne!(v, TradeDocumentType::Unknown, "{wire}");
         assert_eq!(serde_json::to_value(&v).unwrap(), json!(wire));
     }
-}
-
-#[tokio::test]
-#[allow(deprecated)]
-async fn test_deprecated_get_document_by_id_still_compiles() {
-    // There is no such endpoint; the method is deprecated. This only pins that it still exists
-    // (removal is a 0.7.0 change) and fails cleanly rather than panicking.
-    let server = MockServer::start().await;
-    let client = common::broker_client(&server.uri());
-    assert!(client
-        .get_trade_document_for_account_by_id(&account(), &document())
-        .await
-        .is_err());
+    // Sub-type and tax-form values the crate used to model as document types.
+    for legacy in ["PASSPORT", "DRIVERS_LICENSE", "OTHER"] {
+        let v: DocumentType = serde_json::from_value(json!(legacy)).unwrap();
+        assert_eq!(v, DocumentType::Unknown, "{legacy}");
+    }
+    for legacy in ["TAX_FORM1099_B", "TAX_FORM_W9"] {
+        let v: TradeDocumentType = serde_json::from_value(json!(legacy)).unwrap();
+        assert_eq!(v, TradeDocumentType::Unknown, "{legacy}");
+    }
 }
