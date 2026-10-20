@@ -295,3 +295,87 @@ pub use crate::trading::requests::{
     CreateWatchlistRequest, GetAssetsRequest, GetCalendarRequest, GetTokenizationRequestsRequest,
     TokenizationMintRequest, UpdateWatchlistRequest,
 };
+
+// ── ACATS (Beta) ─────────────────────────────────────────────────────────────
+
+/// An incoming or outgoing ACATS transfer. May include transfers not initiated through the API.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsTransfer {
+    pub acats_id: Uuid,
+    pub account_id: Uuid,
+    pub account_number: String,
+    pub account_name: Option<String>,
+    pub account_type: Option<AcatsAccountType>,
+    pub contra_account_number: String,
+    pub contra_broker_number: String,
+    pub contra_broker_name: Option<String>,
+    pub contra_broker_type: Option<AcatsContraBrokerType>,
+    pub transfer_type: AcatsDtccTransferType,
+    pub direction: AcatsTransferDirection,
+    pub status: AcatsStatusDetails,
+    pub rejection_details: Option<AcatsRejectionDetails>,
+    /// Decimal string.
+    pub total_transfer_value: Option<String>,
+    /// DTCC transfer identifier; empty until the transfer is acknowledged.
+    pub transfer_identifier: Option<String>,
+    pub original_transfer_identifier: Option<String>,
+    pub ip_address: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub settlement_date: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsStatusDetails {
+    pub transfer_status: Option<AcatsTransferStatus>,
+    pub dtcc_status: Option<AcatsDtccStatus>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsRejectionDetails {
+    pub rejection_reason: Option<AcatsRejectionReason>,
+    pub rejection_message: Option<String>,
+}
+
+/// One page of ACATS transfers. Pass `page_token_next` back as `page_token` for the next page.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsListTransfersResponse {
+    pub transfers: Vec<AcatsTransfer>,
+    pub page_token_next: Option<String>,
+    pub page_token_previous: Option<String>,
+    pub pending_transfers: Option<i32>,
+}
+
+/// Returned (HTTP 202) when an incoming transfer is accepted for processing.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsInitiateTransferResponse {
+    pub acats_id: Uuid,
+}
+
+/// One asset on an ACATS transfer.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsAsset {
+    pub asset_class: AcatsAssetClass,
+    pub asset_description: String,
+    pub status: AcatsAssetStatus,
+    pub position: AcatsPosition,
+    pub symbol: Option<String>,
+    pub cusip: Option<String>,
+    /// Deprecated by Alpaca (removed 2027-02-04); use `symbol` or `cusip`.
+    pub isin: Option<String>,
+    /// Decimal string.
+    pub qty: Option<String>,
+    /// Decimal string.
+    pub amount: Option<String>,
+    pub currency_code: Option<String>,
+    pub rejection_message: Option<String>,
+}
+
+/// A valid contra party, from the latest ACATS Participant Master File.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsContraBroker {
+    pub name: String,
+    /// DTCC participant number.
+    pub number: String,
+    #[serde(rename = "type")]
+    pub broker_type: AcatsContraBrokerType,
+}

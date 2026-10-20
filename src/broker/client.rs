@@ -811,4 +811,87 @@ impl BrokerClient {
             )
             .await
     }
+
+    // ── ACATS (Beta) ──────────────────────────────────────────────────────────
+    //
+    // Served under /v1beta1/acats. These endpoints are in Beta at Alpaca and may change.
+
+    fn acats(&self) -> RestClient {
+        self.client.with_api_version("v1beta1")
+    }
+
+    /// Initiate an incoming ACATS transfer into `account_id` (Beta). Full and partial transfers
+    /// of US equities and cash are supported. Alpaca answers with HTTP 202; the transfer can
+    /// take some time to appear in the list endpoints.
+    pub async fn initiate_acats_transfer(
+        &self,
+        account_id: &Uuid,
+        data: &AcatsInitiateTransferRequest,
+    ) -> Result<AcatsInitiateTransferResponse, AlpacaError> {
+        self.acats()
+            .post(&format!("/acats/{}", account_id), Some(data))
+            .await
+    }
+
+    /// List incoming and outgoing ACATS transfers across all accounts (Beta), one page at a
+    /// time. The list may include transfers not initiated through the API.
+    pub async fn list_acats_transfers(
+        &self,
+        filter: Option<&ListAcatsTransfersRequest>,
+    ) -> Result<AcatsListTransfersResponse, AlpacaError> {
+        self.acats().get("/acats", filter).await
+    }
+
+    /// List ACATS transfers where `account_id` was one of the parties (Beta), one page at a
+    /// time.
+    pub async fn list_acats_transfers_for_account(
+        &self,
+        account_id: &Uuid,
+        filter: Option<&ListAcatsTransfersForAccountRequest>,
+    ) -> Result<AcatsListTransfersResponse, AlpacaError> {
+        self.acats()
+            .get(&format!("/acats/{}", account_id), filter)
+            .await
+    }
+
+    /// Get one ACATS transfer (Beta).
+    pub async fn get_acats_transfer(
+        &self,
+        account_id: &Uuid,
+        acats_id: &Uuid,
+    ) -> Result<AcatsTransfer, AlpacaError> {
+        self.acats()
+            .get(&format!("/acats/{}/{}", account_id, acats_id), None::<&()>)
+            .await
+    }
+
+    /// List the assets on an ACATS transfer (Beta). Only available for partial transfers, and
+    /// for transfers where the deliverer has already responded with its asset list; the list
+    /// can change as the transfer is updated.
+    pub async fn list_acats_transfer_assets(
+        &self,
+        account_id: &Uuid,
+        acats_id: &Uuid,
+    ) -> Result<Vec<AcatsAsset>, AlpacaError> {
+        self.acats()
+            .get(
+                &format!("/acats/{}/{}/assets", account_id, acats_id),
+                None::<&()>,
+            )
+            .await
+    }
+
+    /// List valid contra brokers and banks from the latest ACATS Participant Master File
+    /// (Beta).
+    pub async fn list_acats_contra_brokers(&self) -> Result<Vec<AcatsContraBroker>, AlpacaError> {
+        #[derive(serde::Deserialize)]
+        struct Wrapper {
+            brokers: Option<Vec<AcatsContraBroker>>,
+        }
+        let resp: Wrapper = self
+            .acats()
+            .get("/acats/contrabrokers", None::<&()>)
+            .await?;
+        Ok(resp.brokers.unwrap_or_default())
+    }
 }

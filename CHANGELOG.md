@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking**: `CreateAccountRequest` fields `contact`, `identity`, `disclosures` and `agreements` are now `Option`, because requirements vary by account type (an existing-holder IRA or donor-advised account sends none of them). The struct now implements `Default`.
 
 ### Added
+- ACATS transfers (Beta, `/v1beta1/acats`) on `BrokerClient`: `initiate_acats_transfer`, `list_acats_transfers` (firm-wide, with status / type / direction / contra-broker / time filters and sorting), `list_acats_transfers_for_account`, `get_acats_transfer`, `list_acats_transfer_assets`, `list_acats_contra_brokers`. Lists are paginated by `page_token_next`. `AcatsTransferDetails::{Full, Partial}` makes a full transfer carrying assets — which the API rejects — unrepresentable, and `AcatsSecurityId::{Cusip, Symbol}` enforces the one-identifier rule for equities (prefer CUSIP). Twelve new `Acats*` enums.
 - `BrokerClient::create_agreement` (`POST /v1/agreements`) to sign party-level or per-account agreements for an existing party, with `CreateAgreementRequest::{Party, Account}`, `SignedAgreement`, and the enums `PartyAgreementType`, `PerAccountAgreementType`, `SignedAgreementType`.
 - `Order.group_id` / `Order.group_role` (new enum `OrderGroupRole`: `Entry`, `TakeProfit`, `StopLoss`), identifying the members of a `bracket`, `oto` or `oco` order — useful on the trade-updates stream, where `legs` is not populated.
 - `OptionContract.ppind` (Penny Program Indicator).
