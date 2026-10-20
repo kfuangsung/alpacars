@@ -201,7 +201,8 @@ impl TradingClient {
         close_options: Option<&ClosePositionRequest>,
     ) -> Result<Order, AlpacaError> {
         self.client
-            .delete_with_body(&format!("/positions/{}", symbol_or_asset_id), close_options)
+            // qty / percentage are query parameters; a DELETE body is ignored by the API.
+            .delete(&format!("/positions/{}", symbol_or_asset_id), close_options)
             .await
     }
 

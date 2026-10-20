@@ -319,7 +319,10 @@ impl BrokerClient {
         account_id: &Uuid,
     ) -> Result<Vec<Position>, AlpacaError> {
         self.client
-            .get(&format!("/accounts/{}/positions", account_id), None::<&()>)
+            .get(
+                &format!("/trading/accounts/{}/positions", account_id),
+                None::<&()>,
+            )
             .await
     }
 
@@ -330,7 +333,10 @@ impl BrokerClient {
     ) -> Result<Position, AlpacaError> {
         self.client
             .get(
-                &format!("/accounts/{}/positions/{}", account_id, symbol_or_asset_id),
+                &format!(
+                    "/trading/accounts/{}/positions/{}",
+                    account_id, symbol_or_asset_id
+                ),
                 None::<&()>,
             )
             .await
@@ -348,7 +354,7 @@ impl BrokerClient {
         }
         self.client
             .delete(
-                &format!("/accounts/{}/positions", account_id),
+                &format!("/trading/accounts/{}/positions", account_id),
                 Some(&Params { cancel_orders }),
             )
             .await
@@ -360,9 +366,13 @@ impl BrokerClient {
         symbol_or_asset_id: &str,
         close_options: Option<&ClosePositionRequest>,
     ) -> Result<Order, AlpacaError> {
+        // qty / percentage are query parameters; a DELETE body is ignored by the API.
         self.client
-            .delete_with_body(
-                &format!("/accounts/{}/positions/{}", account_id, symbol_or_asset_id),
+            .delete(
+                &format!(
+                    "/trading/accounts/{}/positions/{}",
+                    account_id, symbol_or_asset_id
+                ),
                 close_options,
             )
             .await
@@ -376,7 +386,10 @@ impl BrokerClient {
         order: &OrderRequest,
     ) -> Result<Order, AlpacaError> {
         self.client
-            .post(&format!("/accounts/{}/orders", account_id), Some(order))
+            .post(
+                &format!("/trading/accounts/{}/orders", account_id),
+                Some(order),
+            )
             .await
     }
 
@@ -386,7 +399,7 @@ impl BrokerClient {
         filter: Option<&GetOrdersForAccountRequest>,
     ) -> Result<Vec<Order>, AlpacaError> {
         self.client
-            .get(&format!("/accounts/{}/orders", account_id), filter)
+            .get(&format!("/trading/accounts/{}/orders", account_id), filter)
             .await
     }
 
@@ -397,7 +410,7 @@ impl BrokerClient {
     ) -> Result<Order, AlpacaError> {
         self.client
             .get(
-                &format!("/accounts/{}/orders/{}", account_id, order_id),
+                &format!("/trading/accounts/{}/orders/{}", account_id, order_id),
                 None::<&()>,
             )
             .await
@@ -411,7 +424,7 @@ impl BrokerClient {
     ) -> Result<Order, AlpacaError> {
         self.client
             .patch(
-                &format!("/accounts/{}/orders/{}", account_id, order_id),
+                &format!("/trading/accounts/{}/orders/{}", account_id, order_id),
                 Some(data),
             )
             .await
@@ -422,7 +435,10 @@ impl BrokerClient {
         account_id: &Uuid,
     ) -> Result<Vec<serde_json::Value>, AlpacaError> {
         self.client
-            .delete(&format!("/accounts/{}/orders", account_id), None::<&()>)
+            .delete(
+                &format!("/trading/accounts/{}/orders", account_id),
+                None::<&()>,
+            )
             .await
     }
 
@@ -433,7 +449,7 @@ impl BrokerClient {
     ) -> Result<(), AlpacaError> {
         self.client
             .delete_void(
-                &format!("/accounts/{}/orders/{}", account_id, order_id),
+                &format!("/trading/accounts/{}/orders/{}", account_id, order_id),
                 None::<&()>,
             )
             .await
@@ -704,7 +720,7 @@ impl BrokerClient {
         self.client
             .post_void(
                 &format!(
-                    "/accounts/{}/positions/{}/exercise",
+                    "/trading/accounts/{}/positions/{}/exercise",
                     account_id, symbol_or_contract_id
                 ),
                 None::<&()>,

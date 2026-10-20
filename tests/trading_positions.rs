@@ -3,7 +3,7 @@ mod common;
 use alpacars::trading::models::{ClosePositionResponse, Order, Position};
 use alpacars::trading::requests::ClosePositionRequest;
 use uuid::Uuid;
-use wiremock::matchers::{method, path};
+use wiremock::matchers::{method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 const POSITION_JSON: &str = r#"{
@@ -161,13 +161,17 @@ async fn test_close_position_by_symbol() {
     assert_eq!(order.symbol.as_deref(), Some("AAPL"));
 }
 
+/// `qty` / `percentage` are query parameters on DELETE /v2/positions/{symbol} (Trading spec).
+/// Sent as a body they are ignored and the *whole* position is closed, so assert the query.
 #[tokio::test]
 async fn test_close_position_with_qty() {
     let server = MockServer::start().await;
 
     Mock::given(method("DELETE"))
         .and(path("/v2/positions/AAPL"))
+        .and(query_param("qty", "3"))
         .respond_with(ResponseTemplate::new(200).set_body_string(ORDER_JSON))
+        .expect(1)
         .mount(&server)
         .await;
 
