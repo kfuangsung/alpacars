@@ -78,9 +78,9 @@ New client methods should be thin wrappers calling one of these verbs — don't 
 
 ### Every client has a `new_with_url` test-only constructor
 
-Alongside the public `new(api_key, secret_key, paper/sandbox)` constructor, each client exposes a `#[doc(hidden)] new_with_url(...)` that points at an arbitrary base URL. This exists purely so tests can point the client at a `wiremock::MockServer`. `tests/common/mod.rs` has thin factory functions (`trading_client(base_url)`, `broker_client(base_url)`, `stock_client(base_url)`) built on top of it — extend that file rather than constructing clients ad hoc in each test.
+Alongside the public `new(api_key, secret_key, paper/sandbox)` constructor, clients expose a `#[doc(hidden)] new_with_url(...)` that points at an arbitrary base URL. This exists purely so tests can point the client at a `wiremock::MockServer`. `tests/common/mod.rs` has thin factory functions (`trading_client`, `broker_client`, `stock_client`, `corporate_actions_client`) built on top of it — extend that file rather than constructing clients ad hoc in each test.
 
-`BrokerClient` was missing this constructor until v0.5.0, so the entire Broker surface went untested for a long time — see the caveat below.
+A client without this constructor cannot be tested at all, and every time one was added it surfaced bugs: `BrokerClient` gained it in v0.5.0 (the rebalancing bugs below), `CorporateActionsClient` in v0.6.0 (it had been calling `/v1beta1/corporate-actions` instead of `/v1/corporate-actions`). **`CryptoHistoricalDataClient`, `NewsClient` and `ScreenerClient` still lack it** — add it before trusting or changing them.
 
 ### Two independent WebSocket stacks
 
@@ -105,8 +105,16 @@ Tests live in `tests/*.rs` (one file per resource area, e.g. `trading_orders.rs`
 
 When a test is meant to prove a *negative* (a header is absent, a field is omitted), verify it actually fails against deliberately broken code before trusting it. Several tests here were written that way, and one of them caught a real bug that reading the docs had not.
 
+**Build fixtures from the API reference, never from the crate's own types.** A fixture copied from the crate encodes the crate's bugs and passes against them: `tests/broker_rebalancing.rs` used the crate's `assets` key, so `create_portfolio` shipped sending a field the API does not accept. For request bodies, assert the whole body with `body_json` against the reference's named request examples where they exist.
+
+### Enums: `#[non_exhaustive]` everywhere, `Unknown` on response enums
+
+Every public enum is `#[non_exhaustive]`. Every enum that appears in a response type (any `models.rs`, the trading stream, the live data streams) also ends with a `#[serde(other)] Unknown` unit variant, so a value Alpaca adds later parses instead of failing the whole response. Request-only enums get no `Unknown`. When adding an enum, follow the same rule, add it to `tests/enum_forward_compat.rs` if it has `Unknown`, and add its reference value list to `tests/enum_wire_values.rs`. When values don't survive `rename_all` case conversion (`TYPE_401K`, `DIVCGL`-style acronyms, empty strings), rename every variant explicitly.
+
 ### Broker API endpoint paths are the least trustworthy part of the crate
 
 The Trading API has an official OpenAPI spec to check against; the Broker API does not, so its paths were transcribed by hand and were never cross-checked. That gap hid four bugs that made **all 13 rebalancing methods fail** — wrong path prefix (`/v1/portfolios` rather than `/v1/rebalancing/portfolios`), wrong verb for archive, wrong response shape for List All Runs, and a `PortfolioStatus` enum with both wrong casing and wrong variants.
 
-Before relying on or modifying an untested `BrokerClient` method, verify its path and enum encoding against the docs reference page (`docs.alpaca.markets/us/reference/<operation>`) — not against the crate, and not against the Trading spec. Broker areas still without coverage as of v0.5.0: accounts, documents/CIP, funding (ACH/banks/transfers), journals, per-account orders and positions, watchlists.
+The 0.6.0 audit found the same pattern in every Broker area it checked: all journal methods (wrong `JNLC`/`JNLS` and status casing, wrong batch paths), the rebalancing *request bodies* (`assets` vs `weights`; `create_run` missing its required `type`), account activities (a non-existent path), and `create_account` (unable to express non-trading account types).
+
+Before relying on or modifying an untested `BrokerClient` method, verify its path, request body and enum encoding against the docs reference page — not against the crate, and not against the Trading spec. Each `docs.alpaca.markets/us/reference/<operation>.md` page embeds that operation's full OpenAPI JSON in a fenced block, so enums, required fields and examples can be parsed exactly. Broker areas still without coverage as of v0.6.0: account reads/updates, documents/CIP, funding (ACH/banks/transfers), per-account orders and positions, watchlists — expect bugs there at the same rate.

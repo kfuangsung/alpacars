@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-20
+
+Catch-up with the Alpaca changelog for 2026-07-29 through 2026-10-19, forward-compatible enums, and an audit of the Broker API against its reference pages that found several call paths broken outright — account activities, rebalancing request bodies, batch journals and corporate actions now work. Breaking: see *Upgrading from 0.5* first.
+
+### Upgrading from 0.5
+
+- **`match` on any crate enum needs a `_ =>` arm**: every public enum is now `#[non_exhaustive]`, and response enums have a new `Unknown` variant for values Alpaca adds later.
+- **`reqwest` 0.13**: only matters if your code names `reqwest::Error` from `AlpacaError::Http`.
+- **Mint methods** take a new trailing `idempotency_key` argument: `mint_tokenized_asset(&req, None)` / `mint_tokenized_asset_for_account(&id, &req, None)`, or pass an idempotency key.
+- **Account activities**: `activity_type: Some(t)` → `activity_types: Some(vec![t])`; `page_token` is a `String`; `BrokerClient::get_account_activities(&id, filter)` → `get_account_activities(filter)` with `account_id` set on the filter.
+- **Rebalancing**: `CreatePortfolioRequest.assets` → `weights` (`PortfolioWeightRequest`); `CreateRunRequest` is `{ account_id, run_type, amount, weights }` (no `portfolio_id`); read `Portfolio.weights` instead of `assets`; `GetRunsRequest.run_type` takes `RunType`.
+- **Batch journals**: `CreateReverseBatchJournalRequest` has a top-level `to_account` and entries without one; `BatchJournalEntryRequest.amount` is `Option<String>` and the struct has more optional fields; `CreateBatchJournalRequest` has `correspondent`.
+- **`CreateAccountRequest`**: wrap `contact` / `identity` / `disclosures` / `agreements` in `Some(..)`, and use `..Default::default()` for the rest.
+- **`TradeAccount.account_number`** is `Option<String>`.
+- **Removed fields**: `Asset.easy_to_borrow` → `borrow_status`; `TokenizationRequest.account` / `issuer_account` → `client_account_id` / `client_external_account_id`.
+- New fields on structs you build with literal syntax (request types, `Order`, `Asset`, …) need adding, or use `..Default::default()` where the type implements `Default`.
+
 ### Changed
 - **Breaking**: `reqwest` 0.12 → 0.13. `AlpacaError::Http` wraps `reqwest::Error`, so it now carries the 0.13 error type; code that names `reqwest::Error` (e.g. matching on `AlpacaError::Http(e)` and calling reqwest-specific methods on `e`) must use reqwest 0.13. `cargo-semver-checks` does not detect this kind of change, so it is called out here.
 - `reqwest` now uses `default-features = false` with `json`, `query`, `native-tls`, `charset`, `http2` and `system-proxy`. 0.13 made rustls/aws-lc-rs the default TLS backend; the crate stays on `native-tls`, the same backend `tokio-tungstenite` uses, so there is still one TLS stack and no new license or C-toolchain requirements.
@@ -172,7 +189,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/kfuangsung/alpacars/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/kfuangsung/alpacars/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kfuangsung/alpacars/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/kfuangsung/alpacars/compare/v0.4.0...v0.4.1
