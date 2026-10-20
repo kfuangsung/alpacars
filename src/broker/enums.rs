@@ -423,3 +423,337 @@ pub enum SignedAgreementType {
     #[serde(other)]
     Unknown,
 }
+
+// ── ACATS (Beta) ─────────────────────────────────────────────────────────────
+// Every variant is renamed explicitly: values such as `TYPE_401K` do not survive
+// `rename_all` case conversion.
+
+/// Direction of an ACATS transfer relative to the Alpaca account.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsTransferDirection {
+    #[serde(rename = "INCOMING")]
+    Incoming,
+    #[serde(rename = "OUTGOING")]
+    Outgoing,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Simplified ACATS transfer status.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsTransferStatus {
+    #[serde(rename = "PENDING")]
+    Pending,
+    #[serde(rename = "IN_PROGRESS")]
+    InProgress,
+    #[serde(rename = "REJECTED")]
+    Rejected,
+    #[serde(rename = "SETTLED")]
+    Settled,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Detailed DTCC status of an ACATS transfer.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsDtccStatus {
+    #[serde(rename = "REQUEST")]
+    Request,
+    #[serde(rename = "REQUEST_ADJUST")]
+    RequestAdjust,
+    #[serde(rename = "REQUEST_ADJUST_PAST")]
+    RequestAdjustPast,
+    #[serde(rename = "REQUEST_PAST")]
+    RequestPast,
+    #[serde(rename = "REQUEST_REJECT")]
+    RequestReject,
+    #[serde(rename = "REVIEW")]
+    Review,
+    #[serde(rename = "REVIEW_ADJUST_DELIVERER")]
+    ReviewAdjustDeliverer,
+    #[serde(rename = "REVIEW_ERROR")]
+    ReviewError,
+    #[serde(rename = "REVIEW_ACCELERATE")]
+    ReviewAccelerate,
+    #[serde(rename = "REVIEW_ADJUST_RECEIVER_ACCELERATE")]
+    ReviewAdjustReceiverAccelerate,
+    #[serde(rename = "SETTLE_PREP")]
+    SettlePrep,
+    #[serde(rename = "SETTLE_CLOSE")]
+    SettleClose,
+    #[serde(rename = "CLOSE_PURGE")]
+    ClosePurge,
+    #[serde(rename = "REQUEST_PTR")]
+    RequestPtr,
+    #[serde(rename = "MEMO_PURGE_PARTIAL_TRANSFER_REQUEST_RECEIVER")]
+    MemoPurgePartialTransferRequestReceiver,
+    #[serde(rename = "REJECT")]
+    Reject,
+    #[serde(rename = "SYSTEM_REJECTED")]
+    SystemRejected,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// DTCC transfer type code (`FUL` full, `PTR` partial, `RCR` residual credit, ...).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsDtccTransferType {
+    #[serde(rename = "FUL")]
+    Ful,
+    #[serde(rename = "FRV")]
+    Frv,
+    #[serde(rename = "MFC")]
+    Mfc,
+    #[serde(rename = "PTD")]
+    Ptd,
+    #[serde(rename = "PTR")]
+    Ptr,
+    #[serde(rename = "RCL")]
+    Rcl,
+    #[serde(rename = "RCR")]
+    Rcr,
+    #[serde(rename = "PTF")]
+    Ptf,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Registration type of the account on an ACATS transfer.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsAccountType {
+    #[serde(rename = "AGENCY")]
+    Agency,
+    #[serde(rename = "BANK_CUSTODY")]
+    BankCustody,
+    #[serde(rename = "BENEFICIARY")]
+    Beneficiary,
+    #[serde(rename = "BENEFICIARY_ROTH_IRA")]
+    BeneficiaryRothIra,
+    #[serde(rename = "CORPORATE")]
+    Corporate,
+    #[serde(rename = "CO_TRUSTEE")]
+    CoTrustee,
+    #[serde(rename = "COVERDELL_IRA")]
+    CoverdellIra,
+    #[serde(rename = "CUSTODIAN_UGMA")]
+    CustodianUgma,
+    #[serde(rename = "DIRECT_ROLLOVER")]
+    DirectRollover,
+    #[serde(rename = "ESTATE")]
+    Estate,
+    #[serde(rename = "HSA")]
+    Hsa,
+    #[serde(rename = "IRA")]
+    Ira,
+    #[serde(rename = "JOINT")]
+    Joint,
+    #[serde(rename = "MEDICAL_SAVINGS_ACCOUNT")]
+    MedicalSavingsAccount,
+    #[serde(rename = "OTHER")]
+    Other,
+    #[serde(rename = "QUALIFIED_OR_PROFIT_SHARING_OR_PENSION")]
+    QualifiedOrProfitSharingOrPension,
+    #[serde(rename = "ROTH_401K")]
+    Roth401k,
+    #[serde(rename = "ROTH_IRA")]
+    RothIra,
+    #[serde(rename = "ROTH_SEP")]
+    RothSep,
+    #[serde(rename = "ROTH_SIMPLE")]
+    RothSimple,
+    #[serde(rename = "ROTH_SOLO_401K")]
+    RothSolo401k,
+    #[serde(rename = "SARSEP")]
+    Sarsep,
+    #[serde(rename = "SEP_IRA")]
+    SepIra,
+    #[serde(rename = "SIMPLE_IRA")]
+    SimpleIra,
+    #[serde(rename = "SINGLE")]
+    Single,
+    #[serde(rename = "SOLO_401K")]
+    Solo401k,
+    #[serde(rename = "TRUST")]
+    Trust,
+    #[serde(rename = "TYPE_401K")]
+    Type401k,
+    #[serde(rename = "TYPE_403B")]
+    Type403b,
+    #[serde(rename = "TYPE_457_PLAN")]
+    Type457Plan,
+    #[serde(rename = "TYPE_529_PLAN")]
+    Type529Plan,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Kind of contra party on an ACATS transfer.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsContraBrokerType {
+    #[serde(rename = "BANK")]
+    Bank,
+    #[serde(rename = "BROKER")]
+    Broker,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Why an ACATS transfer was rejected.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsRejectionReason {
+    #[serde(rename = "SS_TAX_ID_MISMATCH")]
+    SsTaxIdMismatch,
+    #[serde(rename = "ACCOUNT_TITLE_MISMATCH")]
+    AccountTitleMismatch,
+    #[serde(rename = "DOCUMENTATION_NEEDED")]
+    DocumentationNeeded,
+    #[serde(rename = "ACCOUNT_FLAT")]
+    AccountFlat,
+    #[serde(rename = "INVALID_ACCOUNT_NUMBER")]
+    InvalidAccountNumber,
+    #[serde(rename = "DUPLICATE")]
+    Duplicate,
+    #[serde(rename = "ACCOUNT_IN_DISTRIBUTION_OR_TRANSFER")]
+    AccountInDistributionOrTransfer,
+    #[serde(rename = "CLIENT_RESCINDED")]
+    ClientRescinded,
+    #[serde(rename = "MISSING_AUTHORIZATION_SIGNATURE")]
+    MissingAuthorizationSignature,
+    #[serde(rename = "ACCOUNT_VIOLATES_CREDIT_POLICY_OF_RECEIVING_FIRM")]
+    AccountViolatesCreditPolicyOfReceivingFirm,
+    #[serde(rename = "UNRECOGNIZED_FOR_RESIDUAL_CREDIT_BALANCE")]
+    UnrecognizedForResidualCreditBalance,
+    #[serde(rename = "PARTIAL_TRANSFER_DELIVERER_INITIATED_REJECT")]
+    PartialTransferDelivererInitiatedReject,
+    #[serde(rename = "FAIL_REVERSAL_REJECT")]
+    FailReversalReject,
+    #[serde(rename = "RECLAIM_REJECT")]
+    ReclaimReject,
+    #[serde(rename = "MUTUAL_FUND_CLEANUP")]
+    MutualFundCleanup,
+    #[serde(rename = "SYSTEM_REJECTED")]
+    SystemRejected,
+    #[serde(rename = "INVALID_PARTICIPANT")]
+    InvalidParticipant,
+    #[serde(rename = "ASSOCIATED_RECORD_NOT_PRESENT_OR_INVALID")]
+    AssociatedRecordNotPresentOrInvalid,
+    #[serde(rename = "MISSED_CUTOFF")]
+    MissedCutoff,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Position type of an ACATS asset. Requests may only use `Long` and `Short`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsPosition {
+    #[serde(rename = "LONG")]
+    Long,
+    #[serde(rename = "SHORT")]
+    Short,
+    #[serde(rename = "CREDIT")]
+    Credit,
+    #[serde(rename = "DEBIT")]
+    Debit,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Asset class of an asset on an ACATS transfer.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsAssetClass {
+    #[serde(rename = "EQUITY")]
+    Equity,
+    #[serde(rename = "CASH")]
+    Cash,
+    #[serde(rename = "OPTION")]
+    Option,
+    #[serde(rename = "OTHER")]
+    Other,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Status of one asset on an ACATS transfer.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsAssetStatus {
+    #[serde(rename = "NOT_VALIDATED")]
+    NotValidated,
+    #[serde(rename = "REQUESTED")]
+    Requested,
+    #[serde(rename = "DELETED")]
+    Deleted,
+    #[serde(rename = "SETTLED")]
+    Settled,
+    #[serde(rename = "REVERSED")]
+    Reversed,
+    #[serde(rename = "INTERFACE_REJECTED")]
+    InterfaceRejected,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Sort order for listing ACATS transfers.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsSortDirection {
+    #[serde(rename = "ASC")]
+    Asc,
+    #[serde(rename = "DESC")]
+    Desc,
+}
+
+/// Field to sort ACATS transfers by.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum AcatsSortBy {
+    #[serde(rename = "account_number")]
+    AccountNumber,
+    #[serde(rename = "total_transfer_value")]
+    TotalTransferValue,
+    #[serde(rename = "created_at")]
+    CreatedAt,
+    #[serde(rename = "contra_account_number")]
+    ContraAccountNumber,
+    #[serde(rename = "contra_broker_number")]
+    ContraBrokerNumber,
+    #[serde(rename = "external_transfer_id")]
+    ExternalTransferId,
+    #[serde(rename = "settled_at")]
+    SettledAt,
+    #[serde(rename = "status")]
+    Status,
+    #[serde(rename = "transfer_type")]
+    TransferType,
+    #[serde(rename = "updated_at")]
+    UpdatedAt,
+}

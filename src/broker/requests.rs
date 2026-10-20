@@ -484,3 +484,122 @@ pub enum CreateAgreementRequest {
     Party(CreatePartyAgreementRequest),
     Account(CreateAccountAgreementRequest),
 }
+
+// ── ACATS (Beta) ─────────────────────────────────────────────────────────────
+
+/// Initiate an incoming ACATS transfer (`POST /v1beta1/acats/{account_id}`).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsInitiateTransferRequest {
+    pub contra_account_details: AcatsContraAccountDetails,
+    pub transfer_details: AcatsTransferDetails,
+    /// IP address of the customer who authorized the transfer.
+    pub ip_address: String,
+    /// When the customer authorized the transfer.
+    pub signed_at: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub validate_account_number: Option<bool>,
+}
+
+/// The account at the delivering (contra) firm.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsContraAccountDetails {
+    pub account_number: String,
+    /// DTCC participant number of the delivering firm (see `list_acats_contra_brokers`).
+    pub broker_number: String,
+    pub customer_name: String,
+    pub customer_tax_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub broker_name: Option<String>,
+}
+
+/// What to transfer. `Full` moves the entire account and must not list assets; `Partial`
+/// needs at least one non-empty `cash` or `securities` list.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "UPPERCASE")]
+pub enum AcatsTransferDetails {
+    Full,
+    Partial {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        cash: Option<Vec<AcatsCashBalance>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        securities: Option<AcatsSecurities>,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsCashBalance {
+    /// Only `USD` is supported.
+    pub currency: String,
+    /// Decimal string. Omit when `transfer_all` is set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub amount: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transfer_all: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsSecurities {
+    pub equities: Vec<AcatsEquity>,
+}
+
+/// An equity in a partial transfer, identified by exactly one of CUSIP or symbol.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcatsEquity {
+    #[serde(flatten)]
+    pub security: AcatsSecurityId,
+    /// Only `Long` and `Short` are accepted here.
+    pub position: AcatsPosition,
+    /// Decimal string. Omit when `transfer_all` is set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub qty: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transfer_all: Option<bool>,
+}
+
+/// How an equity is identified. Prefer `Cusip`: it is stable and unambiguous, whereas ticker
+/// symbols can change or be reused.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AcatsSecurityId {
+    Cusip(String),
+    Symbol(String),
+}
+
+/// Filters for listing ACATS transfers across all accounts.
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct ListAcatsTransfersRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transfer_type: Option<AcatsDtccTransferType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transfer_direction: Option<AcatsTransferDirection>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transfer_status: Option<AcatsTransferStatus>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dtcc_status: Option<AcatsDtccStatus>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contra_broker_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub since: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub until: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sort_by: Option<AcatsSortBy>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sort_direction: Option<AcatsSortDirection>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u32>,
+    /// `page_token_next` / `page_token_previous` from a previous response, unchanged.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_token: Option<String>,
+}
+
+/// Paging for listing one account's ACATS transfers.
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct ListAcatsTransfersForAccountRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_token: Option<String>,
+}

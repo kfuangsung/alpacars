@@ -141,3 +141,139 @@ fn test_agreement_types_match_reference() {
         .collect();
     assert_round_trips(&all, SignedAgreementType::Unknown);
 }
+
+// ACATS references (listacatstransfers, requestacatstransfer, listacatsassets,
+// listacatscontrabrokers): every listed value of every ACATS enum.
+#[test]
+fn test_acats_enums_match_reference() {
+    assert_round_trips(
+        &["INCOMING", "OUTGOING"],
+        alpacars::broker::enums::AcatsTransferDirection::Unknown,
+    );
+    assert_round_trips(
+        &["PENDING", "IN_PROGRESS", "REJECTED", "SETTLED"],
+        alpacars::broker::enums::AcatsTransferStatus::Unknown,
+    );
+    assert_round_trips(
+        &[
+            "REQUEST",
+            "REQUEST_ADJUST",
+            "REQUEST_ADJUST_PAST",
+            "REQUEST_PAST",
+            "REQUEST_REJECT",
+            "REVIEW",
+            "REVIEW_ADJUST_DELIVERER",
+            "REVIEW_ERROR",
+            "REVIEW_ACCELERATE",
+            "REVIEW_ADJUST_RECEIVER_ACCELERATE",
+            "SETTLE_PREP",
+            "SETTLE_CLOSE",
+            "CLOSE_PURGE",
+            "REQUEST_PTR",
+            "MEMO_PURGE_PARTIAL_TRANSFER_REQUEST_RECEIVER",
+            "REJECT",
+            "SYSTEM_REJECTED",
+        ],
+        alpacars::broker::enums::AcatsDtccStatus::Unknown,
+    );
+    assert_round_trips(
+        &["FUL", "FRV", "MFC", "PTD", "PTR", "RCL", "RCR", "PTF"],
+        alpacars::broker::enums::AcatsDtccTransferType::Unknown,
+    );
+    assert_round_trips(
+        &[
+            "AGENCY",
+            "BANK_CUSTODY",
+            "BENEFICIARY",
+            "BENEFICIARY_ROTH_IRA",
+            "CORPORATE",
+            "CO_TRUSTEE",
+            "COVERDELL_IRA",
+            "CUSTODIAN_UGMA",
+            "DIRECT_ROLLOVER",
+            "ESTATE",
+            "HSA",
+            "IRA",
+            "JOINT",
+            "MEDICAL_SAVINGS_ACCOUNT",
+            "OTHER",
+            "QUALIFIED_OR_PROFIT_SHARING_OR_PENSION",
+            "ROTH_401K",
+            "ROTH_IRA",
+            "ROTH_SEP",
+            "ROTH_SIMPLE",
+            "ROTH_SOLO_401K",
+            "SARSEP",
+            "SEP_IRA",
+            "SIMPLE_IRA",
+            "SINGLE",
+            "SOLO_401K",
+            "TRUST",
+            "TYPE_401K",
+            "TYPE_403B",
+            "TYPE_457_PLAN",
+            "TYPE_529_PLAN",
+        ],
+        alpacars::broker::enums::AcatsAccountType::Unknown,
+    );
+    assert_round_trips(
+        &["BANK", "BROKER"],
+        alpacars::broker::enums::AcatsContraBrokerType::Unknown,
+    );
+    assert_round_trips(
+        &[
+            "SS_TAX_ID_MISMATCH",
+            "ACCOUNT_TITLE_MISMATCH",
+            "DOCUMENTATION_NEEDED",
+            "ACCOUNT_FLAT",
+            "INVALID_ACCOUNT_NUMBER",
+            "DUPLICATE",
+            "ACCOUNT_IN_DISTRIBUTION_OR_TRANSFER",
+            "CLIENT_RESCINDED",
+            "MISSING_AUTHORIZATION_SIGNATURE",
+            "ACCOUNT_VIOLATES_CREDIT_POLICY_OF_RECEIVING_FIRM",
+            "UNRECOGNIZED_FOR_RESIDUAL_CREDIT_BALANCE",
+            "PARTIAL_TRANSFER_DELIVERER_INITIATED_REJECT",
+            "FAIL_REVERSAL_REJECT",
+            "RECLAIM_REJECT",
+            "MUTUAL_FUND_CLEANUP",
+            "SYSTEM_REJECTED",
+            "INVALID_PARTICIPANT",
+            "ASSOCIATED_RECORD_NOT_PRESENT_OR_INVALID",
+            "MISSED_CUTOFF",
+        ],
+        alpacars::broker::enums::AcatsRejectionReason::Unknown,
+    );
+    assert_round_trips(
+        &["LONG", "SHORT", "CREDIT", "DEBIT"],
+        alpacars::broker::enums::AcatsPosition::Unknown,
+    );
+    assert_round_trips(
+        &["EQUITY", "CASH", "OPTION", "OTHER"],
+        alpacars::broker::enums::AcatsAssetClass::Unknown,
+    );
+    assert_round_trips(
+        &[
+            "NOT_VALIDATED",
+            "REQUESTED",
+            "DELETED",
+            "SETTLED",
+            "REVERSED",
+            "INTERFACE_REJECTED",
+        ],
+        alpacars::broker::enums::AcatsAssetStatus::Unknown,
+    );
+    assert_round_trips_strict::<alpacars::broker::enums::AcatsSortDirection>(&["ASC", "DESC"]);
+    assert_round_trips_strict::<alpacars::broker::enums::AcatsSortBy>(&[
+        "account_number",
+        "total_transfer_value",
+        "created_at",
+        "contra_account_number",
+        "contra_broker_number",
+        "external_transfer_id",
+        "settled_at",
+        "status",
+        "transfer_type",
+        "updated_at",
+    ]);
+}
