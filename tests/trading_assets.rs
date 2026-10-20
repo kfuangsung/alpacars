@@ -16,7 +16,6 @@ const ASSET_JSON: &str = r#"{
   "tradable": true,
   "marginable": true,
   "shortable": true,
-  "easy_to_borrow": true,
   "borrow_status": "easy_to_borrow",
   "fractionable": true
 }"#;
@@ -109,6 +108,5 @@ async fn test_get_asset_by_symbol() {
     assert_eq!(asset.symbol, "AAPL");
     assert_eq!(asset.status, AssetStatus::Active);
     assert!(asset.tradable);
-    assert_eq!(asset.easy_to_borrow, Some(true));
     assert_eq!(asset.borrow_status, Some(BorrowStatus::EasyToBorrow));
 }

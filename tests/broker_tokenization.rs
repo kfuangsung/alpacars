@@ -26,9 +26,7 @@ const TOKENIZATION_REQUEST_JSON: &str = r#"{
   "client_external_account_id": "issuer-acct-99",
   "issuer_request_id": "iss-req-31337",
   "fees": null,
-  "tx_hash": null,
-  "account": null,
-  "issuer_account": null
+  "tx_hash": null
 }"#;
 
 fn account_id() -> Uuid {
