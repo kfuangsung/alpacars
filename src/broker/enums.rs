@@ -231,8 +231,9 @@ pub enum BankAccountType {
     Unknown,
 }
 
+/// Wire values are lowercase (`ach`, `wire`), per the Broker transfer references.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "lowercase")]
 #[non_exhaustive]
 pub enum TransferType {
     Ach,
