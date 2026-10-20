@@ -1,4 +1,5 @@
 use crate::common::client::{base_url, RestClient, DATA_V2_MAX_LIMIT};
+use crate::common::enums::Sort;
 use crate::data::enums::{Adjustment, DataFeed, TimeFrame};
 use crate::data::models::*;
 use crate::error::AlpacaError;
@@ -23,7 +24,7 @@ struct BarsParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub currency: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub asof: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -44,7 +45,7 @@ struct QuotesParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub currency: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
 }
@@ -63,7 +64,7 @@ struct TradesParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub currency: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
 }
@@ -99,7 +100,7 @@ pub struct StockBarsRequest {
     pub adjustment: Option<Adjustment>,
     pub feed: Option<DataFeed>,
     pub currency: Option<String>,
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     pub asof: Option<String>,
 }
 
@@ -112,7 +113,7 @@ pub struct StockQuotesRequest {
     pub limit: Option<u32>,
     pub feed: Option<DataFeed>,
     pub currency: Option<String>,
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
 }
 
 /// Request parameters for fetching stock trade data.
@@ -124,7 +125,7 @@ pub struct StockTradesRequest {
     pub limit: Option<u32>,
     pub feed: Option<DataFeed>,
     pub currency: Option<String>,
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
 }
 
 /// Request parameters for fetching latest stock data.

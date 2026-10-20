@@ -297,3 +297,72 @@ fn test_funding_enums_match_reference() {
     // createtransferforaccount: FeePaymentMethod is "user" or "invoice".
     assert_round_trips(&["user", "invoice"], FeePaymentMethod::Unknown);
 }
+
+#[test]
+fn test_typed_filter_enums_match_reference() {
+    use alpacars::broker::enums::{AccountEntity, RunStatus};
+    use alpacars::common::enums::Sort;
+    use alpacars::data::enums::MarketType;
+    use alpacars::trading::enums::{
+        ActivityCategory, AssetAttribute, CalendarDateType, CorporateActionType, IntradayReporting,
+        PnlReset,
+    };
+    // `sort` / `direction` on every list endpoint (getallorders-1, getallaccounts, stockbars, …).
+    assert_round_trips_strict::<Sort>(&["asc", "desc"]);
+    // getallaccounts `entities`.
+    assert_round_trips_strict::<AccountEntity>(&[
+        "agreements",
+        "contact",
+        "disclosures",
+        "documents",
+        "identity",
+        "trading_configurations",
+        "trusted_contact",
+    ]);
+    // getaccountactivities / getaccountactivities-2 `category`.
+    assert_round_trips_strict::<ActivityCategory>(&["trade_activity", "non_trade_activity"]);
+    // getaccountportfoliohistory-1.
+    assert_round_trips_strict::<IntradayReporting>(&[
+        "market_hours",
+        "extended_hours",
+        "continuous",
+    ]);
+    assert_round_trips_strict::<PnlReset>(&["no_reset", "per_day"]);
+    // legacycalendar `date_type`.
+    assert_round_trips_strict::<CalendarDateType>(&["TRADING", "SETTLEMENT"]);
+    // get-v2-assets-1 `attributes` (also on the Asset response).
+    assert_round_trips(
+        &[
+            "ptp_no_exception",
+            "ptp_with_exception",
+            "ipo",
+            "has_options",
+            "options_late_close",
+            "fractional_eh_enabled",
+            "overnight_tradable",
+            "overnight_halted",
+        ],
+        AssetAttribute::Unknown,
+    );
+    // get-v1-rebalancing-runs-run_id PortfolioRunStatus.
+    assert_round_trips(
+        &[
+            "QUEUED",
+            "IN_PROGRESS",
+            "CANCELED",
+            "CANCELED_MID_RUN",
+            "ERROR",
+            "TIMEOUT",
+            "COMPLETED_ADJUSTED",
+            "COMPLETED_SUCCESS",
+        ],
+        RunStatus::Unknown,
+    );
+    // movers-1 `market_type`.
+    assert_round_trips(&["stocks", "crypto"], MarketType::Unknown);
+    // get-v2-corporate_actions-announcements-1 CorporateActionCaType: capitalized.
+    assert_round_trips(
+        &["Spinoff", "Merger", "Split", "Reorg", "Dividend"],
+        CorporateActionType::Unknown,
+    );
+}

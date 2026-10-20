@@ -1,5 +1,9 @@
 mod common;
 
+use alpacars::broker::enums::AccountEntity;
+use alpacars::common::enums::Sort;
+use alpacars::trading::enums::AccountStatus;
+
 use alpacars::broker::enums::{AccountSubType, AccountType, AgreementType};
 use alpacars::broker::requests::{
     AgreementRequest, CreateAccountRequest, ListAccountsRequest, UpdateAccountRequest,
@@ -227,6 +231,9 @@ async fn test_list_accounts() {
     Mock::given(method("GET"))
         .and(path("/v1/accounts"))
         .and(query_param("query", "elbakyan"))
+        .and(query_param("status", "ACTIVE"))
+        .and(query_param("sort", "desc"))
+        .and(query_param("entities", "contact,identity"))
         .respond_with(
             ResponseTemplate::new(200).set_body_string(format!("[{ACCOUNT_EXTENDED_JSON}]")),
         )
@@ -237,6 +244,9 @@ async fn test_list_accounts() {
     let client = common::broker_client(&server.uri());
     let filter = ListAccountsRequest {
         query: Some("elbakyan".to_string()),
+        status: Some(AccountStatus::Active),
+        sort: Some(Sort::Desc),
+        entities: Some(vec![AccountEntity::Contact, AccountEntity::Identity]),
         ..Default::default()
     };
     let accounts = client.list_accounts(Some(&filter)).await.unwrap();

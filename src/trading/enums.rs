@@ -181,14 +181,16 @@ pub enum PositionSide {
     Unknown,
 }
 
+/// Corporate action announcement type (`ca_type`, and the `ca_types` filter). The wire values
+/// are capitalized (`Dividend`), per the announcements reference.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
 #[non_exhaustive]
 pub enum CorporateActionType {
     Dividend,
     Merger,
     Spinoff,
     Split,
+    Reorg,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
@@ -539,4 +541,60 @@ pub enum TokenizationIssuer {
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
     Unknown,
+}
+
+/// Account activity `category` filter: mutually exclusive with `activity_types`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum ActivityCategory {
+    TradeActivity,
+    NonTradeActivity,
+}
+
+/// Portfolio history `intraday_reporting`: which timestamps intraday data points cover.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum IntradayReporting {
+    MarketHours,
+    ExtendedHours,
+    Continuous,
+}
+
+/// Portfolio history `pnl_reset`: the baseline for profit and loss.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum PnlReset {
+    NoReset,
+    PerDay,
+}
+
+/// Asset `attributes`, also usable as a `GetAssetsRequest` filter.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum AssetAttribute {
+    PtpNoException,
+    PtpWithException,
+    Ipo,
+    HasOptions,
+    OptionsLateClose,
+    FractionalEhEnabled,
+    OvernightTradable,
+    OvernightHalted,
+    /// A value this version of the crate does not recognize yet. Alpaca adds values over
+    /// time; this keeps such responses parseable. Not meaningful to send in a request.
+    #[serde(other)]
+    Unknown,
+}
+
+/// What a calendar request's `start` and `end` refer to.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
+pub enum CalendarDateType {
+    Trading,
+    Settlement,
 }

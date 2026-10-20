@@ -1,5 +1,8 @@
 use crate::broker::enums::*;
-use crate::trading::enums::{ActivityType, AssetClass, QueryOrderStatus};
+use crate::common::enums::Sort;
+use crate::trading::enums::{
+    AccountStatus, ActivityCategory, ActivityType, AssetClass, QueryOrderStatus,
+};
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -132,11 +135,12 @@ pub struct ListAccountsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_before: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<String>,
+    pub status: Option<AccountStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub entities: Option<String>,
+    /// Sent comma-separated.
+    pub entities: Option<Vec<AccountEntity>>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -149,7 +153,7 @@ pub struct GetAccountActivitiesRequest {
     pub activity_types: Option<Vec<ActivityType>>,
     /// `trade_activity` or `non_trade_activity`. Mutually exclusive with `activity_types`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub category: Option<String>,
+    pub category: Option<ActivityCategory>,
     /// Only return activities (such as fills) belonging to this order.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub order_id: Option<Uuid>,
@@ -160,7 +164,7 @@ pub struct GetAccountActivitiesRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub after: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub direction: Option<String>,
+    pub direction: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_size: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -468,7 +472,7 @@ pub struct GetRunsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub account_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<String>,
+    pub status: Option<RunStatus>,
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub run_type: Option<RunType>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -509,7 +513,7 @@ pub struct GetOrdersForAccountRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub until: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub direction: Option<String>,
+    pub direction: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nested: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]

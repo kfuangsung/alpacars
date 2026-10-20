@@ -1,4 +1,5 @@
 use crate::common::client::{base_url, RestClient, DATA_V2_MAX_LIMIT};
+use crate::common::enums::Sort;
 use crate::data::enums::{CryptoFeed, TimeFrame};
 use crate::data::models::*;
 use crate::error::AlpacaError;
@@ -17,7 +18,7 @@ struct CryptoBarsParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip)]
     pub loc: Option<CryptoFeed>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -34,7 +35,7 @@ struct CryptoQuotesParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     #[serde(skip)]
     pub loc: Option<CryptoFeed>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -64,7 +65,7 @@ pub struct CryptoBarsRequest {
     pub start: Option<DateTime<Utc>>,
     pub end: Option<DateTime<Utc>>,
     pub limit: Option<u32>,
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     pub loc: Option<CryptoFeed>,
 }
 
@@ -75,7 +76,7 @@ pub struct CryptoQuotesRequest {
     pub start: Option<DateTime<Utc>>,
     pub end: Option<DateTime<Utc>>,
     pub limit: Option<u32>,
-    pub sort: Option<String>,
+    pub sort: Option<Sort>,
     pub loc: Option<CryptoFeed>,
 }
 

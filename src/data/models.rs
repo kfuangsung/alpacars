@@ -1,3 +1,4 @@
+use crate::data::enums::MarketType;
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -345,7 +346,7 @@ pub struct Mover {
 pub struct Movers {
     pub gainers: Vec<Mover>,
     pub losers: Vec<Mover>,
-    pub market_type: Option<String>,
+    pub market_type: Option<MarketType>,
     pub last_updated: Option<DateTime<Utc>>,
 }
 

@@ -27,7 +27,7 @@ pub struct Asset {
     pub margin_requirement_long: Option<String>,
     /// Margin requirement percentage for short positions (equities only), as a decimal string.
     pub margin_requirement_short: Option<String>,
-    pub attributes: Option<Vec<String>>,
+    pub attributes: Option<Vec<AssetAttribute>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -363,11 +363,14 @@ pub struct TradeUpdate {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct CorporateActionAnnouncement {
-    pub id: Uuid,
-    pub corporate_action_id: String,
-    pub ca_type: CorporateActionType,
-    pub ca_sub_type: CorporateActionSubType,
-    pub initiating_symbol: String,
+    /// The reference marks no field required, and its own examples omit `id`.
+    pub id: Option<Uuid>,
+    /// One reference example spells this `corporate_actions_id`; both are accepted.
+    #[serde(alias = "corporate_actions_id")]
+    pub corporate_action_id: Option<String>,
+    pub ca_type: Option<CorporateActionType>,
+    pub ca_sub_type: Option<CorporateActionSubType>,
+    pub initiating_symbol: Option<String>,
     pub initiating_original_cusip: Option<String>,
     pub target_symbol: Option<String>,
     pub target_original_cusip: Option<String>,

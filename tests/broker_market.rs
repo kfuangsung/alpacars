@@ -4,7 +4,7 @@
 
 mod common;
 
-use alpacars::trading::enums::{AssetClass, AssetStatus};
+use alpacars::trading::enums::{AssetAttribute, AssetClass, AssetStatus};
 use alpacars::trading::requests::{GetAssetsRequest, GetCalendarRequest};
 use chrono::NaiveDate;
 use wiremock::matchers::{method, path, query_param};
@@ -34,6 +34,7 @@ async fn test_get_all_assets() {
         .and(path("/v1/assets"))
         .and(query_param("status", "active"))
         .and(query_param("asset_class", "us_equity"))
+        .and(query_param("attributes", "has_options,ipo"))
         .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{ASSET_JSON}]")))
         .expect(1)
         .mount(&server)
@@ -43,11 +44,16 @@ async fn test_get_all_assets() {
     let filter = GetAssetsRequest {
         status: Some(AssetStatus::Active),
         asset_class: Some(AssetClass::UsEquity),
+        attributes: Some(vec![AssetAttribute::HasOptions, AssetAttribute::Ipo]),
         ..Default::default()
     };
     let assets = client.get_all_assets(Some(&filter)).await.unwrap();
     assert_eq!(assets.len(), 1);
     assert_eq!(assets[0].symbol, "AAPL");
+    assert_eq!(
+        assets[0].attributes,
+        Some(vec![AssetAttribute::PtpNoException, AssetAttribute::Ipo])
+    );
 }
 
 #[tokio::test]
