@@ -102,13 +102,13 @@ jobs:
       - uses: obi1kenobi/cargo-semver-checks-action@v2
 
   msrv:
-    name: MSRV (1.88)
+    name: MSRV (1.89)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.88"
+          toolchain: "1.89"
       - uses: Swatinem/rust-cache@v2
       - name: Build on MSRV
         run: cargo build --all-targets --locked
