@@ -1,5 +1,4 @@
 use crate::broker::enums::*;
-use crate::broker::models::BankExtraFields;
 use crate::trading::enums::{ActivityType, AssetClass, QueryOrderStatus};
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
@@ -218,6 +217,18 @@ pub struct GetBanksRequest {
     pub status: Option<BankStatusFilter>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bank_name: Option<String>,
+}
+
+/// Intermediary banks for a recipient bank (`extra_fields`). Used in both
+/// [`CreateBankRequest`] and the `Bank` response, so it stays constructible.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct BankExtraFields {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub intermediary_bank1_bic: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub intermediary_bank2_bic: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub intermediary_bank3_bic: Option<String>,
 }
 
 /// Create a recipient bank (`POST /v1/accounts/{account_id}/recipient_banks`). The bank is

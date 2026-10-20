@@ -22,6 +22,7 @@ where
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Bar {
     /// The symbol. Streams send it as `S`; historical methods fill it from the response's
     /// map key.
@@ -62,6 +63,7 @@ pub type BarSet = HashMap<String, Vec<Bar>>;
 pub type LatestBarSet = HashMap<String, Bar>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Quote {
     /// The symbol. Streams send it as `S`; historical methods fill it from the response's
     /// map key.
@@ -102,6 +104,7 @@ pub type QuoteSet = HashMap<String, Vec<Quote>>;
 pub type LatestQuoteSet = HashMap<String, Quote>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Trade {
     /// The symbol. Streams send it as `S`; historical methods fill it from the response's
     /// map key.
@@ -139,6 +142,7 @@ pub type TradeSet = HashMap<String, Vec<Trade>>;
 pub type LatestTradeSet = HashMap<String, Trade>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct OrderbookEntry {
     #[serde(rename = "p")]
     pub price: f64,
@@ -147,6 +151,7 @@ pub struct OrderbookEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Orderbook {
     /// The symbol. Streams send it as `S`; historical methods fill it from the response's
     /// map key.
@@ -164,6 +169,7 @@ pub struct Orderbook {
 pub type LatestOrderbookSet = HashMap<String, Orderbook>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Snapshot {
     /// The symbol, filled from the response's map key.
     #[serde(default)]
@@ -184,6 +190,7 @@ pub struct Snapshot {
 pub type SnapshotSet = HashMap<String, Snapshot>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct OptionsSnapshot {
     /// The contract symbol, filled from the response's map key.
     #[serde(default)]
@@ -204,6 +211,7 @@ pub struct OptionsSnapshot {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct OptionsGreeks {
     pub delta: Option<f64>,
     pub gamma: Option<f64>,
@@ -216,6 +224,7 @@ pub struct OptionsGreeks {
 pub type OptionsSnapshotSet = HashMap<String, OptionsSnapshot>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TradingStatus {
     #[serde(rename = "t")]
     pub timestamp: DateTime<Utc>,
@@ -234,6 +243,7 @@ pub struct TradingStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TradeCancel {
     #[serde(rename = "t")]
     pub timestamp: DateTime<Utc>,
@@ -252,6 +262,7 @@ pub struct TradeCancel {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TradeCorrection {
     #[serde(rename = "t")]
     pub timestamp: DateTime<Utc>,
@@ -280,12 +291,14 @@ pub struct TradeCorrection {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct NewsImage {
     pub size: String,
     pub url: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct News {
     pub id: u64,
     pub headline: String,
@@ -304,6 +317,7 @@ pub struct News {
 pub type NewsSet = Vec<News>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ActiveStock {
     pub symbol: String,
     pub volume: Option<f64>,
@@ -311,12 +325,14 @@ pub struct ActiveStock {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct MostActives {
     pub most_actives: Vec<ActiveStock>,
     pub last_updated: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Mover {
     pub symbol: String,
     pub percent_change: Option<f64>,
@@ -325,6 +341,7 @@ pub struct Mover {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Movers {
     pub gainers: Vec<Mover>,
     pub losers: Vec<Mover>,
@@ -334,6 +351,7 @@ pub struct Movers {
 
 // Corporate action types
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ForwardSplit {
     pub symbol: String,
     pub new_rate: f64,
@@ -346,6 +364,7 @@ pub struct ForwardSplit {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ReverseSplit {
     pub symbol: String,
     pub new_symbol: Option<String>,
@@ -358,6 +377,7 @@ pub struct ReverseSplit {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct UnitSplit {
     pub old_symbol: String,
     pub old_rate: f64,
@@ -371,6 +391,7 @@ pub struct UnitSplit {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct CashDividend {
     pub symbol: String,
     pub rate: f64,
@@ -385,6 +406,7 @@ pub struct CashDividend {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct StockDividend {
     pub symbol: String,
     pub rate: f64,
@@ -395,6 +417,7 @@ pub struct StockDividend {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct SpinOff {
     pub source_symbol: String,
     pub source_rate: f64,
@@ -408,6 +431,7 @@ pub struct SpinOff {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct CorporateActionsSet {
     pub reverse_splits: Option<Vec<ReverseSplit>>,
     pub forward_splits: Option<Vec<ForwardSplit>>,
