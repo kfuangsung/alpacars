@@ -186,7 +186,8 @@ pub struct Calendar {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TradeAccount {
     pub id: Uuid,
-    pub account_number: String,
+    /// `null` for some accounts, per the Trading API reference.
+    pub account_number: Option<String>,
     pub status: AccountStatus,
     pub crypto_status: Option<AccountStatus>,
     pub currency: Option<String>,

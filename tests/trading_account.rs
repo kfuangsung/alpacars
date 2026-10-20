@@ -50,8 +50,34 @@ async fn test_get_account() {
     let account = client.get_account().await.unwrap();
 
     assert!(matches!(account, TradeAccount { .. }));
+    assert_eq!(account.account_number.as_deref(), Some("010203ABCD"));
     assert_eq!(account.buying_power.as_deref(), Some("262113.632"));
     assert_eq!(account.options_buying_power.as_deref(), Some("262113.632"));
+}
+
+#[tokio::test]
+async fn test_get_account_with_null_account_number() {
+    // The Trading API reference types account_number as `string | null` (changelog 2026-10-09).
+    let server = MockServer::start().await;
+
+    Mock::given(method("GET"))
+        .and(path("/v2/account"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(
+            r#"{
+              "id": "e6fe16f3-64a4-4921-8928-cadf02f92f98",
+              "account_number": null,
+              "status": "ACTIVE",
+              "currency": "USD"
+            }"#,
+        ))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::trading_client(&server.uri());
+    let account = client.get_account().await.unwrap();
+
+    assert_eq!(account.account_number, None);
 }
 
 #[tokio::test]
