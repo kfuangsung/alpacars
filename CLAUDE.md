@@ -86,7 +86,7 @@ A client without this constructor cannot be tested at all, and every time one wa
 
 Trading-stream and market-data-stream are separate implementations, not a shared abstraction — don't try to unify them:
 
-- `trading/stream.rs` (`TradingStream`) — auth via `{action: "auth", data: {key_id, secret_key}}`, listens on a single `trade_updates` stream, JSON only.
+- `trading/stream.rs` (`TradingStream`) — auth via `{action: "auth", key, secret}`, listens on a single `trade_updates` stream. Accepts text **and binary** frames: per Alpaca's "Websocket Streaming" doc the *paper* stream sends `trade_updates` as binary frames (JSON payload, or MessagePack), so ignoring binary silently drops every paper update. Tested end to end in `tests/trading_stream.rs` via the `#[doc(hidden)] new_with_url`.
 - `data/live/websocket.rs` (`DataStreamConnection`) — auth via `{action: "auth", key, secret}`, subscribes to multiple typed channels at once (trades/quotes/bars/updated_bars/daily_bars/statuses/orderbooks/news) via `SubscribeMsg`, and accepts both JSON text frames and msgpack binary frames (falling back to JSON if msgpack decoding fails) via `rmp-serde`. Per-asset-class wrappers in `data/live/{stock,crypto,option,news}.rs` build the appropriate `SubscribeMsg` and expose typed `subscribe_*` handler-registration methods over the raw `RawStreamEvent`.
 
 ### Historical data auto-pagination

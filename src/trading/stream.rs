@@ -7,16 +7,12 @@ use std::sync::Arc;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::{debug, info, warn};
 
-#[derive(Debug, Serialize)]
-struct AuthData<'a> {
-    key_id: &'a str,
-    secret_key: &'a str,
-}
-
+/// `{"action": "auth", "key": ..., "secret": ...}`, per Alpaca's "Websocket Streaming" doc.
 #[derive(Debug, Serialize)]
 struct AuthMessage<'a> {
     action: &'a str,
-    data: AuthData<'a>,
+    key: &'a str,
+    secret: &'a str,
 }
 
 #[derive(Debug, Serialize)]
@@ -39,6 +35,7 @@ pub struct TradingStream {
     api_key: String,
     secret_key: String,
     paper: bool,
+    url_override: Option<String>,
     trade_update_handler: Option<TradeUpdateHandler>,
 }
 
@@ -48,6 +45,19 @@ impl TradingStream {
             api_key: api_key.to_string(),
             secret_key: secret_key.to_string(),
             paper,
+            url_override: None,
+            trade_update_handler: None,
+        }
+    }
+
+    /// Create a stream pointed at a custom WebSocket URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(api_key: &str, secret_key: &str, url: &str) -> Self {
+        Self {
+            api_key: api_key.to_string(),
+            secret_key: secret_key.to_string(),
+            paper: true,
+            url_override: Some(url.to_string()),
             trade_update_handler: None,
         }
     }
@@ -60,11 +70,11 @@ impl TradingStream {
         self.trade_update_handler = Some(Arc::new(handler));
     }
 
-    fn stream_url(&self) -> &'static str {
-        if self.paper {
-            base_url::TRADING_STREAM_PAPER
-        } else {
-            base_url::TRADING_STREAM_LIVE
+    fn stream_url(&self) -> &str {
+        match &self.url_override {
+            Some(url) => url,
+            None if self.paper => base_url::TRADING_STREAM_PAPER,
+            None => base_url::TRADING_STREAM_LIVE,
         }
     }
 
@@ -80,11 +90,9 @@ impl TradingStream {
 
         debug!("authenticating trading stream");
         let auth = serde_json::to_string(&AuthMessage {
-            action: "authenticate",
-            data: AuthData {
-                key_id: &self.api_key,
-                secret_key: &self.secret_key,
-            },
+            action: "auth",
+            key: &self.api_key,
+            secret: &self.secret_key,
         })?;
         write
             .send(Message::Text(auth.into()))
@@ -108,39 +116,18 @@ impl TradingStream {
         while let Some(msg) = read.next().await {
             let msg = msg.map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
             match msg {
-                Message::Text(text) => {
-                    let event: serde_json::Value = match serde_json::from_str(&text) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            warn!(error = %e, "failed to parse trading stream message");
-                            continue;
-                        }
-                    };
-                    let stream = event["stream"].as_str().unwrap_or("");
-                    if stream == "trade_updates" {
-                        let event_type = event["data"]["event"].as_str().unwrap_or("unknown");
-                        info!(event_type, "trading stream: trade_updates event received");
-                        if let Some(ref h) = handler {
-                            match serde_json::from_value::<TradeUpdate>(event["data"].clone()) {
-                                Ok(update) => h(update),
-                                Err(e) => {
-                                    warn!(error = %e, raw = %event["data"], "failed to deserialize TradeUpdate");
-                                }
-                            }
-                        }
-                    } else if stream == "authorization" {
-                        let status = event["data"]["status"].as_str().unwrap_or("unknown");
-                        if status == "authorized" {
-                            info!("trading stream authenticated successfully");
-                        } else {
-                            warn!(%status, "trading stream authentication failed — no trade updates will be received");
-                        }
-                    } else if stream == "listening" {
-                        info!("trading stream subscription confirmed");
-                    } else if !stream.is_empty() {
-                        debug!(stream, "received message for unhandled stream");
-                    }
-                }
+                Message::Text(text) => match serde_json::from_str(&text) {
+                    Ok(event) => Self::handle_event(&event, handler.as_ref()),
+                    Err(e) => warn!(error = %e, "failed to parse trading stream message"),
+                },
+                // The paper stream sends `trade_updates` in binary frames (Alpaca's
+                // "Websocket Streaming" doc). They carry JSON, or MessagePack if negotiated.
+                Message::Binary(bytes) => match serde_json::from_slice(&bytes)
+                    .or_else(|_| rmp_serde::from_slice::<serde_json::Value>(&bytes))
+                {
+                    Ok(event) => Self::handle_event(&event, handler.as_ref()),
+                    Err(e) => warn!(error = %e, "failed to parse binary trading stream message"),
+                },
                 Message::Close(frame) => {
                     debug!(frame = ?frame, "trading stream closed by server");
                     break;
@@ -155,6 +142,33 @@ impl TradingStream {
         }
 
         Ok(())
+    }
+
+    fn handle_event(event: &serde_json::Value, handler: Option<&TradeUpdateHandler>) {
+        let stream = event["stream"].as_str().unwrap_or("");
+        if stream == "trade_updates" {
+            let event_type = event["data"]["event"].as_str().unwrap_or("unknown");
+            info!(event_type, "trading stream: trade_updates event received");
+            if let Some(h) = handler {
+                match serde_json::from_value::<TradeUpdate>(event["data"].clone()) {
+                    Ok(update) => h(update),
+                    Err(e) => {
+                        warn!(error = %e, raw = %event["data"], "failed to deserialize TradeUpdate");
+                    }
+                }
+            }
+        } else if stream == "authorization" {
+            let status = event["data"]["status"].as_str().unwrap_or("unknown");
+            if status == "authorized" {
+                info!("trading stream authenticated successfully");
+            } else {
+                warn!(%status, "trading stream authentication failed — no trade updates will be received");
+            }
+        } else if stream == "listening" {
+            info!("trading stream subscription confirmed");
+        } else if !stream.is_empty() {
+            debug!(stream, "received message for unhandled stream");
+        }
     }
 
     /// Stop the stream by dropping this client (the run loop will exit on the next message).
