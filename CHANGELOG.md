@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- MSRV raised from 1.88 to 1.89, required by `uuid` ≥ 1.27.
+- Dependency updates: `tokio` 1.53.3, `serde_json` 1.0.154, `thiserror` 2.0.21, `uuid` 1.28.0, `base64` 0.23.1, `futures-util` 0.3.34.
+
 ### Fixed
 - Broker journals were non-functional. All of these were verified against the `docs.alpaca.markets/us/reference` pages, and none of them changes the Rust API:
   - `JournalEntryType` was serialized as `CASH`/`SECURITY`; Alpaca uses `JNLC`/`JNLS`. Every journal response failed to deserialize and every journal request sent an invalid `entry_type`.
