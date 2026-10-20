@@ -9,14 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `BrokerClient::get_trading_account(account_id)` (`GET /v1/trading/accounts/{account_id}/account`): balances, buying power and trading configuration for an account.
+- `BrokerClient::download_trade_document_for_account(account_id, document_id) -> Vec<u8>` (`GET …/documents/{document_id}/download`). The API redirects to a pre-signed link, which is followed; the Basic-auth `Authorization` header is not forwarded to the file host (covered by a test).
+- `RestClient::get_bytes`, for endpoints that serve files. It shares the JSON verbs' auth, retry and error handling (the request loop is now one `send_with_retry` path).
+- `DocumentType` variants for the API's actual upload `document_type` values (`IdentityVerification`, `AddressVerification`, `TaxIdVerification`, `W8ben`, `W9`, `CipResult`, … — 14 in all), and `TradeDocumentType::{AccountApplication, CryptoAccountStatement, OptionsApplication, TaxStatement, TradeConfirmationJson}`.
 
 ### Deprecated
 - `BrokerClient::get_trade_account_by_id(account_id, trading_account_id)`: the endpoint takes no trading account id. It now calls `get_trading_account` and ignores the second argument.
 - `BrokerClient::delete_account`: the Broker API has no `DELETE /v1/accounts/{account_id}` endpoint, so it can never succeed. Use `close_account`.
+- `BrokerClient::get_trade_document_for_account_by_id`: there is no JSON endpoint for a single document. Use `get_trade_documents_for_account` and `download_trade_document_for_account`.
+- The pre-existing `DocumentType` variants (`DriversLicense`, `Passport`, …) are not valid `document_type` values — they are `document_sub_type` values — and the `TradeDocumentType::TaxForm*` variants are not in the API reference. They are documented as such.
 
-Both will be removed in 0.7.0.
+All of these will be removed in 0.7.0.
 
 ### Fixed
+- `upload_documents_to_account` could never send a valid `document_type`: `DocumentType`'s variants were sub-type values in SCREAMING_SNAKE_CASE (`PASSPORT`), while the API takes `identity_verification`, `address_verification`, …. Use the new variants (see Added).
+- `get_trade_documents_for_account` returned every document with `document_type` and `document_sub_type` set to `None`: the API's keys are `type` and `sub_type`, and its type values are lowercase (`account_statement`). `TradeDocument` now reads both key spellings, and `TradeDocumentType::AccountStatement` / `TradeConfirmation` use the lowercase wire values.
+- CIP get / upload called `/v1/accounts/{account_id}/cip_data`; the endpoint is `/v1/accounts/{account_id}/cip`. (The reference documents the upload's `200` without a body; if Alpaca returns none, `upload_cip_data_for_account_by_id` reports a deserialization error despite succeeding — its return type is unchanged until 0.7.0.)
 - Broker recipient banks called `/v1/accounts/{account_id}/banks…`; the endpoints are `/v1/accounts/{account_id}/recipient_banks…`. `create_bank_for_account`, `get_banks_for_account` and `delete_bank_for_account` were all failing.
 - `TransferType` was serialized as `ACH` / `WIRE`; the wire values are `ach` / `wire`. `create_transfer_for_account` sent an unrecognized `transfer_type`, and transfers read back parsed as `TransferType::Unknown`.
 - `CreateTransferRequest` sent unset `relationship_id` / `bank_id` as `null`, and `CreateBankRequest` did the same for its optional fields; the API types these as plain strings. Unset fields are now omitted.

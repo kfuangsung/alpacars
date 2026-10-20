@@ -57,7 +57,10 @@ async fn test_get_trade_documents_for_account() {
         .await
         .unwrap();
     assert_eq!(docs[0].id, document());
-    assert_eq!(docs[0].document_type, Some(TradeDocumentType::AccountStatement));
+    assert_eq!(
+        docs[0].document_type,
+        Some(TradeDocumentType::AccountStatement)
+    );
     assert_eq!(docs[0].document_sub_type.as_deref(), Some("1099-Comp"));
 }
 
@@ -115,10 +118,10 @@ async fn test_download_document_follows_redirect_without_credentials() {
             "/v1/accounts/{ACCOUNT_ID}/documents/{DOCUMENT_ID}/download"
         )))
         .and(header_exists("authorization"))
-        .respond_with(
-            ResponseTemplate::new(301)
-                .insert_header("Location", format!("{}/presigned/statement.pdf", file_host.uri())),
-        )
+        .respond_with(ResponseTemplate::new(301).insert_header(
+            "Location",
+            format!("{}/presigned/statement.pdf", file_host.uri()),
+        ))
         .expect(1)
         .mount(&api)
         .await;
@@ -171,18 +174,33 @@ async fn test_upload_cip_data() {
 fn test_document_type_wire_values() {
     // OwnerDocumentType (uploaddoctoaccount) and AccountDocumentType (getdocsforaccount).
     for wire in [
-        "account_approval_letter", "address_verification", "cip_result", "company_formation",
-        "date_of_birth_verification", "entity_operating_document", "entity_registration",
-        "hio_declaration_form", "identity_verification", "limited_trading_authorization",
-        "pep_declaration_form", "tax_id_verification", "w8ben", "w9",
+        "account_approval_letter",
+        "address_verification",
+        "cip_result",
+        "company_formation",
+        "date_of_birth_verification",
+        "entity_operating_document",
+        "entity_registration",
+        "hio_declaration_form",
+        "identity_verification",
+        "limited_trading_authorization",
+        "pep_declaration_form",
+        "tax_id_verification",
+        "w8ben",
+        "w9",
     ] {
         let v: DocumentType = serde_json::from_value(json!(wire)).unwrap();
         assert_ne!(v, DocumentType::Unknown, "{wire}");
         assert_eq!(serde_json::to_value(&v).unwrap(), json!(wire));
     }
     for wire in [
-        "account_application", "account_statement", "crypto_account_statement",
-        "options_application", "tax_statement", "trade_confirmation_json", "trade_confirmation",
+        "account_application",
+        "account_statement",
+        "crypto_account_statement",
+        "options_application",
+        "tax_statement",
+        "trade_confirmation_json",
+        "trade_confirmation",
     ] {
         let v: TradeDocumentType = serde_json::from_value(json!(wire)).unwrap();
         assert_ne!(v, TradeDocumentType::Unknown, "{wire}");

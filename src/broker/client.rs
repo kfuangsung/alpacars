@@ -191,7 +191,10 @@ impl BrokerClient {
     ) -> Result<Vec<u8>, AlpacaError> {
         self.client
             .get_bytes(
-                &format!("/accounts/{}/documents/{}/download", account_id, document_id),
+                &format!(
+                    "/accounts/{}/documents/{}/download",
+                    account_id, document_id
+                ),
                 None::<&()>,
             )
             .await

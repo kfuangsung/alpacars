@@ -111,6 +111,8 @@ When a test is meant to prove a *negative* (a header is absent, a field is omitt
 
 Every public enum is `#[non_exhaustive]`. Every enum that appears in a response type (any `models.rs`, the trading stream, the live data streams) also ends with a `#[serde(other)] Unknown` unit variant, so a value Alpaca adds later parses instead of failing the whole response. Request-only enums get no `Unknown`. When adding an enum, follow the same rule, add it to `tests/enum_forward_compat.rs` if it has `Unknown`, and add its reference value list to `tests/enum_wire_values.rs`. When values don't survive `rename_all` case conversion (`TYPE_401K`, `DIVCGL`-style acronyms, empty strings), rename every variant explicitly.
 
+**Adding a variant to an existing enum in a patch release:** serde requires `#[serde(other)] Unknown` to stay the *last* variant, so a new variant inserted before it shifts `Unknown`'s implicit discriminant — which `cargo semver-checks` reports as major (`enum_no_repr_variant_discriminant_changed`). Pin `Unknown` to its previous value and number the new variants after it explicitly, e.g. `NewValue = 14, … Unknown = 13` (see `DocumentType`). In a minor (0.x) release this does not matter.
+
 ### Broker API endpoint paths are the least trustworthy part of the crate
 
 The Trading API has an official OpenAPI spec to check against; the Broker API does not, so its paths were transcribed by hand and were never cross-checked. That gap hid four bugs that made **all 13 rebalancing methods fail** — wrong path prefix (`/v1/portfolios` rather than `/v1/rebalancing/portfolios`), wrong verb for archive, wrong response shape for List All Runs, and a `PortfolioStatus` enum with both wrong casing and wrong variants.

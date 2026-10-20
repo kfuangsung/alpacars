@@ -184,38 +184,40 @@ pub enum DocumentType {
     LimitedPoa,
     /// Not a valid `document_type`; use a variant such as `IdentityVerification` and put this in `document_sub_type`. Will be removed in 0.7.0.
     Other,
+    // Added in 0.6.1. Explicit discriminants keep every pre-existing variant, including
+    // `Unknown` (which serde requires to stay last), at its 0.6.0 value.
     #[serde(rename = "account_approval_letter")]
-    AccountApprovalLetter,
+    AccountApprovalLetter = 14,
     #[serde(rename = "address_verification")]
-    AddressVerification,
+    AddressVerification = 15,
     #[serde(rename = "cip_result")]
-    CipResult,
+    CipResult = 16,
     #[serde(rename = "company_formation")]
-    CompanyFormation,
+    CompanyFormation = 17,
     #[serde(rename = "date_of_birth_verification")]
-    DateOfBirthVerification,
+    DateOfBirthVerification = 18,
     #[serde(rename = "entity_operating_document")]
-    EntityOperatingDocument,
+    EntityOperatingDocument = 19,
     #[serde(rename = "entity_registration")]
-    EntityRegistration,
+    EntityRegistration = 20,
     #[serde(rename = "hio_declaration_form")]
-    HioDeclarationForm,
+    HioDeclarationForm = 21,
     #[serde(rename = "identity_verification")]
-    IdentityVerification,
+    IdentityVerification = 22,
     #[serde(rename = "limited_trading_authorization")]
-    LimitedTradingAuthorization,
+    LimitedTradingAuthorization = 23,
     #[serde(rename = "pep_declaration_form")]
-    PepDeclarationForm,
+    PepDeclarationForm = 24,
     #[serde(rename = "tax_id_verification")]
-    TaxIdVerification,
+    TaxIdVerification = 25,
     #[serde(rename = "w8ben")]
-    W8ben,
+    W8ben = 26,
     #[serde(rename = "w9")]
-    W9,
+    W9 = 27,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
-    Unknown,
+    Unknown = 13,
 }
 
 /// Type of an account document (`type` on `GET /v1/accounts/{account_id}/documents`).
@@ -243,20 +245,22 @@ pub enum TradeDocumentType {
     TaxFormW8bene,
     /// Not an `AccountDocumentType` in the API reference; will be removed in 0.7.0.
     TaxFormW9,
+    // Added in 0.6.1. Explicit discriminants keep every pre-existing variant, including
+    // `Unknown` (which serde requires to stay last), at its 0.6.0 value.
     #[serde(rename = "account_application")]
-    AccountApplication,
+    AccountApplication = 11,
     #[serde(rename = "crypto_account_statement")]
-    CryptoAccountStatement,
+    CryptoAccountStatement = 12,
     #[serde(rename = "options_application")]
-    OptionsApplication,
+    OptionsApplication = 13,
     #[serde(rename = "tax_statement")]
-    TaxStatement,
+    TaxStatement = 14,
     #[serde(rename = "trade_confirmation_json")]
-    TradeConfirmationJson,
+    TradeConfirmationJson = 15,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
-    Unknown,
+    Unknown = 10,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
