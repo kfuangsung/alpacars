@@ -306,13 +306,19 @@ impl BrokerClient {
         data: &CreateBankRequest,
     ) -> Result<Bank, AlpacaError> {
         self.client
-            .post(&format!("/accounts/{}/banks", account_id), Some(data))
+            .post(
+                &format!("/accounts/{}/recipient_banks", account_id),
+                Some(data),
+            )
             .await
     }
 
     pub async fn get_banks_for_account(&self, account_id: &Uuid) -> Result<Vec<Bank>, AlpacaError> {
         self.client
-            .get(&format!("/accounts/{}/banks", account_id), None::<&()>)
+            .get(
+                &format!("/accounts/{}/recipient_banks", account_id),
+                None::<&()>,
+            )
             .await
     }
 
@@ -323,7 +329,7 @@ impl BrokerClient {
     ) -> Result<(), AlpacaError> {
         self.client
             .delete_void(
-                &format!("/accounts/{}/banks/{}", account_id, bank_id),
+                &format!("/accounts/{}/recipient_banks/{}", account_id, bank_id),
                 None::<&()>,
             )
             .await
