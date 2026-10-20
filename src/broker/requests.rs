@@ -232,12 +232,32 @@ pub struct CreateJournalRequest {
     pub transmitter_timestamp: Option<String>,
 }
 
+/// One recipient of a one-to-many batch journal.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BatchJournalEntryRequest {
     pub to_account: Uuid,
-    pub amount: String,
+    /// Cash amount. The API requires the key but allows `null`, so it is always sent.
+    pub amount: Option<String>,
+    /// ISO currency code.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub currency: Option<String>,
+    /// For security journals, together with `qty`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub qty: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transmitter_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transmitter_account_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transmitter_address: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transmitter_financial_institution: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transmitter_timestamp: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -245,18 +265,25 @@ pub struct CreateBatchJournalRequest {
     pub from_account: Uuid,
     pub entry_type: JournalEntryType,
     pub entries: Vec<BatchJournalEntryRequest>,
+    /// The originating correspondent.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub correspondent: Option<String>,
 }
 
+/// One sender of a many-to-one reverse batch journal.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReverseBatchJournalEntry {
-    pub to_account: Uuid,
     pub from_account: Uuid,
     pub amount: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
 }
 
+/// Many-to-one: every entry journals into the single `to_account`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateReverseBatchJournalRequest {
     pub entry_type: JournalEntryType,
+    pub to_account: Uuid,
     pub entries: Vec<ReverseBatchJournalEntry>,
 }
 
@@ -276,14 +303,28 @@ pub struct GetJournalsRequest {
     pub from_account: Option<Uuid>,
 }
 
+/// One allocation in a create-portfolio or create-run request. Percentages across all
+/// weights must be positive and total exactly 100.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PortfolioWeightRequest {
+    #[serde(rename = "type")]
+    pub weight_type: WeightType,
+    /// Required for an asset weight; omit for cash.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    pub percent: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreatePortfolioRequest {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    pub assets: Vec<serde_json::Value>,
+    pub weights: Vec<PortfolioWeightRequest>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cooldown_days: Option<u32>,
+    /// Note the request spells this `rebalance_conditions`, while `Portfolio` responses use
+    /// `rebalancing_conditions` — both per the API reference.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rebalance_conditions: Option<Vec<serde_json::Value>>,
 }
@@ -308,11 +349,19 @@ pub struct GetSubscriptionsRequest {
     pub portfolio_id: Option<Uuid>,
 }
 
+/// Omit `weights` (or pass an empty list) for a run driven by the account's active
+/// subscription; pass weights for a manual one-off run, which the API rejects if the account
+/// already has an active subscription.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateRunRequest {
-    pub portfolio_id: Uuid,
+    pub account_id: Uuid,
+    #[serde(rename = "type")]
+    pub run_type: RunType,
+    /// Decimal amount used by the run.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub account_id: Option<Uuid>,
+    pub amount: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weights: Option<Vec<PortfolioWeightRequest>>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -321,9 +370,8 @@ pub struct GetRunsRequest {
     pub account_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
-    /// Portfolio run type: `full_rebalance` or `invest_cash`.
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
-    pub run_type: Option<String>,
+    pub run_type: Option<RunType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
