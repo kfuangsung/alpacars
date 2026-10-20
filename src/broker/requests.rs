@@ -1,4 +1,5 @@
 use crate::broker::enums::*;
+use crate::broker::models::BankExtraFields;
 use crate::trading::enums::{ActivityType, QueryOrderStatus};
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
@@ -190,26 +191,43 @@ pub struct CreateACHRelationshipRequest {
     pub bank_account_type: BankAccountType,
     pub bank_account_number: String,
     pub bank_routing_number: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub plaid_processor_token: Option<String>,
+    /// A Plaid processor token, if you use Plaid.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub processor_token: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub instant: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub nickname: Option<String>,
 }
 
-/// Create a recipient bank (`POST /v1/accounts/{account_id}/recipient_banks`).
-///
-/// The API identifies the bank by `bank_code` plus `bank_code_type` (`ABA` or `BIC`), both
-/// required — set them even though they are `Option` here. `routing_number` does not appear in
-/// the API reference for this request and will be removed in 0.7.0.
+/// Filter for `GET /v1/accounts/{account_id}/ach_relationships`.
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct GetACHRelationshipsRequest {
+    /// Sent as a comma-separated `statuses` query parameter.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub statuses: Option<Vec<ACHRelationshipStatus>>,
+}
+
+/// Filter for `GET /v1/accounts/{account_id}/recipient_banks`.
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct GetBanksRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<BankStatusFilter>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bank_name: Option<String>,
+}
+
+/// Create a recipient bank (`POST /v1/accounts/{account_id}/recipient_banks`). The bank is
+/// identified by `bank_code`: an ABA routing number or a BIC, per `bank_code_type`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateBankRequest {
     pub name: String,
-    pub routing_number: String,
+    pub bank_code: String,
+    pub bank_code_type: BankCodeType,
     pub account_number: String,
+    /// Intermediary banks, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub bank_code: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub bank_code_type: Option<String>,
+    pub extra_fields: Option<BankExtraFields>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -231,10 +249,37 @@ pub struct CreateTransferRequest {
     pub bank_id: Option<Uuid>,
     pub amount: String,
     pub direction: TransferDirection,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub timing: Option<String>,
+    /// Wire transfers only.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub additional_information: Option<String>,
+    /// Who pays the fees of an outgoing wire.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fee_payment_method: Option<FeePaymentMethod>,
+    /// IRA accounts only.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ira: Option<TransferIra>,
+}
+
+/// IRA distribution details of a new transfer.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct TransferIra {
+    /// e.g. `normal`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub distribution_reason: Option<String>,
+    /// e.g. `2024`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tax_year: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tax_withholding: Option<TransferIraTaxWithholding>,
+}
+
+/// Withholding percentages, e.g. `"10.25"`.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct TransferIraTaxWithholding {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fed_pct: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub state_pct: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
