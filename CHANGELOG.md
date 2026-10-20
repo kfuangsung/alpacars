@@ -10,8 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `CryptoFeed::{Us1, Us2, Eu1, Bs1}` — the other crypto market data locations in the reference (`us-1`, `us-2`, `eu-1`, `bs-1`).
 - `#[doc(hidden)] new_with_url` on `CryptoHistoricalDataClient`, `NewsClient` and `ScreenerClient`, so every historical data client can now be tested; tests for all four of crypto, news, screener and options.
+- `#[doc(hidden)] TradingStream::new_with_url`, and the first end-to-end test of the trading stream.
 
 ### Fixed
+- **`TradingStream` delivered no trade updates on paper accounts.** Per Alpaca's "Websocket Streaming" doc, the paper stream (`wss://paper-api.alpaca.markets/stream`) sends `trade_updates` in binary frames; `TradingStream` handled only text frames and silently dropped binary ones. Binary frames are now decoded (JSON, with a MessagePack fallback) and handled like text frames.
+- `TradingStream` authenticated with the legacy `{"action": "authenticate", "data": {"key_id", "secret_key"}}` message; it now sends the documented `{"action": "auth", "key", "secret"}`.
 - `ScreenerClient::get_market_movers` always called `/v1beta1/screener/stocks/movers` and sent `market_type` as a query parameter the API does not read, so `MarketType::Crypto` returned stock movers. `market_type` now selects the path (`/screener/{market_type}/movers`).
 - `OptionHistoricalDataClient::get_option_chain` called `/v1beta1/options/snapshots?underlying_symbols=…`, an endpoint that requires contract `symbols`; the chain endpoint is `/v1beta1/options/snapshots/{underlying_symbol}`.
 - Crypto bars, latest bars / quotes / trades / orderbooks and snapshots always used the `us` location: `loc` was sent as an ignored query parameter while the path was hardcoded to `/crypto/us/…`. `loc` now selects the path segment. (Quotes and trades still use `us`: their request type has no `loc` field, and adding one is breaking.)
