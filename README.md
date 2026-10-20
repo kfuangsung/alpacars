@@ -43,7 +43,7 @@ The design mirrors `alpaca-py` closely so that anyone familiar with the Python S
 |---|---|---|
 | ⚡ | **Async by default** | Built on `tokio` and `reqwest` — no blocking calls |
 | 📈 | **Trading API** | Orders (market, limit, stop, bracket, OTO, OCO, trailing-stop, multi-leg, DMA routing), positions, assets, watchlists, options contracts, locates (hard-to-borrow), tokenization |
-| 🏦 | **Broker API** | Account management, documents, ACH/bank transfers, journals, portfolio rebalancing, subscriptions, tokenization |
+| 🏦 | **Broker API** | Account management, agreements, documents, ACH/bank transfers, journals, portfolio rebalancing, subscriptions, tokenization, ACATS transfers (Beta) |
 | 🪙 | **Tokenization** | Mint tokenized assets and look up requests by Alpaca, client, or issuer ID — on both Trading and Broker |
 | 🕰️ | **Historical market data** | Stocks, crypto, options, news, screener (most actives, movers) — all endpoints auto-paginate |
 | 📡 | **Live streaming** | Stocks, crypto, options, and news WebSocket streams with per-event-type handler callbacks; JSON and msgpack frames |
@@ -60,7 +60,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-alpacars = "0.5"
+alpacars = "0.6"
 ```
 
 > **Minimum Rust version:** 1.89 — enforced by a dedicated CI job.
@@ -271,7 +271,7 @@ CI additionally runs the suite on **macOS and Windows**, checks formatting and c
 |---|---|---|
 | 📊 `TradingClient` | Trading | Orders, positions, assets, watchlists, options, locates, tokenization, corporate actions |
 | 🔔 `TradingStream` | Trading | Real-time trade updates via WebSocket |
-| 🏦 `BrokerClient` | Broker | Account management, funding, journals, rebalancing, tokenization |
+| 🏦 `BrokerClient` | Broker | Account management, agreements, funding, journals, rebalancing, tokenization, ACATS (Beta) |
 | 📈 `StockHistoricalDataClient` | Data | Bars, quotes, trades, snapshots (auto-paginated) |
 | ₿ `CryptoHistoricalDataClient` | Data | Bars, quotes, trades, orderbook, snapshots |
 | 🎯 `OptionHistoricalDataClient` | Data | Bars, trades, quotes, snapshots, option chains |
