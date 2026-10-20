@@ -429,8 +429,12 @@ pub struct AddSymbolToWatchlistRequest {
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetAccountActivitiesRequest {
+    /// Sent as a comma-separated `activity_types` query parameter.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_type: Option<ActivityType>,
+    pub activity_types: Option<Vec<ActivityType>>,
+    /// Only return activities (such as fills) belonging to this order.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -441,8 +445,10 @@ pub struct GetAccountActivitiesRequest {
     pub direction: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_size: Option<u32>,
+    /// The `id` of the last activity on the previous page (`"<timestamp>::<uuid>"` format).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_token: Option<Uuid>,
+    pub page_token: Option<String>,
+    /// `trade_activity` or `non_trade_activity`. Mutually exclusive with `activity_types`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
 }

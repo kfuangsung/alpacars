@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Breaking**: `reqwest` 0.12 → 0.13. `AlpacaError::Http` wraps `reqwest::Error`, so it now carries the 0.13 error type; code that names `reqwest::Error` (e.g. matching on `AlpacaError::Http(e)` and calling reqwest-specific methods on `e`) must use reqwest 0.13. `cargo-semver-checks` does not detect this kind of change, so it is called out here.
 - `reqwest` now uses `default-features = false` with `json`, `query`, `native-tls`, `charset`, `http2` and `system-proxy`. 0.13 made rustls/aws-lc-rs the default TLS backend; the crate stays on `native-tls`, the same backend `tokio-tungstenite` uses, so there is still one TLS stack and no new license or C-toolchain requirements.
+- **Breaking**: `trading::GetAccountActivitiesRequest.activity_type: Option<ActivityType>` is now `activity_types: Option<Vec<ActivityType>>`, sent as the comma-separated `activity_types` query parameter the API actually reads. Its `page_token` is now `Option<String>`: activity IDs (and therefore page tokens) have the form `"<timestamp>::<uuid>"`, so the old `Option<Uuid>` made pagination impossible.
+- **Breaking**: `BrokerClient::get_account_activities(account_id, filter)` is now `get_account_activities(filter)`; set `account_id` on the filter, or leave it unset to query across all accounts.
+
+### Added
+- `order_id` filter on both `GetAccountActivitiesRequest`s; `activity_types` and `category` on the Broker one.
+- `ActivityType` variants `Cgd`, `Divfee`, `Divft`, `Divtw`, `Fopt`, `Intnra`, `Inttw`, `Jnl`, `Misc`, `Opca`, `Ptr`, `Reo`, `Trans`, completing the set in the Trading and Broker API references. **Breaking** for exhaustive `match`es.
+
+### Fixed
+- `ActivityType` was serialized in snake_case (`fill`, `jnlc`); Alpaca's values are uppercase (`FILL`, `JNLC`). Activity filters were sent with values the API does not recognize, and `TradeActivity`/`NonTradeActivity` failed to deserialize any real activity.
+- `BrokerClient::get_account_activities` called `/v1/accounts/{account_id}/account_activities`, which does not exist; the endpoint is `/v1/accounts/activities` with `account_id` as a query parameter.
+- `AccountActivity` was `#[serde(untagged)]` with `Trade` tried first, and both shapes only require `id` and `activity_type`, so every activity — dividends, journals, fees — deserialized as `Trade`. It now selects the variant from `activity_type` (`FILL` is the only trade activity).
 
 ## [0.5.1] - 2026-10-20
 
