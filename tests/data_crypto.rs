@@ -91,6 +91,7 @@ async fn test_get_crypto_bars_paginates() {
         ..Default::default()
     };
     let bars = client.get_crypto_bars(&req).await.unwrap();
+    assert!(bars["BTC/USD"].iter().all(|b| b.symbol == "BTC/USD"));
     assert_eq!(bars["BTC/USD"].len(), 2);
 }
 
@@ -193,6 +194,7 @@ async fn test_get_crypto_quotes_paginates() {
         ..Default::default()
     };
     let quotes = client.get_crypto_quotes(&req).await.unwrap();
+    assert!(quotes["BTC/USD"].iter().all(|q| q.symbol == "BTC/USD"));
     assert_eq!(quotes["BTC/USD"].len(), 2);
 }
 
@@ -271,6 +273,7 @@ async fn test_get_crypto_trades_paginates() {
         ..Default::default()
     };
     let trades = client.get_crypto_trades(&req).await.unwrap();
+    assert!(trades["BTC/USD"].iter().all(|t| t.symbol == "BTC/USD"));
     assert_eq!(trades["BTC/USD"].len(), 2);
 }
 
@@ -302,6 +305,7 @@ async fn test_get_crypto_latest_bar() {
         loc: None,
     };
     let set = client.get_crypto_latest_bar(&req).await.unwrap();
+    assert_eq!(set["BTC/USD"].symbol, "BTC/USD");
     assert!(set.contains_key("BTC/USD"));
 }
 
@@ -337,6 +341,7 @@ async fn test_get_crypto_latest_quote() {
         loc: None,
     };
     let set = client.get_crypto_latest_quote(&req).await.unwrap();
+    assert_eq!(set["BTC/USD"].symbol, "BTC/USD");
     assert!(set.contains_key("BTC/USD"));
 }
 
@@ -372,6 +377,7 @@ async fn test_get_crypto_latest_trade() {
         loc: None,
     };
     let set = client.get_crypto_latest_trade(&req).await.unwrap();
+    assert_eq!(set["BTC/USD"].symbol, "BTC/USD");
     assert!(set.contains_key("BTC/USD"));
 }
 
@@ -416,6 +422,7 @@ async fn test_get_crypto_latest_orderbook() {
         loc: None,
     };
     let set = client.get_crypto_latest_orderbook(&req).await.unwrap();
+    assert_eq!(set["BTC/USD"].symbol, "BTC/USD");
     assert!(set.contains_key("BTC/USD"));
 }
 
@@ -483,6 +490,10 @@ async fn test_get_crypto_snapshot() {
         loc: None,
     };
     let set = client.get_crypto_snapshot(&req).await.unwrap();
+    assert_eq!(set["BTC/USD"].symbol, "BTC/USD");
+    if let Some(q) = &set["BTC/USD"].latest_quote {
+        assert_eq!(q.symbol, "BTC/USD");
+    }
     assert!(set.contains_key("BTC/USD"));
 }
 

@@ -220,7 +220,7 @@ impl CryptoHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     pub async fn get_crypto_quotes(
@@ -256,7 +256,7 @@ impl CryptoHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     pub async fn get_crypto_trades(
@@ -292,7 +292,7 @@ impl CryptoHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     pub async fn get_crypto_latest_trade(
@@ -310,7 +310,7 @@ impl CryptoHistoricalDataClient {
                 Some(&params),
             )
             .await?;
-        Ok(resp.trades.unwrap_or_default())
+        Ok(with_symbols(resp.trades.unwrap_or_default()))
     }
 
     pub async fn get_crypto_latest_quote(
@@ -328,7 +328,7 @@ impl CryptoHistoricalDataClient {
                 Some(&params),
             )
             .await?;
-        Ok(resp.quotes.unwrap_or_default())
+        Ok(with_symbols(resp.quotes.unwrap_or_default()))
     }
 
     pub async fn get_crypto_latest_bar(
@@ -346,7 +346,7 @@ impl CryptoHistoricalDataClient {
                 Some(&params),
             )
             .await?;
-        Ok(resp.bars.unwrap_or_default())
+        Ok(with_symbols(resp.bars.unwrap_or_default()))
     }
 
     pub async fn get_crypto_latest_orderbook(
@@ -367,7 +367,7 @@ impl CryptoHistoricalDataClient {
                 Some(&params),
             )
             .await?;
-        Ok(resp.orderbooks.unwrap_or_default())
+        Ok(with_symbols(resp.orderbooks.unwrap_or_default()))
     }
 
     pub async fn get_crypto_snapshot(
@@ -385,6 +385,8 @@ impl CryptoHistoricalDataClient {
                 Some(&params),
             )
             .await?;
-        Ok(resp.snapshots.or(resp.direct).unwrap_or_default())
+        Ok(with_symbols(
+            resp.snapshots.or(resp.direct).unwrap_or_default(),
+        ))
     }
 }

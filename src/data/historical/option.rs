@@ -220,7 +220,7 @@ impl OptionHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     pub async fn get_option_latest_quote(
@@ -236,7 +236,7 @@ impl OptionHistoricalDataClient {
             .client
             .get("/options/quotes/latest", Some(&params))
             .await?;
-        Ok(resp.quotes.unwrap_or_default())
+        Ok(with_symbols(resp.quotes.unwrap_or_default()))
     }
 
     pub async fn get_option_latest_trade(
@@ -252,7 +252,7 @@ impl OptionHistoricalDataClient {
             .client
             .get("/options/trades/latest", Some(&params))
             .await?;
-        Ok(resp.trades.unwrap_or_default())
+        Ok(with_symbols(resp.trades.unwrap_or_default()))
     }
 
     pub async fn get_option_trades(
@@ -283,7 +283,7 @@ impl OptionHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     pub async fn get_option_snapshot(
@@ -312,7 +312,7 @@ impl OptionHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     pub async fn get_option_exchange_codes(&self) -> Result<serde_json::Value, AlpacaError> {

@@ -35,6 +35,7 @@ async fn test_get_stock_bars_single_symbol() {
 
     assert!(barset.contains_key("AAPL"));
     let bars = &barset["AAPL"];
+    assert!(bars.iter().all(|b| b.symbol == "AAPL"));
     assert_eq!(bars.len(), 2);
     assert!(matches!(bars[0], Bar { .. }));
     assert_eq!(bars[0].open, 174.0);
@@ -120,6 +121,7 @@ async fn test_get_stock_quotes() {
 
     assert!(quoteset.contains_key("AAPL"));
     let quotes = &quoteset["AAPL"];
+    assert!(quotes.iter().all(|q| q.symbol == "AAPL"));
     assert_eq!(quotes.len(), 2);
     assert!(matches!(quotes[0], Quote { .. }));
     assert_eq!(quotes[0].ask_price, 158.65);
@@ -153,6 +155,7 @@ async fn test_get_stock_trades() {
 
     assert!(tradeset.contains_key("AAPL"));
     let trades = &tradeset["AAPL"];
+    assert!(trades.iter().all(|t| t.symbol == "AAPL"));
     assert_eq!(trades.len(), 2);
     assert!(matches!(trades[0], Trade { .. }));
     assert_eq!(trades[0].price, 159.07);
@@ -182,6 +185,7 @@ async fn test_get_stock_latest_trade() {
 
     assert!(trades.contains_key("AAPL"));
     let trade = &trades["AAPL"];
+    assert_eq!(trade.symbol, "AAPL");
     assert!(matches!(trade, Trade { .. }));
     assert_eq!(trade.price, 161.2958);
     assert_eq!(trade.size, 100.0);
@@ -230,6 +234,7 @@ async fn test_get_stock_latest_quote() {
 
     assert!(quotes.contains_key("AAPL"));
     let quote = &quotes["AAPL"];
+    assert_eq!(quote.symbol, "AAPL");
     assert!(matches!(quote, Quote { .. }));
     assert_eq!(quote.ask_price, 161.11);
     assert_eq!(quote.bid_size, 2.0);
@@ -258,6 +263,7 @@ async fn test_get_stock_latest_bar() {
 
     assert!(bars.contains_key("SPY"));
     let bar = &bars["SPY"];
+    assert_eq!(bar.symbol, "SPY");
     assert!(matches!(bar, Bar { .. }));
     assert_eq!(bar.open, 392.18);
 }
@@ -289,6 +295,13 @@ async fn test_get_stock_snapshot() {
 
     assert!(snapshots.contains_key("AAPL"));
     let snap = &snapshots["AAPL"];
+    assert_eq!(snap.symbol, "AAPL");
+    if let Some(t) = &snap.latest_trade {
+        assert_eq!(t.symbol, "AAPL");
+    }
+    if let Some(b) = &snap.daily_bar {
+        assert_eq!(b.symbol, "AAPL");
+    }
     assert!(matches!(snap, Snapshot { .. }));
     assert_eq!(snap.latest_trade.as_ref().unwrap().price, 161.1998);
     assert_eq!(snap.latest_quote.as_ref().unwrap().bid_size, 5.0);

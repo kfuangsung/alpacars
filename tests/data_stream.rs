@@ -96,7 +96,7 @@ async fn test_data_stream_round_trip() {
     assert_eq!(events[1].fields["bp"], json!(227.4));
 }
 
-/// `StockDataStream` end to end, with the example messages from Alpaca's "Real-time Stock Data"
+/// `StockDataStream` end to end, including `Trade.symbol` (0.8.0), with the example messages from Alpaca's "Real-time Stock Data"
 /// doc. `RawStreamEvent` takes `S` out of each message, so it has to be put back before
 /// typed parsing; without that, every trading status failed to parse (its `symbol` is
 /// required) and cancels / corrections lost their symbol.
@@ -115,9 +115,11 @@ async fn test_stock_stream_status_cancel_correction_keep_symbol() {
         let sub = next_json(&mut ws).await;
         assert_eq!(
             sub,
-            json!([{"action": "subscribe", "trades": ["GOOGL"], "statuses": ["AAPL"]}])
+            json!([{"action": "subscribe", "trades": ["AAPL"], "statuses": ["AAPL"]}])
         );
         let text = json!([
+            {"T": "t", "i": 96921, "S": "AAPL", "x": "D", "p": 126.55, "s": 1,
+             "t": "2021-02-22T15:51:44.208Z", "c": ["@", "I"], "z": "C"},
             {"T": "s", "S": "AAPL", "sc": "H", "sm": "Trading Halt", "rc": "T12",
              "rm": "Trading Halted; For information requested by NASDAQ",
              "t": "2021-02-22T19:15:00Z", "z": "C"},
@@ -143,7 +145,10 @@ async fn test_stock_stream_status_cancel_correction_keep_symbol() {
             .push(format!("status {} {:?}", status.symbol, status.status_code));
     });
     let s = seen.clone();
-    stream.subscribe_trades(["GOOGL"], |_| {});
+    stream.subscribe_trades(["AAPL"], move |trade| {
+        s.lock().unwrap().push(format!("trade {}", trade.symbol));
+    });
+    let s = seen.clone();
     stream.register_trade_cancels(move |cancel| {
         s.lock()
             .unwrap()
@@ -165,6 +170,7 @@ async fn test_stock_stream_status_cancel_correction_keep_symbol() {
     assert_eq!(
         *seen.lock().unwrap(),
         vec![
+            "trade AAPL".to_string(),
             "status AAPL Some(\"H\")".to_string(),
             "cancel Some(\"GOOGL\")".to_string(),
             "correction Some(\"EEM\")".to_string(),

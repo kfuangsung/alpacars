@@ -196,14 +196,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 📡 Connect to live stock stream
     let mut stream = StockDataStream::new("API_KEY", "SECRET_KEY", DataFeed::Iex);
 
-    // Handlers receive the event without its symbol, so subscribe one symbol per handler
-    // when you need to tell them apart.
-    stream.subscribe_trades(["AAPL"], |trade| {
-        println!("🔔 AAPL trade @ ${} x {}", trade.price, trade.size);
+    stream.subscribe_trades(["AAPL", "TSLA"], |trade| {
+        println!("🔔 Trade: {} @ ${} x {}", trade.symbol, trade.price, trade.size);
     });
 
     stream.subscribe_quotes(["AAPL"], |quote| {
-        println!("💬 AAPL bid={} ask={}", quote.bid_price, quote.ask_price);
+        println!("💬 Quote: {} bid={} ask={}", quote.symbol, quote.bid_price, quote.ask_price);
     });
 
     stream.run().await?; // blocks until stream ends or error

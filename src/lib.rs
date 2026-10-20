@@ -113,10 +113,8 @@
 //! #[tokio::main]
 //! async fn main() -> Result<(), alpacars::AlpacaError> {
 //!     let mut quotes = StockDataStream::new("API_KEY", "SECRET_KEY", DataFeed::Iex);
-//!     // Handlers receive the event without its symbol: subscribe one symbol per handler
-//!     // when you need to tell them apart.
-//!     quotes.subscribe_trades(["AAPL"], |trade| {
-//!         println!("AAPL {} x {}", trade.price, trade.size);
+//!     quotes.subscribe_trades(["AAPL", "TSLA"], |trade| {
+//!         println!("{} {} x {}", trade.symbol, trade.price, trade.size);
 //!     });
 //!
 //!     let mut orders = TradingStream::new("API_KEY", "SECRET_KEY", true);

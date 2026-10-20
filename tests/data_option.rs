@@ -91,6 +91,9 @@ async fn test_get_option_bars_paginates() {
         ..Default::default()
     };
     let bars = client.get_option_bars(&req).await.unwrap();
+    assert!(bars["AAPL240419P00140000"]
+        .iter()
+        .all(|b| b.symbol == "AAPL240419P00140000"));
     assert_eq!(bars["AAPL240419P00140000"].len(), 2);
 }
 
@@ -144,6 +147,9 @@ async fn test_get_option_trades_paginates() {
         ..Default::default()
     };
     let trades = client.get_option_trades(&req).await.unwrap();
+    assert!(trades["AAPL240112C00182500"]
+        .iter()
+        .all(|t| t.symbol == "AAPL240112C00182500"));
     assert_eq!(trades["AAPL240112C00182500"].len(), 4);
 }
 
@@ -184,11 +190,8 @@ async fn test_get_option_latest_quote() {
         symbols: syms(&["AAPL240419P00140000"]),
         ..Default::default()
     };
-    assert!(client
-        .get_option_latest_quote(&req)
-        .await
-        .unwrap()
-        .contains_key("AAPL240419P00140000"));
+    let quotes = client.get_option_latest_quote(&req).await.unwrap();
+    assert_eq!(quotes["AAPL240419P00140000"].symbol, "AAPL240419P00140000");
 }
 
 #[tokio::test]
@@ -215,11 +218,8 @@ async fn test_get_option_latest_trade() {
         symbols: syms(&["AAPL250321C00190000"]),
         ..Default::default()
     };
-    assert!(client
-        .get_option_latest_trade(&req)
-        .await
-        .unwrap()
-        .contains_key("AAPL250321C00190000"));
+    let trades = client.get_option_latest_trade(&req).await.unwrap();
+    assert_eq!(trades["AAPL250321C00190000"].symbol, "AAPL250321C00190000");
 }
 
 #[tokio::test]
@@ -301,6 +301,11 @@ async fn test_get_option_snapshot_paginates() {
         ..Default::default()
     };
     let snaps = client.get_option_snapshot(&req).await.unwrap();
+    let snap = &snaps["AAPL240426C00162500"];
+    assert_eq!(snap.symbol, "AAPL240426C00162500");
+    if let Some(t) = &snap.latest_trade {
+        assert_eq!(t.symbol, "AAPL240426C00162500");
+    }
     assert!(snaps.contains_key("AAPL240426C00162500"));
 }
 
