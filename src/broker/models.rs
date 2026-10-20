@@ -296,8 +296,7 @@ pub use crate::trading::models::{
     TradeActivity, Watchlist,
 };
 pub use crate::trading::requests::{
-    CreateWatchlistRequest, GetAssetsRequest, GetCalendarRequest, GetTokenizationRequestsRequest,
-    TokenizationMintRequest, UpdateWatchlistRequest,
+    GetAssetsRequest, GetCalendarRequest, GetTokenizationRequestsRequest, TokenizationMintRequest,
 };
 
 // ── ACATS (Beta) ─────────────────────────────────────────────────────────────

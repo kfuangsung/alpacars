@@ -5,7 +5,7 @@
 
 mod common;
 
-use alpacars::trading::requests::{CreateWatchlistRequest, UpdateWatchlistRequest};
+use alpacars::broker::requests::{CreateWatchlistRequest, UpdateWatchlistRequest};
 use serde_json::json;
 use uuid::Uuid;
 use wiremock::matchers::{body_json, method, path};
@@ -98,13 +98,36 @@ async fn test_create_watchlist_for_account() {
     let client = common::broker_client(&server.uri());
     let req = CreateWatchlistRequest {
         name: "Tech".to_string(),
-        symbols: Some(vec!["AAPL".to_string()]),
+        symbols: vec!["AAPL".to_string()],
     };
     let list = client
         .create_watchlist_for_account(&account(), &req)
         .await
         .unwrap();
     assert_eq!(list.name, "Tech");
+}
+
+#[tokio::test]
+async fn test_create_watchlist_for_account_sends_empty_symbols() {
+    // createwatchlistforaccount requires `symbols`; an empty list must still be sent.
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path(base()))
+        .and(body_json(json!({"name": "Tech", "symbols": []})))
+        .respond_with(ResponseTemplate::new(200).set_body_string(WATCHLIST_JSON))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    let req = CreateWatchlistRequest {
+        name: "Tech".to_string(),
+        symbols: vec![],
+    };
+    client
+        .create_watchlist_for_account(&account(), &req)
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -122,8 +145,8 @@ async fn test_update_watchlist_for_account_by_id() {
 
     let client = common::broker_client(&server.uri());
     let req = UpdateWatchlistRequest {
-        name: Some("Tech".to_string()),
-        symbols: Some(vec!["AAPL".to_string(), "MSFT".to_string()]),
+        name: "Tech".to_string(),
+        symbols: vec!["AAPL".to_string(), "MSFT".to_string()],
     };
     client
         .update_watchlist_for_account_by_id(&account(), &watchlist(), &req)

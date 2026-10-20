@@ -458,9 +458,25 @@ pub struct GetOrdersForAccountRequest {
 }
 
 pub use crate::trading::requests::{
-    ClosePositionRequest, CreateWatchlistRequest, GetAssetsRequest, GetCalendarRequest,
-    OrderRequest, ReplaceOrderRequest, UpdateWatchlistRequest,
+    ClosePositionRequest, GetAssetsRequest, GetCalendarRequest, OrderRequest, ReplaceOrderRequest,
 };
+
+/// Body of `POST /v1/trading/accounts/{account_id}/watchlists`. Unlike the Trading API's
+/// [`crate::trading::requests::CreateWatchlistRequest`], the Broker API requires `symbols`
+/// (it may be empty).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateWatchlistRequest {
+    pub name: String,
+    pub symbols: Vec<String>,
+}
+
+/// Body of `PUT /v1/trading/accounts/{account_id}/watchlists/{watchlist_id}`, which replaces
+/// the watchlist: the Broker API requires both fields, even when only one changes.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateWatchlistRequest {
+    pub name: String,
+    pub symbols: Vec<String>,
+}
 
 /// Sign a party-level agreement after the party was created.
 #[derive(Debug, Clone, Serialize, Deserialize)]
