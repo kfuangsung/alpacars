@@ -18,8 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `order_id` filter on both `GetAccountActivitiesRequest`s; `activity_types` and `category` on the Broker one.
 - `ActivityType` variants `Cgd`, `Divfee`, `Divft`, `Divtw`, `Fopt`, `Intnra`, `Inttw`, `Jnl`, `Misc`, `Opca`, `Ptr`, `Reo`, `Trans`, completing the set in the Trading and Broker API references. **Breaking** for exhaustive `match`es.
+- Enum values Alpaca added since the last sync, each checked against the API reference:
+  - `TokenizationNetwork`: `Cronos`, `Hyperevm`, `Robinhood`, `Hypercore`.
+  - `TokenizationIssuer`: `Binance`, `Coinbase`, `Ondo`.
+  - Broker `AccountType`: `Trust`, `OmnibusNonDisclosed`, `OmnibusSub`, `Joint` (returned on reads; not creatable through the API).
+  - `JournalStatus`: `Queued`, `SentToClearing`, `Deleted`.
 
 ### Fixed
+- **Breaking**: `TradeAccount.account_number` is now `Option<String>`. The Trading API reference types it `string | null`, and a `null` made `get_account` fail.
 - `ActivityType` was serialized in snake_case (`fill`, `jnlc`); Alpaca's values are uppercase (`FILL`, `JNLC`). Activity filters were sent with values the API does not recognize, and `TradeActivity`/`NonTradeActivity` failed to deserialize any real activity.
 - `BrokerClient::get_account_activities` called `/v1/accounts/{account_id}/account_activities`, which does not exist; the endpoint is `/v1/accounts/activities` with `account_id` as a query parameter.
 - `AccountActivity` was `#[serde(untagged)]` with `Trade` tried first, and both shapes only require `id` and `activity_type`, so every activity — dividends, journals, fees — deserialized as `Trade`. It now selects the variant from `activity_type` (`FILL` is the only trade activity).

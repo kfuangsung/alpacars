@@ -498,6 +498,10 @@ pub enum TokenizationNetwork {
     Ton,
     Tron,
     Mantle,
+    Cronos,
+    Hyperevm,
+    Robinhood,
+    Hypercore,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
@@ -511,6 +515,9 @@ pub enum TokenizationNetwork {
 pub enum TokenizationIssuer {
     Xstocks,
     St0x,
+    Binance,
+    Coinbase,
+    Ondo,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]

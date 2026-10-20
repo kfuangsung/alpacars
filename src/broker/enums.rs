@@ -18,6 +18,16 @@ pub enum AccountType {
     DonorAdvised,
     Ira,
     Hsa,
+    /// Returned on reads only; accounts of this type cannot be created through the API.
+    Trust,
+    /// Returned on reads only; accounts of this type cannot be created through the API.
+    #[serde(rename = "omnibus_non_disclosed")]
+    OmnibusNonDisclosed,
+    /// Returned on reads only; accounts of this type cannot be created through the API.
+    #[serde(rename = "omnibus_sub")]
+    OmnibusSub,
+    /// Returned on reads only; accounts of this type cannot be created through the API.
+    Joint,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
@@ -293,6 +303,11 @@ pub enum JournalStatus {
     /// Wire value `correct`.
     #[serde(rename = "correct")]
     Corrected,
+    /// In queue, not yet processed.
+    Queued,
+    /// Sent to Alpaca's booking system, not yet processed.
+    SentToClearing,
+    Deleted,
     /// A value this version of the crate does not recognize yet. Alpaca adds values over
     /// time; this keeps such responses parseable. Not meaningful to send in a request.
     #[serde(other)]
