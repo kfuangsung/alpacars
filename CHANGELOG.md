@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Crate-level documentation, which is the docs.rs front page and was empty before: the clients, environments and auth, retry and pagination, examples for Trading, Broker, historical data and streaming, error handling, and forward compatibility. The examples compile as `no_run` doctests.
+- The README's Rust examples are compiled as `no_run` doctests too (`#[cfg(doctest)]`), so they can't drift from the API.
+
+### Fixed
+- The README's live-streaming example read `trade.symbol` and `quote.symbol`, which don't exist: stream handlers receive the event without its symbol. The installation snippet now says `0.7`.
+
 ## [0.7.0] - 2026-10-20
 
 Breaking release that finishes the 0.6.x Broker audit. It removes the methods and enum variants deprecated in 0.6.1, and it makes the funding and watchlist request types match the API reference, so a request the API would reject no longer compiles. It also adds the documented query filters the request types lacked. Each removal or rename below names its replacement; most code needs only mechanical changes:
