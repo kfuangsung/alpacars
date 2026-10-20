@@ -196,24 +196,38 @@ pub struct CreateACHRelationshipRequest {
     pub processor_token: Option<String>,
 }
 
+/// Create a recipient bank (`POST /v1/accounts/{account_id}/recipient_banks`).
+///
+/// The API identifies the bank by `bank_code` plus `bank_code_type` (`ABA` or `BIC`), both
+/// required — set them even though they are `Option` here. `routing_number` does not appear in
+/// the API reference for this request and will be removed in 0.7.0.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateBankRequest {
     pub name: String,
     pub routing_number: String,
     pub account_number: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bank_code: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bank_code_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub state_province: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub postal_code: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub city: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub street_address: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateTransferRequest {
     pub transfer_type: TransferType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub relationship_id: Option<Uuid>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bank_id: Option<Uuid>,
     pub amount: String,
     pub direction: TransferDirection,

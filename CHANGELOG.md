@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Both will be removed in 0.7.0.
 
 ### Fixed
+- Broker recipient banks called `/v1/accounts/{account_id}/banks…`; the endpoints are `/v1/accounts/{account_id}/recipient_banks…`. `create_bank_for_account`, `get_banks_for_account` and `delete_bank_for_account` were all failing.
+- `TransferType` was serialized as `ACH` / `WIRE`; the wire values are `ach` / `wire`. `create_transfer_for_account` sent an unrecognized `transfer_type`, and transfers read back parsed as `TransferType::Unknown`.
+- `CreateTransferRequest` sent unset `relationship_id` / `bank_id` as `null`, and `CreateBankRequest` did the same for its optional fields; the API types these as plain strings. Unset fields are now omitted.
+- `CreateBankRequest` docs now state that the API requires `bank_code` and `bank_code_type` (`ABA` / `BIC`), and that `routing_number` is not part of the request.
 - `BrokerClient::close_account` called `POST /v1/accounts/{account_id}:close`; the endpoint is `POST /v1/accounts/{account_id}/actions/close`.
 - `BrokerClient::get_trade_account_by_id` called `/v1/accounts/{account_id}/trading_accounts/{id}`, which does not exist (see Deprecated).
 - **`close_position` / `close_position_for_account` closed the entire position when asked for a partial close.** `ClosePositionRequest.qty` / `percentage` were sent as a `DELETE` request body, which the API ignores; they are query parameters (Trading spec; Broker `closepositionforaccountbysymbol` reference). They are now sent as query parameters. Affects both `TradingClient` and `BrokerClient`.
