@@ -117,14 +117,14 @@ impl DataStreamConnection {
             secret: &self.secret_key,
         }])?;
         write
-            .send(Message::Text(auth))
+            .send(Message::Text(auth.into()))
             .await
             .map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 
         debug!("sending subscription message");
         let sub = serde_json::to_string(&[&self.subscribe_msg])?;
         write
-            .send(Message::Text(sub))
+            .send(Message::Text(sub.into()))
             .await
             .map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 

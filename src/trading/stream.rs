@@ -87,7 +87,7 @@ impl TradingStream {
             },
         })?;
         write
-            .send(Message::Text(auth))
+            .send(Message::Text(auth.into()))
             .await
             .map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 
@@ -99,7 +99,7 @@ impl TradingStream {
             },
         })?;
         write
-            .send(Message::Text(listen))
+            .send(Message::Text(listen.into()))
             .await
             .map_err(|e| AlpacaError::WebSocket(e.to_string()))?;
 

@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Breaking**: `reqwest` 0.12 → 0.13. `AlpacaError::Http` wraps `reqwest::Error`, so it now carries the 0.13 error type; code that names `reqwest::Error` (e.g. matching on `AlpacaError::Http(e)` and calling reqwest-specific methods on `e`) must use reqwest 0.13. `cargo-semver-checks` does not detect this kind of change, so it is called out here.
+- `reqwest` now uses `default-features = false` with `json`, `query`, `native-tls`, `charset`, `http2` and `system-proxy`. 0.13 made rustls/aws-lc-rs the default TLS backend; the crate stays on `native-tls`, the same backend `tokio-tungstenite` uses, so there is still one TLS stack and no new license or C-toolchain requirements.
+
+## [0.5.1] - 2026-10-20
+
+Patch release: unblocks the dependency updates, fixes the Broker journal endpoints, and patches an h2 advisory. No breaking API changes; the MSRV rises to 1.89.
+
+### Added
+- `tests/data_stream.rs`, the first runtime test of a WebSocket stack. It drives `DataStreamConnection` against a local server through auth, subscribe, JSON text frames, msgpack binary frames, ping/pong and close.
+
+### Changed
+- MSRV raised from 1.88 to 1.89, required by `uuid` ≥ 1.27.
+- Dependency updates: `tokio` 1.53.3, `serde_json` 1.0.154, `thiserror` 2.0.21, `uuid` 1.28.0, `base64` 0.23.1, `futures-util` 0.3.34.
+- `tokio-tungstenite` 0.24 → 0.30. No public API change: WebSocket errors were already surfaced as `AlpacaError::WebSocket(String)`.
+
+### Fixed
+- Broker journals were non-functional. All of these were verified against the `docs.alpaca.markets/us/reference` pages, and none of them changes the Rust API:
+  - `JournalEntryType` was serialized as `CASH`/`SECURITY`; Alpaca uses `JNLC`/`JNLS`. Every journal response failed to deserialize and every journal request sent an invalid `entry_type`.
+  - `JournalStatus` was serialized in SCREAMING_SNAKE_CASE (`PENDING`); Alpaca uses lowercase (`pending`), and `Corrected` is `correct` on the wire.
+  - `create_batch_journal` posted to `/v1/journals:batch` instead of `/v1/journals/batch`.
+  - `create_reverse_batch_journal` posted to `/v1/journals:batch_reverse` instead of `/v1/journals/reverse_batch`.
+
+### Security
+- Bumped `h2` to 0.4.20 in `Cargo.lock` to fix [RUSTSEC-2026-0258](https://rustsec.org/advisories/RUSTSEC-2026-0258) (unbounded queueing of empty DATA frames). This only changes the lockfile — downstream crates pick up the fix with their own `cargo update -p h2`.
+
 ## [0.5.0] - 2026-08-01
 
 Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
@@ -100,7 +126,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/kfuangsung/alpacars/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kfuangsung/alpacars/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/kfuangsung/alpacars/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/kfuangsung/alpacars/compare/v0.3.0...v0.4.0
