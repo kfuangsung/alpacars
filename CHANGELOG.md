@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `create_batch_journal` posted to `/v1/journals:batch` instead of `/v1/journals/batch`.
   - `create_reverse_batch_journal` posted to `/v1/journals:batch_reverse` instead of `/v1/journals/reverse_batch`.
 
+### Security
+- Bumped `h2` to 0.4.20 in `Cargo.lock` to fix [RUSTSEC-2026-0258](https://rustsec.org/advisories/RUSTSEC-2026-0258) (unbounded queueing of empty DATA frames). This only changes the lockfile — downstream crates pick up the fix with their own `cargo update -p h2`.
+
 ## [0.5.0] - 2026-08-01
 
 Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
