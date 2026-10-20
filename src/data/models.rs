@@ -23,6 +23,10 @@ where
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bar {
+    /// The symbol. Streams send it as `S`; historical methods fill it from the response's
+    /// map key.
+    #[serde(rename = "S", default)]
+    pub symbol: String,
     /// Timestamp
     #[serde(rename = "t")]
     pub timestamp: DateTime<Utc>,
@@ -59,6 +63,10 @@ pub type LatestBarSet = HashMap<String, Bar>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Quote {
+    /// The symbol. Streams send it as `S`; historical methods fill it from the response's
+    /// map key.
+    #[serde(rename = "S", default)]
+    pub symbol: String,
     /// Timestamp
     #[serde(rename = "t")]
     pub timestamp: DateTime<Utc>,
@@ -95,6 +103,10 @@ pub type LatestQuoteSet = HashMap<String, Quote>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Trade {
+    /// The symbol. Streams send it as `S`; historical methods fill it from the response's
+    /// map key.
+    #[serde(rename = "S", default)]
+    pub symbol: String,
     /// Timestamp
     #[serde(rename = "t")]
     pub timestamp: DateTime<Utc>,
@@ -136,6 +148,10 @@ pub struct OrderbookEntry {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Orderbook {
+    /// The symbol. Streams send it as `S`; historical methods fill it from the response's
+    /// map key.
+    #[serde(rename = "S", default)]
+    pub symbol: String,
     #[serde(rename = "t")]
     pub timestamp: DateTime<Utc>,
     #[serde(rename = "a")]
@@ -149,6 +165,9 @@ pub type LatestOrderbookSet = HashMap<String, Orderbook>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Snapshot {
+    /// The symbol, filled from the response's map key.
+    #[serde(default)]
+    pub symbol: String,
     #[serde(rename = "latestTrade")]
     pub latest_trade: Option<Trade>,
     #[serde(rename = "latestQuote")]
@@ -166,7 +185,9 @@ pub type SnapshotSet = HashMap<String, Snapshot>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OptionsSnapshot {
-    pub symbol: Option<String>,
+    /// The contract symbol, filled from the response's map key.
+    #[serde(default)]
+    pub symbol: String,
     #[serde(rename = "latestTrade")]
     pub latest_trade: Option<Trade>,
     #[serde(rename = "latestQuote")]
@@ -405,4 +426,66 @@ pub struct CorporateActionsSet {
     pub partial_calls: Option<Vec<serde_json::Value>>,
     pub reorganizations: Option<Vec<serde_json::Value>>,
     pub next_page_token: Option<String>,
+}
+
+/// Models whose symbol is the key of the map they arrive in rather than a field of the payload.
+pub(crate) trait SetSymbol {
+    fn set_symbol(&mut self, symbol: &str);
+}
+
+macro_rules! set_symbol_field {
+    ($($ty:ty),+) => {
+        $(impl SetSymbol for $ty {
+            fn set_symbol(&mut self, symbol: &str) {
+                self.symbol = symbol.to_string();
+            }
+        })+
+    };
+}
+set_symbol_field!(Bar, Quote, Trade, Orderbook);
+
+impl SetSymbol for Snapshot {
+    fn set_symbol(&mut self, symbol: &str) {
+        self.symbol = symbol.to_string();
+        self.latest_trade.set_symbol(symbol);
+        self.latest_quote.set_symbol(symbol);
+        self.minute_bar.set_symbol(symbol);
+        self.daily_bar.set_symbol(symbol);
+        self.prev_daily_bar.set_symbol(symbol);
+    }
+}
+
+impl SetSymbol for OptionsSnapshot {
+    fn set_symbol(&mut self, symbol: &str) {
+        self.symbol = symbol.to_string();
+        self.latest_trade.set_symbol(symbol);
+        self.latest_quote.set_symbol(symbol);
+        self.minute_bar.set_symbol(symbol);
+        self.daily_bar.set_symbol(symbol);
+        self.prev_daily_bar.set_symbol(symbol);
+    }
+}
+
+impl<T: SetSymbol> SetSymbol for Option<T> {
+    fn set_symbol(&mut self, symbol: &str) {
+        if let Some(v) = self {
+            v.set_symbol(symbol);
+        }
+    }
+}
+
+impl<T: SetSymbol> SetSymbol for Vec<T> {
+    fn set_symbol(&mut self, symbol: &str) {
+        for v in self {
+            v.set_symbol(symbol);
+        }
+    }
+}
+
+/// Sets each value's symbol from its key in a symbol-keyed response map.
+pub(crate) fn with_symbols<V: SetSymbol>(mut map: HashMap<String, V>) -> HashMap<String, V> {
+    for (symbol, v) in map.iter_mut() {
+        v.set_symbol(symbol);
+    }
+    map
 }

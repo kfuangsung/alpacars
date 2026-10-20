@@ -271,7 +271,7 @@ impl StockHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     /// Fetch historical quotes (auto-paginated).
@@ -303,7 +303,7 @@ impl StockHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     /// Fetch historical trades (auto-paginated).
@@ -335,7 +335,7 @@ impl StockHistoricalDataClient {
                 _ => break,
             }
         }
-        Ok(result)
+        Ok(with_symbols(result))
     }
 
     /// Fetch the latest trade for each requested symbol.
@@ -352,7 +352,7 @@ impl StockHistoricalDataClient {
             .client
             .get("/stocks/trades/latest", Some(&params))
             .await?;
-        Ok(resp.trades.unwrap_or_default())
+        Ok(with_symbols(resp.trades.unwrap_or_default()))
     }
 
     /// Fetch the latest quote for each requested symbol.
@@ -369,7 +369,7 @@ impl StockHistoricalDataClient {
             .client
             .get("/stocks/quotes/latest", Some(&params))
             .await?;
-        Ok(resp.quotes.unwrap_or_default())
+        Ok(with_symbols(resp.quotes.unwrap_or_default()))
     }
 
     /// Fetch the latest bar for each requested symbol.
@@ -386,7 +386,7 @@ impl StockHistoricalDataClient {
             .client
             .get("/stocks/bars/latest", Some(&params))
             .await?;
-        Ok(resp.bars.unwrap_or_default())
+        Ok(with_symbols(resp.bars.unwrap_or_default()))
     }
 
     /// Fetch snapshots for multiple symbols.
@@ -400,6 +400,8 @@ impl StockHistoricalDataClient {
             currency: req.currency.clone(),
         };
         let resp: SnapshotsResp = self.client.get("/stocks/snapshots", Some(&params)).await?;
-        Ok(resp.snapshots.or(resp.direct).unwrap_or_default())
+        Ok(with_symbols(
+            resp.snapshots.or(resp.direct).unwrap_or_default(),
+        ))
     }
 }

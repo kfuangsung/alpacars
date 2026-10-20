@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Breaking:** `Trade`, `Quote`, `Bar` and `Orderbook` have a `symbol: String`, so a stream handler subscribed to several symbols can tell their events apart (`trade.symbol`), as in alpaca-py. Streams fill it from the message's `S`. Historical methods fill it from the response's map key, so it is set there too, including on the trades, quotes and bars nested in `Snapshot` and `OptionsSnapshot`. `Snapshot` gains `symbol` as well, and `OptionsSnapshot.symbol` is now a `String` (was `Option<String>`).
+
 ## [0.7.2] - 2026-10-20
 
 Patch release: the stock stream's trading-status events now reach their handler, and trade cancels and corrections carry their symbol. No breaking changes. **If you use `StockDataStream::subscribe_trading_statuses`, upgrade.**
