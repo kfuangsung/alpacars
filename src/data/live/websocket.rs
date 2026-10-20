@@ -20,6 +20,18 @@ pub struct RawStreamEvent {
     pub fields: HashMap<String, Value>,
 }
 
+impl RawStreamEvent {
+    /// The event's payload for deserializing into a typed model. Serde moves `S` into
+    /// [`Self::symbol`], so it is put back here; models such as `TradingStatus` read it.
+    pub fn into_payload(self) -> Value {
+        let mut map: serde_json::Map<String, Value> = self.fields.into_iter().collect();
+        if let Some(symbol) = self.symbol {
+            map.insert("S".to_string(), Value::String(symbol));
+        }
+        Value::Object(map)
+    }
+}
+
 #[derive(Debug, Serialize)]
 struct AuthMsg<'a> {
     action: &'a str,

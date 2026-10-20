@@ -11,6 +11,7 @@ pub type Handler<T> = Arc<dyn Fn(T) + Send + Sync + 'static>;
 pub struct OptionDataStream {
     api_key: String,
     secret_key: String,
+    url_override: Option<String>,
     trade_syms: Vec<String>,
     quote_syms: Vec<String>,
     trade_handler: Option<Handler<Trade>>,
@@ -22,10 +23,20 @@ impl OptionDataStream {
         Self {
             api_key: api_key.to_string(),
             secret_key: secret_key.to_string(),
+            url_override: None,
             trade_syms: Vec::new(),
             quote_syms: Vec::new(),
             trade_handler: None,
             quote_handler: None,
+        }
+    }
+
+    /// Create a stream pointed at a custom WebSocket URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(api_key: &str, secret_key: &str, url: &str) -> Self {
+        Self {
+            url_override: Some(url.to_string()),
+            ..Self::new(api_key, secret_key)
         }
     }
 
@@ -63,7 +74,10 @@ impl OptionDataStream {
             vec![],
         );
 
-        let url = format!("{}/v2/options/opra", base_url::MARKET_DATA_STREAM);
+        let url = self
+            .url_override
+            .clone()
+            .unwrap_or_else(|| format!("{}/v2/options/opra", base_url::MARKET_DATA_STREAM));
         let conn =
             DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
 
@@ -71,11 +85,9 @@ impl OptionDataStream {
         let quote_h = self.quote_handler.clone();
 
         conn.run(move |event: RawStreamEvent| {
-            let msg_type = event.msg_type.as_deref().unwrap_or("");
-            let raw = serde_json::Value::Object(
-                event.fields.into_iter().collect::<serde_json::Map<_, _>>(),
-            );
-            match msg_type {
+            let msg_type = event.msg_type.clone().unwrap_or_default();
+            let raw = event.into_payload();
+            match msg_type.as_str() {
                 "t" => match serde_json::from_value::<Trade>(raw) {
                     Ok(v) => {
                         if let Some(h) = &trade_h {

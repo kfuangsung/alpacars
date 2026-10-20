@@ -11,6 +11,7 @@ pub type NewsHandler = Arc<dyn Fn(News) + Send + Sync + 'static>;
 pub struct NewsDataStream {
     api_key: String,
     secret_key: String,
+    url_override: Option<String>,
     symbols: Vec<String>,
     news_handler: Option<NewsHandler>,
 }
@@ -20,8 +21,18 @@ impl NewsDataStream {
         Self {
             api_key: api_key.to_string(),
             secret_key: secret_key.to_string(),
+            url_override: None,
             symbols: Vec::new(),
             news_handler: None,
+        }
+    }
+
+    /// Create a stream pointed at a custom WebSocket URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(api_key: &str, secret_key: &str, url: &str) -> Self {
+        Self {
+            url_override: Some(url.to_string()),
+            ..Self::new(api_key, secret_key)
         }
     }
 
@@ -49,7 +60,10 @@ impl NewsDataStream {
             self.symbols.clone(),
         );
 
-        let url = format!("{}/v1beta1/news", base_url::MARKET_DATA_STREAM);
+        let url = self
+            .url_override
+            .clone()
+            .unwrap_or_else(|| format!("{}/v1beta1/news", base_url::MARKET_DATA_STREAM));
         let conn =
             DataStreamConnection::new(url, self.api_key.clone(), self.secret_key.clone(), sub);
 
@@ -59,9 +73,7 @@ impl NewsDataStream {
             if event.msg_type.as_deref() != Some("n") {
                 return;
             }
-            let raw = serde_json::Value::Object(
-                event.fields.into_iter().collect::<serde_json::Map<_, _>>(),
-            );
+            let raw = event.into_payload();
             match serde_json::from_value::<News>(raw) {
                 Ok(v) => {
                     if let Some(h) = &handler {

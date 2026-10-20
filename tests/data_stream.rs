@@ -95,3 +95,79 @@ async fn test_data_stream_round_trip() {
     assert_eq!(events[1].msg_type.as_deref(), Some("q"));
     assert_eq!(events[1].fields["bp"], json!(227.4));
 }
+
+/// `StockDataStream` end to end, with the example messages from Alpaca's "Real-time Stock Data"
+/// doc. `RawStreamEvent` takes `S` out of each message, so it has to be put back before
+/// typed parsing; without that, every trading status failed to parse (its `symbol` is
+/// required) and cancels / corrections lost their symbol.
+#[tokio::test]
+async fn test_stock_stream_status_cancel_correction_keep_symbol() {
+    use alpacars::data::live::stock::StockDataStream;
+    use std::sync::{Arc, Mutex};
+
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+
+    let server = tokio::spawn(async move {
+        let (tcp, _) = listener.accept().await.unwrap();
+        let mut ws = tokio_tungstenite::accept_async(tcp).await.unwrap();
+        next_json(&mut ws).await; // auth
+        let sub = next_json(&mut ws).await;
+        assert_eq!(
+            sub,
+            json!([{"action": "subscribe", "trades": ["GOOGL"], "statuses": ["AAPL"]}])
+        );
+        let text = json!([
+            {"T": "s", "S": "AAPL", "sc": "H", "sm": "Trading Halt", "rc": "T12",
+             "rm": "Trading Halted; For information requested by NASDAQ",
+             "t": "2021-02-22T19:15:00Z", "z": "C"},
+            {"T": "x", "S": "GOOGL", "i": 465, "x": "D", "p": 105.31, "s": 300, "a": "C",
+             "z": "C", "t": "2023-04-06T13:15:42.83540958Z"},
+            {"T": "c", "S": "EEM", "x": "M", "oi": 52983525033527u64, "op": 39.1582,
+             "os": 440000, "oc": [" ", "7"], "ci": 52983525034326u64, "cp": 39.1809,
+             "cs": 440000, "cc": [" ", "7"], "z": "B", "t": "2023-04-06T14:25:06.542305024Z"}
+        ]);
+        ws.send(Message::Text(text.to_string().into()))
+            .await
+            .unwrap();
+        ws.close(None).await.unwrap();
+    });
+
+    let seen: Arc<Mutex<Vec<String>>> = Arc::default();
+    let mut stream =
+        StockDataStream::new_with_url("test-key", "test-secret", &format!("ws://{addr}"));
+    let s = seen.clone();
+    stream.subscribe_trading_statuses(["AAPL"], move |status| {
+        s.lock()
+            .unwrap()
+            .push(format!("status {} {:?}", status.symbol, status.status_code));
+    });
+    let s = seen.clone();
+    stream.subscribe_trades(["GOOGL"], |_| {});
+    stream.register_trade_cancels(move |cancel| {
+        s.lock()
+            .unwrap()
+            .push(format!("cancel {:?}", cancel.symbol));
+    });
+    let s = seen.clone();
+    stream.register_trade_corrections(move |correction| {
+        s.lock()
+            .unwrap()
+            .push(format!("correction {:?}", correction.symbol));
+    });
+
+    tokio::time::timeout(std::time::Duration::from_secs(10), stream.run())
+        .await
+        .expect("stream did not finish after the server closed")
+        .unwrap();
+    server.await.unwrap();
+
+    assert_eq!(
+        *seen.lock().unwrap(),
+        vec![
+            "status AAPL Some(\"H\")".to_string(),
+            "cancel Some(\"GOOGL\")".to_string(),
+            "correction Some(\"EEM\")".to_string(),
+        ]
+    );
+}

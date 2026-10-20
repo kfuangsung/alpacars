@@ -12,6 +12,7 @@ pub type Handler<T> = Arc<dyn Fn(T) + Send + Sync + 'static>;
 pub struct StockDataStream {
     api_key: String,
     secret_key: String,
+    url_override: Option<String>,
     feed: DataFeed,
     // Subscriptions
     trade_syms: Vec<String>,
@@ -36,6 +37,7 @@ impl StockDataStream {
         Self {
             api_key: api_key.to_string(),
             secret_key: secret_key.to_string(),
+            url_override: None,
             feed,
             trade_syms: Vec::new(),
             quote_syms: Vec::new(),
@@ -51,6 +53,15 @@ impl StockDataStream {
             trading_status_handler: None,
             trade_cancel_handler: None,
             trade_correction_handler: None,
+        }
+    }
+
+    /// Create a stream pointed at a custom WebSocket URL (for testing / mocking).
+    #[doc(hidden)]
+    pub fn new_with_url(api_key: &str, secret_key: &str, url: &str) -> Self {
+        Self {
+            url_override: Some(url.to_string()),
+            ..Self::new(api_key, secret_key, DataFeed::Iex)
         }
     }
 
@@ -137,6 +148,9 @@ impl StockDataStream {
     }
 
     fn ws_url(&self) -> String {
+        if let Some(url) = &self.url_override {
+            return url.clone();
+        }
         let feed_str = match self.feed {
             DataFeed::Iex => "iex",
             DataFeed::Sip => "sip",
@@ -177,12 +191,10 @@ impl StockDataStream {
         let correction_h = self.trade_correction_handler.clone();
 
         conn.run(move |event: RawStreamEvent| {
-            let msg_type = event.msg_type.as_deref().unwrap_or("");
-            let raw = serde_json::Value::Object(
-                event.fields.into_iter().collect::<serde_json::Map<_, _>>(),
-            );
+            let msg_type = event.msg_type.clone().unwrap_or_default();
+            let raw = event.into_payload();
 
-            match msg_type {
+            match msg_type.as_str() {
                 "t" => match serde_json::from_value::<Trade>(raw) {
                     Ok(v) => {
                         if let Some(h) = &trade_h {

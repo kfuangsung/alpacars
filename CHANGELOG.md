@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **`StockDataStream` never delivered trading-status events,** and trade cancels and corrections always had `symbol: None`. The stream's raw event takes the message's `S` (symbol) into its own field, so the typed models never saw it, and `TradingStatus` (whose `symbol` is required) failed to parse every time. The symbol is now passed through to every typed event on the stock, crypto, option and news streams.
+
+### Added
+- `#[doc(hidden)] new_with_url` on `StockDataStream`, `CryptoDataStream`, `OptionDataStream` and `NewsDataStream`, plus an end-to-end test of the typed stock stream using the example messages from Alpaca's "Real-time Stock Data" doc.
+
 ## [0.7.1] - 2026-10-20
 
 Patch release. The docs.rs front page now has an overview and examples, every `BrokerClient` method is tested, and `get_all_subscriptions` works for the first time. No breaking changes.
