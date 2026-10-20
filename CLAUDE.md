@@ -113,6 +113,10 @@ Every public enum is `#[non_exhaustive]`. Every enum that appears in a response 
 
 **Adding a variant to an existing enum in a patch release:** serde requires `#[serde(other)] Unknown` to stay the *last* variant, so a new variant inserted before it shifts `Unknown`'s implicit discriminant — which `cargo semver-checks` reports as major (`enum_no_repr_variant_discriminant_changed`). Pin `Unknown` to its previous value and number the new variants after it explicitly, e.g. `NewValue = 14, … Unknown = 13` (0.6.1 did this for `DocumentType`). In a minor (0.x) release this does not matter, and the pins can be dropped (0.7.0 did).
 
+### Response models are `#[non_exhaustive]`
+
+Since 0.8.0 every `pub struct` in a `models.rs` is `#[non_exhaustive]`, so adding a response field Alpaca introduces is a patch change, not a breaking one. Users read models and deserialize them; they don't build them. The exception is a type that is also a request body: it must stay constructible (`AccountConfiguration`, sent by `update_account_configurations`), and a type shared by a request and a response lives in `requests.rs`, re-exported from `models.rs` (`BankExtraFields`). `tests/model_rules.rs` enforces this; add a new exception there and document it on the type. Request structs are never `non_exhaustive`, because that would forbid `..Default::default()`, so adding a request field is still breaking.
+
 ### Broker API endpoint paths are the least trustworthy part of the crate
 
 The Trading API has an official OpenAPI spec to check against; the Broker API does not, so its paths were transcribed by hand and were never cross-checked. That gap hid four bugs that made **all 13 rebalancing methods fail** — wrong path prefix (`/v1/portfolios` rather than `/v1/rebalancing/portfolios`), wrong verb for archive, wrong response shape for List All Runs, and a `PortfolioStatus` enum with both wrong casing and wrong variants.

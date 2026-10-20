@@ -1,4 +1,5 @@
 use crate::broker::enums::*;
+pub use crate::broker::requests::BankExtraFields;
 use crate::trading::enums::AccountStatus;
 use crate::trading::models::Order;
 use chrono::{DateTime, NaiveDate, Utc};
@@ -6,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Contact {
     pub email_address: String,
     pub phone_number: Option<String>,
@@ -18,6 +20,7 @@ pub struct Contact {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Identity {
     pub given_name: Option<String>,
     pub middle_name: Option<String>,
@@ -46,6 +49,7 @@ pub struct Identity {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Disclosures {
     pub is_control_person: bool,
     pub is_affiliated_exchange_or_finra: bool,
@@ -56,6 +60,7 @@ pub struct Disclosures {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Agreement {
     pub agreement: AgreementType,
     pub signed_at: Option<DateTime<Utc>>,
@@ -65,6 +70,7 @@ pub struct Agreement {
 
 /// An agreement recorded through `POST /v1/agreements`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct SignedAgreement {
     pub party_id: Uuid,
     pub agreement: SignedAgreementType,
@@ -77,6 +83,7 @@ pub struct SignedAgreement {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TrustedContact {
     pub given_name: Option<String>,
     pub family_name: Option<String>,
@@ -90,6 +97,7 @@ pub struct TrustedContact {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AccountDocument {
     pub document_type: Option<DocumentType>,
     pub document_sub_type: Option<String>,
@@ -98,6 +106,7 @@ pub struct AccountDocument {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Account {
     pub id: Uuid,
     pub account_number: Option<String>,
@@ -121,6 +130,7 @@ pub struct Account {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TradeDocument {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
@@ -136,6 +146,7 @@ pub struct TradeDocument {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ACHRelationship {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
@@ -151,6 +162,7 @@ pub struct ACHRelationship {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Bank {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
@@ -170,6 +182,7 @@ pub struct Bank {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Transfer {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
@@ -195,19 +208,9 @@ pub struct Transfer {
     pub ira: Option<TransferIraDetails>,
 }
 
-/// Intermediary banks for a recipient bank (`extra_fields`).
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct BankExtraFields {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub intermediary_bank1_bic: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub intermediary_bank2_bic: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub intermediary_bank3_bic: Option<String>,
-}
-
 /// IRA distribution details of a transfer.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TransferIraDetails {
     pub distribution_reason: Option<String>,
     pub tax_year: Option<String>,
@@ -218,6 +221,7 @@ pub struct TransferIraDetails {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Journal {
     pub id: Uuid,
     pub to_account: Option<Uuid>,
@@ -235,18 +239,21 @@ pub struct Journal {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct BatchJournalEntry {
     pub to_account: Uuid,
     pub amount: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct BatchJournalResponse {
     pub journals: Vec<Journal>,
 }
 
 /// One allocation in a portfolio or run, as returned by the API.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct PortfolioWeight {
     #[serde(rename = "type")]
     pub weight_type: WeightType,
@@ -256,6 +263,7 @@ pub struct PortfolioWeight {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Portfolio {
     pub id: Uuid,
     pub name: Option<String>,
@@ -270,6 +278,7 @@ pub struct Portfolio {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Subscription {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
@@ -281,6 +290,7 @@ pub struct Subscription {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct RebalancingRun {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
@@ -302,12 +312,14 @@ pub struct RebalancingRun {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ListRunsResponse {
     pub runs: Vec<RebalancingRun>,
     pub next_page_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct CIPInfo {
     pub id: Uuid,
     pub account_id: Option<Uuid>,
@@ -334,6 +346,7 @@ pub use crate::trading::requests::{
 
 /// An incoming or outgoing ACATS transfer. May include transfers not initiated through the API.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AcatsTransfer {
     pub acats_id: Uuid,
     pub account_id: Uuid,
@@ -359,12 +372,14 @@ pub struct AcatsTransfer {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AcatsStatusDetails {
     pub transfer_status: Option<AcatsTransferStatus>,
     pub dtcc_status: Option<AcatsDtccStatus>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AcatsRejectionDetails {
     pub rejection_reason: Option<AcatsRejectionReason>,
     pub rejection_message: Option<String>,
@@ -372,6 +387,7 @@ pub struct AcatsRejectionDetails {
 
 /// One page of ACATS transfers. Pass `page_token_next` back as `page_token` for the next page.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AcatsListTransfersResponse {
     pub transfers: Vec<AcatsTransfer>,
     pub page_token_next: Option<String>,
@@ -381,12 +397,14 @@ pub struct AcatsListTransfersResponse {
 
 /// Returned (HTTP 202) when an incoming transfer is accepted for processing.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AcatsInitiateTransferResponse {
     pub acats_id: Uuid,
 }
 
 /// One asset on an ACATS transfer.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AcatsAsset {
     pub asset_class: AcatsAssetClass,
     pub asset_description: String,
@@ -406,6 +424,7 @@ pub struct AcatsAsset {
 
 /// A valid contra party, from the latest ACATS Participant Master File.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AcatsContraBroker {
     pub name: String,
     /// DTCC participant number.

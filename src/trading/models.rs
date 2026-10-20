@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Asset {
     pub id: Uuid,
     #[serde(rename = "class")]
@@ -30,6 +31,7 @@ pub struct Asset {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct UsdPositionValues {
     pub avg_entry_price: String,
     pub market_value: String,
@@ -44,6 +46,7 @@ pub struct UsdPositionValues {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Position {
     pub asset_id: Uuid,
     pub symbol: String,
@@ -70,17 +73,20 @@ pub struct Position {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TakeProfitSpec {
     pub limit_price: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct StopLossSpec {
     pub stop_price: String,
     pub limit_price: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Order {
     pub id: Uuid,
     pub client_order_id: String,
@@ -129,6 +135,7 @@ pub struct Order {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ClosePositionResponse {
     pub order_id: Option<Uuid>,
     pub status: Option<u16>,
@@ -137,6 +144,7 @@ pub struct ClosePositionResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct CancelOrderResponse {
     pub id: Uuid,
     pub status: u16,
@@ -144,6 +152,7 @@ pub struct CancelOrderResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct PortfolioHistory {
     pub timestamp: Vec<i64>,
     pub equity: Vec<Option<f64>>,
@@ -155,6 +164,7 @@ pub struct PortfolioHistory {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct WatchlistAsset {
     pub id: Uuid,
     pub symbol: String,
@@ -166,6 +176,7 @@ pub struct WatchlistAsset {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Watchlist {
     pub id: Uuid,
     pub name: String,
@@ -176,6 +187,7 @@ pub struct Watchlist {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Clock {
     pub timestamp: DateTime<Utc>,
     pub is_open: bool,
@@ -185,6 +197,7 @@ pub struct Clock {
 
 /// Market calendar for one market (`GET /v3/calendar/{market}`).
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct MarketCalendar {
     pub market: Market,
     pub calendar: Vec<MarketCalendarDay>,
@@ -192,6 +205,7 @@ pub struct MarketCalendar {
 
 /// A market, identified by acronym, MIC and/or BIC.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Market {
     pub acronym: String,
     pub name: String,
@@ -204,6 +218,7 @@ pub struct Market {
 /// One trading day. Session times are absolute instants; pre-, post-market and lunch sessions
 /// are `None` where the market has none.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct MarketCalendarDay {
     pub date: NaiveDate,
     pub core_start: DateTime<Utc>,
@@ -218,6 +233,7 @@ pub struct MarketCalendarDay {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Calendar {
     pub date: NaiveDate,
     pub open: String,
@@ -227,6 +243,7 @@ pub struct Calendar {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TradeAccount {
     pub id: Uuid,
     /// `null` for some accounts, per the Trading API reference.
@@ -262,6 +279,8 @@ pub struct TradeAccount {
     pub options_trading_level: Option<i32>,
 }
 
+/// Also the body of `update_account_configurations`, so unlike the other models it is not
+/// `#[non_exhaustive]`: callers build it, typically as `AccountConfiguration { .., ..current }`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountConfiguration {
     pub trade_confirm_email: Option<TradeConfirmationEmail>,
@@ -273,6 +292,7 @@ pub struct AccountConfiguration {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TradeActivity {
     pub id: String,
     pub activity_type: ActivityType,
@@ -290,6 +310,7 @@ pub struct TradeActivity {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct NonTradeActivity {
     pub id: String,
     pub activity_type: ActivityType,
@@ -329,6 +350,7 @@ impl<'de> Deserialize<'de> for AccountActivity {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TradeUpdate {
     pub event: TradeEvent,
     pub order: Order,
@@ -339,6 +361,7 @@ pub struct TradeUpdate {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct CorporateActionAnnouncement {
     pub id: Uuid,
     pub corporate_action_id: String,
@@ -359,6 +382,7 @@ pub struct CorporateActionAnnouncement {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct OptionContract {
     pub id: Uuid,
     pub symbol: String,
@@ -384,12 +408,14 @@ pub struct OptionContract {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct OptionContractsResponse {
     pub option_contracts: Vec<OptionContract>,
     pub next_page_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Locate {
     pub id: String,
     pub symbol: String,
@@ -411,6 +437,7 @@ pub struct Locate {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct LocateQuote {
     pub symbol: String,
     pub available_qty: i64,
@@ -419,6 +446,7 @@ pub struct LocateQuote {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct LocateQuoteError {
     pub symbol: String,
     /// One of `symbol_not_found`, `easy_to_borrow`, `threshold_security`,
@@ -429,12 +457,14 @@ pub struct LocateQuoteError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ListLocatesResponse {
     pub locates: Vec<Locate>,
     pub next_page_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ListLocateQuotesResponse {
     pub quotes: Vec<LocateQuote>,
     pub errors: Option<Vec<LocateQuoteError>>,
@@ -442,6 +472,7 @@ pub struct ListLocateQuotesResponse {
 
 /// A request to mint or redeem a tokenized asset.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TokenizationRequest {
     /// Unique identifier of the tokenization request, assigned by Alpaca.
     pub tokenization_request_id: String,
@@ -469,6 +500,7 @@ pub struct TokenizationRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct TokenizationMintResponse {
     pub tokenization_request_id: String,
     pub status: TokenizationRequestStatus,

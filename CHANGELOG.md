@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Breaking:** every response model struct (in `trading::models`, `broker::models` and `data::models`) is `#[non_exhaustive]`. Fields Alpaca adds to a response can now ship in patch releases instead of forcing a breaking one. You can still read every field and match with `Model { field, .. }`, but you can't build a model with a struct literal: deserialize it from JSON instead (for example in test mocks). `AccountConfiguration` stays constructible because it is also the body of `update_account_configurations`. `BankExtraFields` moved to `broker::requests` (it is a request field too) and is still re-exported from `broker::models`.
 - **Breaking:** `Trade`, `Quote`, `Bar` and `Orderbook` have a `symbol: String`, so a stream handler subscribed to several symbols can tell their events apart (`trade.symbol`), as in alpaca-py. Streams fill it from the message's `S`. Historical methods fill it from the response's map key, so it is set there too, including on the trades, quotes and bars nested in `Snapshot` and `OptionsSnapshot`. `Snapshot` gains `symbol` as well, and `OptionsSnapshot.symbol` is now a `String` (was `Option<String>`).
 
 ## [0.7.2] - 2026-10-20
