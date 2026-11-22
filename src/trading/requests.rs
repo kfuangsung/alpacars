@@ -4,11 +4,17 @@ use jiff::{civil::Date, Timestamp};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// One leg of a multi-leg (`mleg`) options order.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct OptionLegRequest {
+    /// Contract symbol or asset ID.
     pub symbol: String,
-    pub side: OrderSide,
-    pub ratio_qty: u32,
+    /// Quantity of this leg relative to the order's `qty`, as a decimal string (`"1"`).
+    pub ratio_qty: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub side: Option<OrderSide>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub position_intent: Option<PositionIntent>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -33,14 +39,22 @@ pub struct AdvancedInstructions {
     pub display_qty: Option<String>,
 }
 
+/// Body of `submit_order` (and Broker `submit_order_for_account`).
+///
+/// The constructors cover single-asset orders; [`OrderRequest::mleg`] builds a multi-leg
+/// options order, which has no top-level `symbol` or `side`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderRequest {
-    pub symbol: String,
+    /// Symbol, asset ID or currency pair. Required for every order class except `mleg`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub qty: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notional: Option<String>,
-    pub side: OrderSide,
+    /// Required except on `mleg` orders, whose legs carry their own sides.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub side: Option<OrderSide>,
     #[serde(rename = "type")]
     pub order_type: OrderType,
     pub time_in_force: TimeInForce,
@@ -68,15 +82,28 @@ pub struct OrderRequest {
     pub legs: Option<Vec<OptionLegRequest>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub advanced_instructions: Option<AdvancedInstructions>,
+    /// Broker API only: the commission to collect from the end user, interpreted per
+    /// `commission_type`. On an `mleg` order it is a per-contract rate set on the parent
+    /// order (leg commissions are ignored) and needs `commission_type: Qty` when non-zero.
+    /// Commission fields cannot be changed on a replace.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commission: Option<String>,
+    /// Broker API only. The API defaults to `Notional`, except on `mleg` orders.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commission_type: Option<CommissionType>,
+    /// Broker API only. Deprecated by Alpaca: set `commission_type: Bps` and put the bps value
+    /// in `commission` instead. Not supported on `mleg` orders.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commission_bps: Option<String>,
 }
 
 impl OrderRequest {
     pub fn market(symbol: impl Into<String>, side: OrderSide, qty: impl Into<String>) -> Self {
         Self {
-            symbol: symbol.into(),
+            symbol: Some(symbol.into()),
             qty: Some(qty.into()),
             notional: None,
-            side,
+            side: Some(side),
             order_type: OrderType::Market,
             time_in_force: TimeInForce::Day,
             limit_price: None,
@@ -91,6 +118,9 @@ impl OrderRequest {
             position_intent: None,
             legs: None,
             advanced_instructions: None,
+            commission: None,
+            commission_type: None,
+            commission_bps: None,
         }
     }
 
@@ -100,10 +130,10 @@ impl OrderRequest {
         notional: impl Into<String>,
     ) -> Self {
         Self {
-            symbol: symbol.into(),
+            symbol: Some(symbol.into()),
             qty: None,
             notional: Some(notional.into()),
-            side,
+            side: Some(side),
             order_type: OrderType::Market,
             time_in_force: TimeInForce::Day,
             limit_price: None,
@@ -118,6 +148,9 @@ impl OrderRequest {
             position_intent: None,
             legs: None,
             advanced_instructions: None,
+            commission: None,
+            commission_type: None,
+            commission_bps: None,
         }
     }
 
@@ -129,10 +162,10 @@ impl OrderRequest {
         time_in_force: TimeInForce,
     ) -> Self {
         Self {
-            symbol: symbol.into(),
+            symbol: Some(symbol.into()),
             qty: Some(qty.into()),
             notional: None,
-            side,
+            side: Some(side),
             order_type: OrderType::Limit,
             time_in_force,
             limit_price: Some(limit_price.into()),
@@ -147,6 +180,9 @@ impl OrderRequest {
             position_intent: None,
             legs: None,
             advanced_instructions: None,
+            commission: None,
+            commission_type: None,
+            commission_bps: None,
         }
     }
 
@@ -157,10 +193,10 @@ impl OrderRequest {
         stop_price: impl Into<String>,
     ) -> Self {
         Self {
-            symbol: symbol.into(),
+            symbol: Some(symbol.into()),
             qty: Some(qty.into()),
             notional: None,
-            side,
+            side: Some(side),
             order_type: OrderType::Stop,
             time_in_force: TimeInForce::Day,
             limit_price: None,
@@ -175,6 +211,9 @@ impl OrderRequest {
             position_intent: None,
             legs: None,
             advanced_instructions: None,
+            commission: None,
+            commission_type: None,
+            commission_bps: None,
         }
     }
 
@@ -186,10 +225,10 @@ impl OrderRequest {
         limit_price: impl Into<String>,
     ) -> Self {
         Self {
-            symbol: symbol.into(),
+            symbol: Some(symbol.into()),
             qty: Some(qty.into()),
             notional: None,
-            side,
+            side: Some(side),
             order_type: OrderType::StopLimit,
             time_in_force: TimeInForce::Day,
             limit_price: Some(limit_price.into()),
@@ -204,6 +243,9 @@ impl OrderRequest {
             position_intent: None,
             legs: None,
             advanced_instructions: None,
+            commission: None,
+            commission_type: None,
+            commission_bps: None,
         }
     }
 
@@ -215,10 +257,10 @@ impl OrderRequest {
         trail_percent: Option<String>,
     ) -> Self {
         Self {
-            symbol: symbol.into(),
+            symbol: Some(symbol.into()),
             qty: Some(qty.into()),
             notional: None,
-            side,
+            side: Some(side),
             order_type: OrderType::TrailingStop,
             time_in_force: TimeInForce::Day,
             limit_price: None,
@@ -233,6 +275,37 @@ impl OrderRequest {
             position_intent: None,
             legs: None,
             advanced_instructions: None,
+            commission: None,
+            commission_type: None,
+            commission_bps: None,
+        }
+    }
+
+    /// A multi-leg options market order of `qty` strategy units. For a limit order, set
+    /// `order_type` to `OrderType::Limit` and `limit_price` to the net price.
+    pub fn mleg(qty: impl Into<String>, legs: Vec<OptionLegRequest>) -> Self {
+        Self {
+            symbol: None,
+            qty: Some(qty.into()),
+            notional: None,
+            side: None,
+            order_type: OrderType::Market,
+            time_in_force: TimeInForce::Day,
+            limit_price: None,
+            stop_price: None,
+            trail_price: None,
+            trail_percent: None,
+            extended_hours: None,
+            client_order_id: None,
+            order_class: Some(OrderClass::Mleg),
+            take_profit: None,
+            stop_loss: None,
+            position_intent: None,
+            legs: Some(legs),
+            advanced_instructions: None,
+            commission: None,
+            commission_type: None,
+            commission_bps: None,
         }
     }
 }
@@ -306,7 +379,7 @@ pub struct GetPortfolioHistoryRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub period: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub timeframe: Option<String>,
+    pub timeframe: Option<PortfolioHistoryTimeframe>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub intraday_reporting: Option<IntradayReporting>,
     #[serde(skip_serializing_if = "Option::is_none")]

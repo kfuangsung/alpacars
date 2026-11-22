@@ -27,7 +27,16 @@ fn closest_strike(contracts: &[OptionContract], target: f64) -> Option<&OptionCo
         da.partial_cmp(&db).unwrap()
     })
 }
-use alpacars::trading::enums::{AssetStatus, ContractType, OrderClass, OrderSide, TimeInForce};
+
+fn leg(symbol: &str, side: OrderSide, intent: PositionIntent) -> OptionLegRequest {
+    OptionLegRequest {
+        symbol: symbol.to_string(),
+        ratio_qty: "1".to_string(),
+        side: Some(side),
+        position_intent: Some(intent),
+    }
+}
+use alpacars::trading::enums::{AssetStatus, ContractType, OrderSide, OrderType, PositionIntent};
 use alpacars::trading::requests::{GetOptionContractsRequest, OptionLegRequest, OrderRequest};
 use jiff::{tz::TimeZone, Timestamp, ToSpan};
 
@@ -107,21 +116,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
 
         // Build MLEG market order with 2 legs
-        let mut straddle_order = OrderRequest::market("", OrderSide::Buy, "1");
-        straddle_order.symbol = call.symbol.clone(); // symbol unused for MLEG but required
-        straddle_order.order_class = Some(OrderClass::Mleg);
-        straddle_order.legs = Some(vec![
-            OptionLegRequest {
-                symbol: call.symbol.clone(),
-                side: OrderSide::Buy,
-                ratio_qty: 1,
-            },
-            OptionLegRequest {
-                symbol: put.symbol.clone(),
-                side: OrderSide::Buy,
-                ratio_qty: 1,
-            },
-        ]);
+        // An mleg order has no top-level symbol or side: each leg carries its own.
+        let straddle_order = OrderRequest::mleg(
+            "1",
+            vec![
+                leg(&call.symbol, OrderSide::Buy, PositionIntent::BuyToOpen),
+                leg(&put.symbol, OrderSide::Buy, PositionIntent::BuyToOpen),
+            ],
+        );
 
         match trading.submit_order(&straddle_order).await {
             Ok(order) => println!("Straddle order id: {:?}", order.id),
@@ -179,31 +181,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
 
         // Build MLEG limit order at $0 credit (net zero for demo)
-        let mut condor_order =
-            OrderRequest::limit("", OrderSide::Sell, "1", "0.00", TimeInForce::Day);
-        condor_order.order_class = Some(OrderClass::Mleg);
-        condor_order.legs = Some(vec![
-            OptionLegRequest {
-                symbol: sc.symbol.clone(),
-                side: OrderSide::Sell,
-                ratio_qty: 1,
-            },
-            OptionLegRequest {
-                symbol: lc.symbol.clone(),
-                side: OrderSide::Buy,
-                ratio_qty: 1,
-            },
-            OptionLegRequest {
-                symbol: sp.symbol.clone(),
-                side: OrderSide::Sell,
-                ratio_qty: 1,
-            },
-            OptionLegRequest {
-                symbol: lp.symbol.clone(),
-                side: OrderSide::Buy,
-                ratio_qty: 1,
-            },
-        ]);
+        let mut condor_order = OrderRequest::mleg(
+            "1",
+            vec![
+                leg(&sc.symbol, OrderSide::Sell, PositionIntent::SellToOpen),
+                leg(&lc.symbol, OrderSide::Buy, PositionIntent::BuyToOpen),
+                leg(&sp.symbol, OrderSide::Sell, PositionIntent::SellToOpen),
+                leg(&lp.symbol, OrderSide::Buy, PositionIntent::BuyToOpen),
+            ],
+        );
+        condor_order.order_type = OrderType::Limit;
+        condor_order.limit_price = Some("0.00".to_string());
 
         match trading.submit_order(&condor_order).await {
             Ok(order) => {

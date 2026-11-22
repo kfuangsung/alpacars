@@ -562,6 +562,8 @@ impl BrokerClient {
             .await
     }
 
+    /// Cancel a journal that is still `pending` or `queued`. An executed journal cannot be
+    /// canceled; reverse it with a mirror journal instead.
     pub async fn cancel_journal_by_id(&self, journal_id: &Uuid) -> Result<(), AlpacaError> {
         self.client
             .delete_void(&format!("/journals/{}", journal_id), None::<&()>)

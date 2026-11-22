@@ -9,7 +9,9 @@
 
 mod common;
 
-use alpacars::broker::enums::{PortfolioStatus, RunInitiatedFrom, RunStatus, RunType, WeightType};
+use alpacars::broker::enums::{
+    PortfolioStatus, RunInitiatedFrom, RunStatus, RunType, TradeMarker, WeightType,
+};
 use alpacars::broker::requests::{
     CreatePortfolioRequest, CreateRunRequest, CreateSubscriptionRequest, GetPortfoliosRequest,
     GetRunsRequest, GetSubscriptionsRequest, PortfolioWeightRequest,
@@ -185,17 +187,23 @@ async fn test_archive_portfolio_by_id() {
 async fn test_create_subscription() {
     let server = MockServer::start().await;
 
+    // post-v1-rebalancing-subscriptions: `trade_marker` is optional on the request and
+    // required (nullable) on PortfolioSubscription.
     Mock::given(method("POST"))
         .and(path("/v1/rebalancing/subscriptions"))
+        .and(body_json(json!({
+            "account_id": ACCOUNT_ID,
+            "portfolio_id": PORTFOLIO_ID,
+            "trade_marker": "unsolicited"
+        })))
         .respond_with(ResponseTemplate::new(200).set_body_string(format!(
             r#"{{
               "id": "{}",
               "account_id": "{}",
               "portfolio_id": "{}",
-              "status": "active",
               "created_at": "2026-07-20T10:00:00Z",
-              "updated_at": null,
-              "last_rebalanced_at": "2026-07-21T14:30:00Z"
+              "last_rebalanced_at": "2026-07-21T14:30:00Z",
+              "trade_marker": "unsolicited"
             }}"#,
             SUBSCRIPTION_ID, ACCOUNT_ID, PORTFOLIO_ID
         )))
@@ -207,10 +215,12 @@ async fn test_create_subscription() {
     let req = CreateSubscriptionRequest {
         account_id: uuid(ACCOUNT_ID),
         portfolio_id: uuid(PORTFOLIO_ID),
+        trade_marker: Some(TradeMarker::Unsolicited),
     };
     let sub = client.create_subscription(&req).await.unwrap();
 
     assert_eq!(sub.id, uuid(SUBSCRIPTION_ID));
+    assert_eq!(sub.trade_marker, Some(TradeMarker::Unsolicited));
     assert_eq!(sub.portfolio_id, Some(uuid(PORTFOLIO_ID)));
     assert!(sub.last_rebalanced_at.is_some());
 }
@@ -381,7 +391,8 @@ const SUBSCRIPTION_JSON: &str = r#"{
   "account_id": "b1f9c2d4-5e6a-4b7c-8d9e-0f1a2b3c4d5e",
   "portfolio_id": "2d49d00e-ab1c-4f1a-9b3a-5f0e9c1d2a3b",
   "created_at": "2026-07-20T10:00:00Z",
-  "last_rebalanced_at": "2026-07-21T14:30:00Z"
+  "last_rebalanced_at": "2026-07-21T14:30:00Z",
+  "trade_marker": null
 }"#;
 
 /// get-v1-rebalancing-subscriptions answers `{subscriptions, next_page_token}`, not a bare
@@ -419,6 +430,8 @@ async fn test_get_all_subscriptions_is_paginated() {
     let subs = client.get_all_subscriptions(Some(&filter)).await.unwrap();
     assert_eq!(subs.len(), 2);
     assert_eq!(subs[0].id, uuid(SUBSCRIPTION_ID));
+    // Subscriptions created before trade markers return `trade_marker: null`.
+    assert_eq!(subs[0].trade_marker, None);
 }
 
 #[tokio::test]

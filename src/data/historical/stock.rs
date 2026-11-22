@@ -18,7 +18,7 @@ struct BarsParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub adjustment: Option<Adjustment>,
+    pub adjustment: Option<Vec<Adjustment>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub feed: Option<DataFeed>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -97,7 +97,9 @@ pub struct StockBarsRequest {
     pub start: Option<Timestamp>,
     pub end: Option<Timestamp>,
     pub limit: Option<u32>,
-    pub adjustment: Option<Adjustment>,
+    /// Corporate-action adjustments to apply, sent comma-separated (for example `split` and
+    /// `spin-off` together). The API defaults to `raw`.
+    pub adjustment: Option<Vec<Adjustment>>,
     pub feed: Option<DataFeed>,
     pub currency: Option<String>,
     pub sort: Option<Sort>,
