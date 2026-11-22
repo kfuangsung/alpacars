@@ -1,7 +1,7 @@
 mod common;
 
 use alpacars::broker::requests::GetAccountActivitiesRequest as BrokerActivitiesRequest;
-use alpacars::trading::enums::{ActivityCategory, ActivityType};
+use alpacars::trading::enums::{ActivityCategory, ActivityType, TradeActivitySide};
 use alpacars::trading::models::AccountActivity;
 use alpacars::trading::requests::GetAccountActivitiesRequest;
 use serde_json::json;
@@ -77,6 +77,17 @@ fn test_account_activity_picks_trade_or_non_trade() {
             assert_eq!(n.net_amount.as_deref(), Some("1.02"));
         }
         other => panic!("DIV should be a non-trade activity, got {other:?}"),
+    }
+}
+
+/// A trade activity's `side` is TradeActivitySide (buy / sell / sell_short), not the order's
+/// OrderSide, so short sales used to parse as `Unknown`.
+#[test]
+fn test_trade_activity_reports_sell_short() {
+    let short = FILL_JSON.replace(r#""side": "buy""#, r#""side": "sell_short""#);
+    match serde_json::from_str::<AccountActivity>(&short).unwrap() {
+        AccountActivity::Trade(t) => assert_eq!(t.side, Some(TradeActivitySide::SellShort)),
+        other => panic!("FILL should be a trade activity, got {other:?}"),
     }
 }
 

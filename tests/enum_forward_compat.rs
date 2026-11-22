@@ -89,6 +89,10 @@ fn test_every_response_enum_has_unknown_fallback() {
         alpacars::trading::enums::TokenizationRequestType,
         alpacars::trading::enums::TokenizationNetwork,
         alpacars::trading::enums::TokenizationIssuer,
+        alpacars::broker::enums::TradeMarker,
+        alpacars::trading::enums::TradeActivitySide,
+        alpacars::trading::enums::CommissionType,
+        alpacars::trading::enums::TokenizationTransferStatus,
     );
 }
 
