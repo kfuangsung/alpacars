@@ -60,7 +60,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-alpacars = "0.8"
+alpacars = "0.9"
 ```
 
 > **Minimum Rust version:** 1.89 — enforced by a dedicated CI job.
