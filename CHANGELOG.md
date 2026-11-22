@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-22
+
+Breaking release, synced with Alpaca's changelog through 2026-11-20. It drops the unmaintained `chrono` for `jiff`, fixes multi-leg orders and rebalancing pagination, and checks every enum against the API reference. Migrating:
+- **Dates and times:** add `jiff = "1"`. `DateTime<Utc>` → `jiff::Timestamp`, `NaiveDate` → `jiff::civil::Date` (`jiff::civil::date(2026, 1, 2)`, `"2026-01-02T15:04:05Z".parse::<jiff::Timestamp>()`). Wire formats are unchanged.
+- **Orders:** `OrderRequest.symbol` and `.side` are `Option`. The constructors are unchanged, but a struct literal needs `symbol: Some(..)` and `side: Some(..)`. Build multi-leg orders with `OrderRequest::mleg(qty, legs)`. `OptionLegRequest` takes `ratio_qty: "1".into()`, `side: Some(..)` and an optional `position_intent`.
+- **Renamed or retyped:**
+  - `AgreementType::CustodialCustomer` → `CustodianCustomer`.
+  - `TradeActivity.side` is a `TradeActivitySide`.
+  - `GetPortfolioHistoryRequest.timeframe` takes a `PortfolioHistoryTimeframe` (`"1D"` → `PortfolioHistoryTimeframe::OneDay`).
+  - `StockBarsRequest.adjustment` takes a `Vec`.
+  - The rebalancing `page_token` / `next_page_token` are `u32`.
+- **New request fields:** `currency`, `trade_marker`, `identifications` and the order commission fields default to `None`. Struct literals without `..Default::default()` need them added.
+- **Removed:** the never-valid `ActivityType::Intpnl` (use `Invpnl`) and `AssetExchange::{Ftxu, Cbse, Gnss}`.
+
 ### Fixed
 - Listing rebalancing runs or subscriptions failed whenever a page was full. `GET /v1/rebalancing/runs` and `/v1/rebalancing/subscriptions` paginate with integer offsets: `page_token` is an int32 and `next_page_token` a nullable int32 (`offset + limit` on a full page). The crate parsed `next_page_token` as a string, so `get_all_runs` errored on a full page and `get_all_subscriptions` could not get past the first one. **Breaking:** `GetRunsRequest.page_token` and `ListRunsResponse.next_page_token` are `Option<u32>`.
 - `AgreementType::CustodialCustomer` sent `custodial_customer_agreement`, which is not an API value. It is renamed to `CustodianCustomer` and sends `custodian_customer_agreement`. **Breaking.**
@@ -362,7 +376,8 @@ Catch-up with the Alpaca changelog for 2026-07-16 through 2026-07-29.
 ### Fixed
 - Silent failures in the WebSocket connection, `TradingStream`, and live stream handlers now surface via tracing instead of failing silently.
 
-[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/kfuangsung/alpacars/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/kfuangsung/alpacars/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/kfuangsung/alpacars/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/kfuangsung/alpacars/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/kfuangsung/alpacars/compare/v0.7.0...v0.7.1
