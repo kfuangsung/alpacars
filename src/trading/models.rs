@@ -299,7 +299,7 @@ pub struct TradeActivity {
     pub transaction_time: Option<DateTime<Utc>>,
     pub order_id: Option<Uuid>,
     pub symbol: Option<String>,
-    pub side: Option<OrderSide>,
+    pub side: Option<TradeActivitySide>,
     pub qty: Option<String>,
     pub price: Option<String>,
     pub cum_qty: Option<String>,

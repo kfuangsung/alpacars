@@ -55,6 +55,8 @@ pub enum Adjustment {
     Raw,
     Split,
     Dividend,
+    #[serde(rename = "spin-off")]
+    SpinOff,
     All,
 }
 
