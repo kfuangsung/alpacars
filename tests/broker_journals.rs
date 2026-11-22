@@ -7,7 +7,7 @@ use alpacars::broker::requests::{
 };
 use serde_json::json;
 use uuid::Uuid;
-use wiremock::matchers::{body_json, body_partial_json, method, path, query_param};
+use wiremock::matchers::{body_json, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 const FROM_ACCOUNT: &str = "8f8c8cee-2591-4f83-be12-82c659b5e748";
@@ -57,7 +57,14 @@ async fn test_create_journal_sends_jnlc_entry_type() {
 
     Mock::given(method("POST"))
         .and(path("/v1/journals"))
-        .and(body_partial_json(json!({"entry_type": "JNLC"})))
+        // createjournal: `currency` is optional, defaulting to the system currency.
+        .and(body_json(json!({
+            "from_account": FROM_ACCOUNT,
+            "to_account": TO_ACCOUNT,
+            "entry_type": "JNLC",
+            "amount": "1000",
+            "currency": "USD"
+        })))
         .respond_with(ResponseTemplate::new(200).set_body_string(JNLC_JSON))
         .expect(1)
         .mount(&server)
@@ -77,6 +84,7 @@ async fn test_create_journal_sends_jnlc_entry_type() {
         transmitter_address: None,
         transmitter_financial_institution: None,
         transmitter_timestamp: None,
+        currency: Some("USD".to_string()),
     };
     let journal = client.create_journal(&req).await.unwrap();
 
@@ -188,7 +196,7 @@ async fn test_create_reverse_batch_journal_path() {
         .and(body_json(json!({
             "entry_type": "JNLC",
             "to_account": TO_ACCOUNT,
-            "entries": [{"from_account": FROM_ACCOUNT, "amount": "1000"}]
+            "entries": [{"from_account": FROM_ACCOUNT, "amount": "1000", "currency": "USD"}]
         })))
         .respond_with(ResponseTemplate::new(200).set_body_string(format!("[{JNLC_JSON}]")))
         .expect(1)
@@ -203,6 +211,7 @@ async fn test_create_reverse_batch_journal_path() {
             from_account: uuid(FROM_ACCOUNT),
             amount: "1000".to_string(),
             description: None,
+            currency: Some("USD".to_string()),
         }],
     };
     let journals = client.create_reverse_batch_journal(&req).await.unwrap();

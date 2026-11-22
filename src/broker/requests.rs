@@ -43,6 +43,47 @@ pub struct CreateIdentityRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub visa_expiration_date: Option<Date>,
     pub funding_source: Vec<FundingSource>,
+    /// Identification documents, such as a passport or an LEI. Send an LEI here rather than
+    /// as `tax_id_type`, which rejects it. On update, the list replaces every stored
+    /// identification except the tax ID entry.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub identifications: Option<Vec<Identification>>,
+}
+
+/// An identification document on an account's identity. Used both in requests and in the
+/// `Identity` response, so it stays constructible.
+///
+/// Every field but `id_type` is write-only: responses return only `type` (natural persons
+/// only, with the tax ID as one of the entries).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Identification {
+    /// For example `passport`, `national_id`, or `LEI` (uppercase).
+    #[serde(rename = "type")]
+    pub id_type: String,
+    /// Required on write. An `LEI` must pass ISO 17442 check digits.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub number: Option<String>,
+    /// Required on write.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub issued_country: Option<String>,
+    /// No later than today (UTC).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub issued_date: Option<Date>,
+    /// Later than today (UTC), and not before `issued_date`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expiry_date: Option<Date>,
+}
+
+/// Dividend reinvestment (DRIP) setting on an account. Used both in requests and in the
+/// `Account` response, so it stays constructible.
+///
+/// Enabling it needs a signed customer agreement at the required revision, already on the
+/// account or sent in the same request, and fails on `donor_advised`, `trust`, `omnibus_sub`
+/// and `omnibus_non_disclosed` accounts. In sandbox it is available to beta partners only.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AccountDrip {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub equities_dividend_reinvestments: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -110,6 +151,9 @@ pub struct CreateAccountRequest {
     pub trusted_contact: Option<CreateTrustedContactRequest>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled_assets: Option<Vec<String>>,
+    /// Omit to leave dividend reinvestment unchanged.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub drip: Option<AccountDrip>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -124,6 +168,9 @@ pub struct UpdateAccountRequest {
     pub trusted_contact: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled_assets: Option<Vec<String>>,
+    /// Omit to leave dividend reinvestment unchanged.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub drip: Option<AccountDrip>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -333,6 +380,10 @@ pub struct CreateJournalRequest {
     pub transmitter_financial_institution: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub transmitter_timestamp: Option<String>,
+    /// ISO currency of `amount`. Defaults to the system currency (USD in the US); required
+    /// for correspondents with local currency trading enabled.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub currency: Option<String>,
 }
 
 /// One recipient of a one-to-many batch journal.
@@ -377,9 +428,14 @@ pub struct CreateBatchJournalRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReverseBatchJournalEntry {
     pub from_account: Uuid,
+    /// Amount in the entry's `currency`.
     pub amount: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// ISO currency of `amount`. Defaults to the system currency (USD in the US); required
+    /// for correspondents with local currency trading enabled.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub currency: Option<String>,
 }
 
 /// Many-to-one: every entry journals into the single `to_account`.
@@ -442,6 +498,10 @@ pub struct GetPortfoliosRequest {
 pub struct CreateSubscriptionRequest {
     pub account_id: Uuid,
     pub portfolio_id: Uuid,
+    /// The API treats an omitted marker as `Discretionary`, which it rejects unless the
+    /// correspondent's advisor is marked discretionary.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trade_marker: Option<TradeMarker>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]

@@ -101,6 +101,8 @@ pub struct Order {
     pub replaced_at: Option<Timestamp>,
     pub replaced_by: Option<Uuid>,
     pub replaces: Option<Uuid>,
+    /// `None` on the parent of a multi-leg (`mleg`) order, which the API reports as `""`.
+    #[serde(default, deserialize_with = "empty_string_as_none")]
     pub asset_id: Option<Uuid>,
     pub symbol: Option<String>,
     pub asset_class: Option<AssetClass>,
@@ -132,6 +134,14 @@ pub struct Order {
     pub group_id: Option<Uuid>,
     /// This order's role within its group; `None` whenever `group_id` is.
     pub group_role: Option<OrderGroupRole>,
+    /// Broker API: the dollar commission charged on this order.
+    pub commission: Option<String>,
+    /// Broker API: how `commission` was specified.
+    pub commission_type: Option<CommissionType>,
+    /// Broker API, deprecated by Alpaca in favour of `commission_type: Bps`.
+    pub commission_bps: Option<String>,
+    /// Broker API: the order's settlement currency; `None` when it has none.
+    pub settlement_currency: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -500,6 +510,9 @@ pub struct TokenizationRequest {
     pub fees: Option<String>,
     /// Transaction hash of the completed request on the blockchain.
     pub tx_hash: Option<String>,
+    /// State of the underlying share transfer; `None` when the request has none (for
+    /// example, one rejected during validation).
+    pub transfer_status: Option<TokenizationTransferStatus>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -513,4 +526,19 @@ pub struct TokenizationMintResponse {
     pub created_at: Timestamp,
     pub issuer: TokenizationIssuer,
     pub network: TokenizationNetwork,
+}
+
+/// Deserializes an optional value whose absence the API sometimes encodes as `""` (for example
+/// `asset_id` on a multi-leg parent order).
+fn empty_string_as_none<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: std::str::FromStr,
+    T::Err: std::fmt::Display,
+{
+    match Option::<String>::deserialize(deserializer)? {
+        None => Ok(None),
+        Some(s) if s.is_empty() => Ok(None),
+        Some(s) => s.parse().map(Some).map_err(serde::de::Error::custom),
+    }
 }

@@ -253,3 +253,175 @@ fn test_order_request_advanced_instructions_serialization() {
     assert_eq!(ai["destination"], "IEX");
     assert_eq!(ai["display_qty"], "50");
 }
+
+/// postorder, request example `MultilegOptions` and response example
+/// `MultilegOptionsOrderResponse`. An mleg order has no top-level `symbol` or `side`; the
+/// crate used to send both, with a numeric `ratio_qty`. The response's parent order has
+/// `"asset_id": ""`, which used to fail the whole parse.
+#[tokio::test]
+async fn test_submit_mleg_order_matches_reference() {
+    use alpacars::trading::enums::{OrderClass, OrderType, PositionIntent};
+    use alpacars::trading::requests::OptionLegRequest;
+    use wiremock::matchers::body_json;
+
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/v2/orders"))
+        .and(body_json(serde_json::json!({
+            "legs": [
+                {"position_intent": "buy_to_open", "ratio_qty": "3", "side": "buy", "symbol": "AAPL241213C00250000"},
+                {"position_intent": "sell_to_open", "ratio_qty": "1", "side": "sell", "symbol": "AAPL241213C00260000"}
+            ],
+            "limit_price": "10",
+            "order_class": "mleg",
+            "qty": "3",
+            "time_in_force": "day",
+            "type": "limit"
+        })))
+        .respond_with(ResponseTemplate::new(200).set_body_string(MLEG_ORDER_RESPONSE))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let mut order = OrderRequest::mleg(
+        "3",
+        vec![
+            OptionLegRequest {
+                symbol: "AAPL241213C00250000".into(),
+                ratio_qty: "3".into(),
+                side: Some(OrderSide::Buy),
+                position_intent: Some(PositionIntent::BuyToOpen),
+            },
+            OptionLegRequest {
+                symbol: "AAPL241213C00260000".into(),
+                ratio_qty: "1".into(),
+                side: Some(OrderSide::Sell),
+                position_intent: Some(PositionIntent::SellToOpen),
+            },
+        ],
+    );
+    order.order_type = OrderType::Limit;
+    order.limit_price = Some("10".into());
+
+    let client = common::trading_client(&server.uri());
+    let placed = client.submit_order(&order).await.unwrap();
+    assert_eq!(placed.order_class, OrderClass::Mleg);
+    assert_eq!(placed.asset_id, None);
+    assert_eq!(placed.legs.map(|l| l.len()), Some(2));
+}
+
+const MLEG_ORDER_RESPONSE: &str = r#"{
+  "asset_class": "",
+  "asset_id": "",
+  "canceled_at": null,
+  "client_order_id": "646b1fe6-b212-4f54-94c6-429e7bcdee04",
+  "created_at": "2024-12-10T16:15:53.677230742Z",
+  "expired_at": null,
+  "extended_hours": false,
+  "failed_at": null,
+  "filled_at": "2024-12-10T16:15:53.694Z",
+  "filled_avg_price": "1.28",
+  "filled_qty": "1",
+  "hwm": null,
+  "id": "83f37e9f-6b1f-49ed-8fc6-3e6af716323f",
+  "legs": [
+    {
+      "asset_class": "us_option",
+      "asset_id": "f0ea14b2-8a49-4e9b-89d1-894c6e518a76",
+      "canceled_at": null,
+      "client_order_id": "cc8cc104-fe43-476c-b25c-f62650fb73f9",
+      "created_at": "2024-12-10T16:15:53.677230742Z",
+      "expired_at": null,
+      "expires_at": "2024-12-10T21:00:00Z",
+      "extended_hours": false,
+      "failed_at": null,
+      "filled_at": "2024-12-10T16:15:53.694Z",
+      "filled_avg_price": "0.43",
+      "filled_qty": "3",
+      "hwm": null,
+      "id": "df4ff24a-c58a-4e37-8b9f-ef32b83a11f2",
+      "legs": null,
+      "limit_price": null,
+      "notional": null,
+      "order_class": "mleg",
+      "order_type": "",
+      "position_intent": "buy_to_open",
+      "qty": "3",
+      "ratio_qty": "3",
+      "replaced_at": null,
+      "replaced_by": null,
+      "replaces": null,
+      "side": "buy",
+      "source": null,
+      "status": "filled",
+      "stop_price": null,
+      "submitted_at": "2024-12-10T16:15:53.684952901Z",
+      "subtag": null,
+      "symbol": "AAPL241213C00250000",
+      "time_in_force": "day",
+      "trail_percent": null,
+      "trail_price": null,
+      "type": "",
+      "updated_at": "2024-12-10T16:15:53.725091158Z"
+    },
+    {
+      "asset_class": "us_option",
+      "asset_id": "f89940db-eeb1-46e6-8f9b-bb1f27a0b395",
+      "canceled_at": null,
+      "client_order_id": "0bd2d36d-4af2-4dfb-8418-333a5d5026fa",
+      "created_at": "2024-12-10T16:15:53.677230742Z",
+      "expired_at": null,
+      "expires_at": "2024-12-10T21:00:00Z",
+      "extended_hours": false,
+      "failed_at": null,
+      "filled_at": "2024-12-10T16:15:53.694Z",
+      "filled_avg_price": "0.01",
+      "filled_qty": "1",
+      "hwm": null,
+      "id": "ecd91110-c34d-4e9d-a7bf-a9c27c40f8b5",
+      "legs": null,
+      "limit_price": null,
+      "notional": null,
+      "order_class": "mleg",
+      "order_type": "",
+      "position_intent": "sell_to_open",
+      "qty": "1",
+      "ratio_qty": "1",
+      "replaced_at": null,
+      "replaced_by": null,
+      "replaces": null,
+      "side": "sell",
+      "source": null,
+      "status": "filled",
+      "stop_price": null,
+      "submitted_at": "2024-12-10T16:15:53.684952901Z",
+      "subtag": null,
+      "symbol": "AAPL241213C00260000",
+      "time_in_force": "day",
+      "trail_percent": null,
+      "trail_price": null,
+      "type": "",
+      "updated_at": "2024-12-10T16:15:53.708983759Z"
+    }
+  ],
+  "limit_price": "10",
+  "notional": null,
+  "order_class": "mleg",
+  "order_type": "limit",
+  "qty": "1",
+  "replaced_at": null,
+  "replaced_by": null,
+  "replaces": null,
+  "side": "",
+  "source": null,
+  "status": "filled",
+  "stop_price": null,
+  "submitted_at": "2024-12-10T16:15:53.684952901Z",
+  "subtag": null,
+  "symbol": "",
+  "time_in_force": "day",
+  "trail_percent": null,
+  "trail_price": null,
+  "type": "limit",
+  "updated_at": "2024-12-10T16:15:53.725139688Z"
+}"#;

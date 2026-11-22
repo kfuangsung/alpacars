@@ -14,14 +14,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ActivityType` had `INTPNL`, which no reference lists (the code is `INVPNL`), and was missing `ALLOC`, `CORR`, `CSR`, `DTCS`, `DVF`, `ECEXP`, `FIMAT`, `FXCNV`, `INVPNL`, `SC`, `SEG`, `SSO`, `SSP`, `SUB` and `TRD`. Each variant's doc now says what it means and whether it is filter-only or response-only. **Breaking** (`Intpnl` removed).
 - `AssetExchange` was missing `TXSE`, `CRXL` and `INDEX`, and had `FTXU`, `CBSE` and `GNSS`, which no reference lists. **Breaking** (those three removed).
 - `TradeEvent` was missing six documented `trade_updates` events: `done_for_day`, `stopped`, `calculated`, `suspended`, `order_replace_rejected` and `order_cancel_rejected`. They arrived as `Unknown`.
+- **Multi-leg (`mleg`) orders could not be read back.** The parent of an mleg order reports `"asset_id": ""`, which `Order` parsed as a UUID. So `submit_order` and the order getters returned an error even when the order was placed. An empty `asset_id` now parses as `None`.
+- Multi-leg orders could not be sent as the reference shows. `OrderRequest` always sent a top-level `symbol` and `side`, and `OptionLegRequest` sent `ratio_qty` as a number with no `position_intent`. **Breaking:**
+  - `OrderRequest.symbol` and `.side` are `Option`; the constructors keep their signatures.
+  - `OptionLegRequest.side` is `Option`, `ratio_qty` is a `String`, and it gains `position_intent`.
+  - The new `OrderRequest::mleg(qty, legs)` builds a multi-leg order.
 
 ### Added
 - `AgreementType`: `TrustedContactConsent`, `MasterSecuritiesLending`, `CertificationsAndResolutionsStatement`, `JointAccount` and `ForeignMarketsAddendum`.
 - `TaxIdType` lists all 235 values the Broker API accepts, up from 15 (for example `UsaEin`, `CanSin`, `GbrCrn`).
 - `RunType::PartialLiquidation`, `RunInitiatedFrom::Dashboard`, `TokenizationIssuer::{Bitget, Robinhood}`, `AdvancedAlgorithm::{Twap, Vwap}` (Trading API only) and `Adjustment::SpinOff`.
+- Broker order commission. `OrderRequest` gains `commission`, `commission_type` (`CommissionType`: `Notional`, `Qty`, `Bps`) and the deprecated `commission_bps`; `Order` gains the same three fields plus `settlement_currency`. On an `mleg` order, `commission` is a per-contract rate that needs `CommissionType::Qty`.
+- Dividend reinvestment: `drip` (`AccountDrip`) on `CreateAccountRequest`, `UpdateAccountRequest` and `Account`.
+- `identifications` (`Identification`) on `CreateIdentityRequest` and `Identity`. Send an LEI there, not as `tax_id_type`.
+- `trade_marker` (`TradeMarker`: `Discretionary`, `Unsolicited`) on `CreateSubscriptionRequest` and `Subscription`.
+- `currency` on `CreateJournalRequest` and `ReverseBatchJournalEntry`.
+- `TokenizationRequest.transfer_status` (`TokenizationTransferStatus`).
 
 ### Changed
 - **Breaking:** dates and times use [`jiff`](https://docs.rs/jiff) instead of `chrono`, which RustSec now lists as unmaintained (RUSTSEC-2026-0543), with no patched version. Every `DateTime<Utc>` is now a `jiff::Timestamp`, and every `NaiveDate` a `jiff::civil::Date`. The wire formats are unchanged: RFC 3339 timestamps and `YYYY-MM-DD` dates. To migrate, add `jiff = "1"` to your dependencies. Build dates with `jiff::civil::date(2026, 1, 2)` and timestamps with `"2026-01-02T15:04:05Z".parse::<jiff::Timestamp>()`. Get today in UTC with `jiff::tz::TimeZone::UTC.to_datetime(jiff::Timestamp::now()).date()`. A timestamp's `Display` is RFC 3339 (`2026-01-02T15:04:05Z`).
+- **Breaking:** `GetPortfolioHistoryRequest.timeframe` is a `PortfolioHistoryTimeframe` (`1Min`, `5Min`, `15Min`, `1H`, `1D`) rather than a `String`.
+- **Breaking:** `StockBarsRequest.adjustment` is an `Option<Vec<Adjustment>>`, sent comma-separated, so adjustments can be combined (for example `split,spin-off`).
+- **Breaking:** the request fields above are new on structs without `Default` (`CreateJournalRequest`, `ReverseBatchJournalEntry`, `CreateSubscriptionRequest`, `CreateIdentityRequest`); set them to `None`.
 
 ### Security
 - `openssl` upgraded to 0.10.82 (via `native-tls`) for RUSTSEC-2026-0474, RUSTSEC-2026-0476 and RUSTSEC-2026-0477.

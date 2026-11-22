@@ -1,5 +1,5 @@
 use crate::broker::enums::*;
-pub use crate::broker::requests::BankExtraFields;
+pub use crate::broker::requests::{AccountDrip, BankExtraFields, Identification};
 use crate::trading::enums::AccountStatus;
 use crate::trading::models::Order;
 use jiff::{civil::Date, Timestamp};
@@ -46,6 +46,8 @@ pub struct Identity {
     pub employer_address: Option<String>,
     pub employment_position: Option<String>,
     pub employment_status: Option<EmploymentStatus>,
+    /// Only `id_type` is returned. Present for natural persons only; the tax ID is one entry.
+    pub identifications: Option<Vec<Identification>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -127,6 +129,8 @@ pub struct Account {
     pub trading_configurations: Option<serde_json::Value>,
     pub allow_instant_ach: Option<bool>,
     pub instant_ach_blocked: Option<bool>,
+    /// Returned once dividend reinvestment has been enabled at least once.
+    pub drip: Option<AccountDrip>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -286,6 +290,9 @@ pub struct Subscription {
     pub created_at: Option<Timestamp>,
     pub updated_at: Option<Timestamp>,
     pub last_rebalanced_at: Option<Timestamp>,
+    /// `None` for subscriptions created before trade markers existed; their orders stay
+    /// unmarked.
+    pub trade_marker: Option<TradeMarker>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
