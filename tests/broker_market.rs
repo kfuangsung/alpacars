@@ -6,7 +6,6 @@ mod common;
 
 use alpacars::trading::enums::{AssetAttribute, AssetClass, AssetStatus};
 use alpacars::trading::requests::{GetAssetsRequest, GetCalendarRequest};
-use chrono::NaiveDate;
 use wiremock::matchers::{method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -88,7 +87,7 @@ async fn test_get_clock() {
     let client = common::broker_client(&server.uri());
     let clock = client.get_clock().await.unwrap();
     assert!(clock.is_open);
-    assert_eq!(clock.next_close.to_rfc3339(), "2025-06-24T20:00:00+00:00");
+    assert_eq!(clock.next_close.to_string(), "2025-06-24T20:00:00Z");
 }
 
 #[tokio::test]
@@ -108,11 +107,11 @@ async fn test_get_calendar() {
 
     let client = common::broker_client(&server.uri());
     let filter = GetCalendarRequest {
-        start: NaiveDate::from_ymd_opt(2025, 1, 2),
-        end: NaiveDate::from_ymd_opt(2025, 1, 3),
+        start: Some(jiff::civil::date(2025, 1, 2)),
+        end: Some(jiff::civil::date(2025, 1, 3)),
         date_type: None,
     };
     let days = client.get_calendar(Some(&filter)).await.unwrap();
-    assert_eq!(days[0].date, NaiveDate::from_ymd_opt(2025, 1, 2).unwrap());
+    assert_eq!(days[0].date, jiff::civil::date(2025, 1, 2));
     assert_eq!(days[0].session_open.as_deref(), Some("0400"));
 }

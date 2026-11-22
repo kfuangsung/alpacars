@@ -10,7 +10,6 @@ use alpacars::data::historical::option::{
     OptionTradesRequest,
 };
 use alpacars::trading::enums::ContractType;
-use chrono::NaiveDate;
 use wiremock::matchers::{method, path, query_param, query_param_is_missing};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -419,8 +418,8 @@ async fn test_get_option_chain_filters_and_pages() {
         r#type: Some(ContractType::Call),
         strike_price_gte: Some(160.0),
         strike_price_lte: Some(170.5),
-        expiration_date_gte: NaiveDate::from_ymd_opt(2024, 4, 26),
-        expiration_date_lte: NaiveDate::from_ymd_opt(2024, 5, 3),
+        expiration_date_gte: Some(jiff::civil::date(2024, 4, 26)),
+        expiration_date_lte: Some(jiff::civil::date(2024, 5, 3)),
         root_symbol: Some("AAPL".to_string()),
         ..Default::default()
     };
@@ -464,7 +463,7 @@ async fn test_get_option_chain_expiration_date_and_updated_since() {
     let client = common::option_client(&server.uri());
     let req = OptionChainRequest {
         underlying_symbol: "AAPL".to_string(),
-        expiration_date: NaiveDate::from_ymd_opt(2024, 4, 26),
+        expiration_date: Some(jiff::civil::date(2024, 4, 26)),
         updated_since: Some("2024-04-22T19:00:00Z".parse().unwrap()),
         ..Default::default()
     };

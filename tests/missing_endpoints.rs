@@ -9,7 +9,6 @@ use alpacars::broker::requests::{
 };
 use alpacars::trading::enums::{ActivityType, OrderSide, OrderType, TimeInForce};
 use alpacars::trading::requests::{GetMarketCalendarRequest, UpdateWatchlistRequest};
-use chrono::NaiveDate;
 use serde_json::json;
 use uuid::Uuid;
 use wiremock::matchers::{body_json, method, path, query_param};
@@ -159,7 +158,7 @@ async fn test_get_market_calendar() {
 
     let client = common::trading_client(&server.uri());
     let filter = GetMarketCalendarRequest {
-        start: NaiveDate::from_ymd_opt(2025, 1, 2),
+        start: Some(jiff::civil::date(2025, 1, 2)),
         end: None,
         timezone: Some("America/New_York".to_string()),
     };
@@ -169,7 +168,7 @@ async fn test_get_market_calendar() {
         .unwrap();
     assert_eq!(cal.market.acronym, "NYSE");
     let day = &cal.calendar[0];
-    assert_eq!(day.core_start.to_rfc3339(), "2025-01-02T14:30:00+00:00");
+    assert_eq!(day.core_start.to_string(), "2025-01-02T14:30:00Z");
     assert_eq!(day.lunch_start, None);
 }
 

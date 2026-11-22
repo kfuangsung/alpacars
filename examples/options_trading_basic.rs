@@ -10,7 +10,7 @@ use alpacars::data::historical::option::{
 use alpacars::trading::client::TradingClient;
 use alpacars::trading::enums::{AssetStatus, ContractType, ExerciseStyle, OrderSide};
 use alpacars::trading::requests::{ClosePositionRequest, GetOptionContractsRequest, OrderRequest};
-use chrono::{Duration, Utc};
+use jiff::{tz::TimeZone, Timestamp, ToSpan};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -42,9 +42,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // ── Discover SPY option contracts ─────────────────────────────────────────
-    let today = Utc::now().date_naive();
-    let expiry_min = today + Duration::days(7);
-    let expiry_max = today + Duration::days(60);
+    let today = TimeZone::UTC.to_datetime(Timestamp::now()).date();
+    let expiry_min = today + 7.days();
+    let expiry_max = today + 60.days();
 
     let contracts_resp = trading
         .get_option_contracts(&GetOptionContractsRequest {

@@ -3,7 +3,7 @@ use crate::common::enums::Sort;
 use crate::data::enums::{CryptoFeed, TimeFrame};
 use crate::data::models::*;
 use crate::error::AlpacaError;
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -12,9 +12,9 @@ struct CryptoBarsParams {
     pub symbols: String,
     pub timeframe: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -29,9 +29,9 @@ struct CryptoBarsParams {
 struct CryptoQuotesParams {
     pub symbols: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -62,8 +62,8 @@ struct CryptoSnapshotParams {
 pub struct CryptoBarsRequest {
     pub symbols: Vec<String>,
     pub timeframe: Option<TimeFrame>,
-    pub start: Option<DateTime<Utc>>,
-    pub end: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
+    pub end: Option<Timestamp>,
     pub limit: Option<u32>,
     pub sort: Option<Sort>,
     pub loc: Option<CryptoFeed>,
@@ -73,8 +73,8 @@ pub struct CryptoBarsRequest {
 #[derive(Default)]
 pub struct CryptoQuotesRequest {
     pub symbols: Vec<String>,
-    pub start: Option<DateTime<Utc>>,
-    pub end: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
+    pub end: Option<Timestamp>,
     pub limit: Option<u32>,
     pub sort: Option<Sort>,
     pub loc: Option<CryptoFeed>,

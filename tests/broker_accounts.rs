@@ -8,7 +8,7 @@ use alpacars::broker::enums::{AccountSubType, AccountType, AgreementType};
 use alpacars::broker::requests::{
     AgreementRequest, CreateAccountRequest, ListAccountsRequest, UpdateAccountRequest,
 };
-use chrono::{TimeZone, Utc};
+use jiff::Timestamp;
 use serde_json::json;
 use wiremock::matchers::{body_json, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -51,7 +51,7 @@ async fn test_create_account_existing_holder_ira() {
         primary_account_holder_id: Some("8b5b7e4c-9f2d-4f4a-9a7b-1b2c3d4e5f60".parse().unwrap()),
         agreements: Some(vec![AgreementRequest {
             agreement: AgreementType::Customer,
-            signed_at: Utc.with_ymd_and_hms(2020, 9, 11, 18, 13, 44).unwrap(),
+            signed_at: "2020-09-11T18:13:44Z".parse::<Timestamp>().unwrap(),
             ip_address: "185.13.21.99".to_string(),
             revision: None,
         }]),

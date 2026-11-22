@@ -6,7 +6,6 @@ mod common;
 
 use alpacars::trading::enums::{CorporateActionSubType, CorporateActionType};
 use alpacars::trading::requests::GetCorporateAnnouncementsRequest;
-use chrono::NaiveDate;
 use wiremock::matchers::{method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -65,8 +64,8 @@ async fn test_get_corporate_announcements() {
     let client = common::trading_client(&server.uri());
     let req = GetCorporateAnnouncementsRequest {
         ca_types: vec![CorporateActionType::Dividend, CorporateActionType::Merger],
-        since: NaiveDate::from_ymd_opt(2021, 1, 1),
-        until: NaiveDate::from_ymd_opt(2021, 3, 1),
+        since: Some(jiff::civil::date(2021, 1, 1)),
+        until: Some(jiff::civil::date(2021, 3, 1)),
         symbol: None,
         cusip: None,
         date_type: None,
