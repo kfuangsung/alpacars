@@ -749,13 +749,14 @@ impl BrokerClient {
         struct Params<'a> {
             #[serde(flatten)]
             filter: Option<&'a GetSubscriptionsRequest>,
+            /// An integer offset, unlike most Broker pagination tokens.
             #[serde(skip_serializing_if = "Option::is_none")]
-            page_token: Option<String>,
+            page_token: Option<u32>,
         }
         #[derive(serde::Deserialize)]
         struct Page {
             subscriptions: Option<Vec<Subscription>>,
-            next_page_token: Option<String>,
+            next_page_token: Option<u32>,
         }
 
         let mut params = Params {
@@ -770,8 +771,8 @@ impl BrokerClient {
                 .await?;
             result.extend(page.subscriptions.unwrap_or_default());
             match page.next_page_token {
-                Some(t) if !t.is_empty() => params.page_token = Some(t),
-                _ => break,
+                Some(offset) => params.page_token = Some(offset),
+                None => break,
             }
         }
         Ok(result)
@@ -807,6 +808,8 @@ impl BrokerClient {
         self.client.post("/rebalancing/runs", Some(data)).await
     }
 
+    /// List rebalancing runs (`GET /v1/rebalancing/runs`): one page. When the page is full,
+    /// pass its `next_page_token` back as `page_token` for the next one.
     pub async fn get_all_runs(
         &self,
         filter: Option<&GetRunsRequest>,

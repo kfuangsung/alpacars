@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Listing rebalancing runs or subscriptions failed whenever a page was full. `GET /v1/rebalancing/runs` and `/v1/rebalancing/subscriptions` paginate with integer offsets: `page_token` is an int32 and `next_page_token` a nullable int32 (`offset + limit` on a full page). The crate parsed `next_page_token` as a string, so `get_all_runs` errored on a full page and `get_all_subscriptions` could not get past the first one. **Breaking:** `GetRunsRequest.page_token` and `ListRunsResponse.next_page_token` are `Option<u32>`.
+
 ### Changed
 - **Breaking:** dates and times use [`jiff`](https://docs.rs/jiff) instead of `chrono`, which RustSec now lists as unmaintained (RUSTSEC-2026-0543), with no patched version. Every `DateTime<Utc>` is now a `jiff::Timestamp`, and every `NaiveDate` a `jiff::civil::Date`. The wire formats are unchanged: RFC 3339 timestamps and `YYYY-MM-DD` dates. To migrate, add `jiff = "1"` to your dependencies. Build dates with `jiff::civil::date(2026, 1, 2)` and timestamps with `"2026-01-02T15:04:05Z".parse::<jiff::Timestamp>()`. Get today in UTC with `jiff::tz::TimeZone::UTC.to_datetime(jiff::Timestamp::now()).date()`. A timestamp's `Display` is RFC 3339 (`2026-01-02T15:04:05Z`).
 

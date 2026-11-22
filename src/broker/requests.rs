@@ -475,8 +475,10 @@ pub struct GetRunsRequest {
     pub status: Option<RunStatus>,
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub run_type: Option<RunType>,
+    /// Offset of the first run to return (default 0): the previous page's `next_page_token`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_token: Option<String>,
+    pub page_token: Option<u32>,
+    /// Page size (default 100).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
 }
