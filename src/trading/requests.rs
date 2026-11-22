@@ -1,6 +1,6 @@
 use crate::common::enums::Sort;
 use crate::trading::enums::*;
-use chrono::{DateTime, NaiveDate, Utc};
+use jiff::{civil::Date, Timestamp};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -244,9 +244,9 @@ pub struct GetOrdersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<DateTime<Utc>>,
+    pub after: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub until: Option<DateTime<Utc>>,
+    pub until: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direction: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -310,9 +310,9 @@ pub struct GetPortfolioHistoryRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub intraday_reporting: Option<IntradayReporting>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pnl_reset: Option<PnlReset>,
 }
@@ -333,9 +333,9 @@ pub struct GetAssetsRequest {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetCalendarRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<NaiveDate>,
+    pub start: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<NaiveDate>,
+    pub end: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date_type: Option<CalendarDateType>,
 }
@@ -360,9 +360,9 @@ pub struct GetCorporateAnnouncementsRequest {
     /// Sent comma-separated.
     pub ca_types: Vec<CorporateActionType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub since: Option<NaiveDate>,
+    pub since: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub until: Option<NaiveDate>,
+    pub until: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbol: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -378,11 +378,11 @@ pub struct GetOptionContractsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<AssetStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expiration_date: Option<NaiveDate>,
+    pub expiration_date: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expiration_date_gte: Option<NaiveDate>,
+    pub expiration_date_gte: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expiration_date_lte: Option<NaiveDate>,
+    pub expiration_date_lte: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub root_symbol: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -425,9 +425,9 @@ pub struct GetLocatesRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
 }
@@ -446,9 +446,9 @@ pub struct AddSymbolToWatchlistRequest {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetMarketCalendarRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<NaiveDate>,
+    pub start: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<NaiveDate>,
+    pub end: Option<Date>,
     /// IANA timezone the session times are expressed in (they are parsed to UTC either way).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timezone: Option<String>,
@@ -463,11 +463,11 @@ pub struct GetAccountActivitiesRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub order_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub date: Option<NaiveDate>,
+    pub date: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub until: Option<DateTime<Utc>>,
+    pub until: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<DateTime<Utc>>,
+    pub after: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direction: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -508,7 +508,7 @@ pub struct GetTokenizationRequestsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network: Option<TokenizationNetwork>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<DateTime<Utc>>,
+    pub after: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub before: Option<DateTime<Utc>>,
+    pub before: Option<Timestamp>,
 }

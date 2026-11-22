@@ -3,7 +3,7 @@ use crate::common::enums::Sort;
 use crate::data::enums::{Adjustment, DataFeed, TimeFrame};
 use crate::data::models::*;
 use crate::error::AlpacaError;
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -12,9 +12,9 @@ struct BarsParams {
     pub symbols: String,
     pub timeframe: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -35,9 +35,9 @@ struct BarsParams {
 struct QuotesParams {
     pub symbols: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -54,9 +54,9 @@ struct QuotesParams {
 struct TradesParams {
     pub symbols: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -94,8 +94,8 @@ struct SnapshotParams {
 pub struct StockBarsRequest {
     pub symbols: Vec<String>,
     pub timeframe: Option<TimeFrame>,
-    pub start: Option<DateTime<Utc>>,
-    pub end: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
+    pub end: Option<Timestamp>,
     pub limit: Option<u32>,
     pub adjustment: Option<Adjustment>,
     pub feed: Option<DataFeed>,
@@ -108,8 +108,8 @@ pub struct StockBarsRequest {
 #[derive(Debug, Clone, Default)]
 pub struct StockQuotesRequest {
     pub symbols: Vec<String>,
-    pub start: Option<DateTime<Utc>>,
-    pub end: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
+    pub end: Option<Timestamp>,
     pub limit: Option<u32>,
     pub feed: Option<DataFeed>,
     pub currency: Option<String>,
@@ -120,8 +120,8 @@ pub struct StockQuotesRequest {
 #[derive(Debug, Clone, Default)]
 pub struct StockTradesRequest {
     pub symbols: Vec<String>,
-    pub start: Option<DateTime<Utc>>,
-    pub end: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
+    pub end: Option<Timestamp>,
     pub limit: Option<u32>,
     pub feed: Option<DataFeed>,
     pub currency: Option<String>,

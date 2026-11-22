@@ -1,5 +1,5 @@
 use crate::trading::enums::*;
-use chrono::{DateTime, NaiveDate, Utc};
+use jiff::{civil::Date, Timestamp};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -90,15 +90,15 @@ pub struct StopLossSpec {
 pub struct Order {
     pub id: Uuid,
     pub client_order_id: String,
-    pub created_at: Option<DateTime<Utc>>,
-    pub updated_at: Option<DateTime<Utc>>,
-    pub submitted_at: Option<DateTime<Utc>>,
-    pub filled_at: Option<DateTime<Utc>>,
-    pub expired_at: Option<DateTime<Utc>>,
-    pub expires_at: Option<DateTime<Utc>>,
-    pub canceled_at: Option<DateTime<Utc>>,
-    pub failed_at: Option<DateTime<Utc>>,
-    pub replaced_at: Option<DateTime<Utc>>,
+    pub created_at: Option<Timestamp>,
+    pub updated_at: Option<Timestamp>,
+    pub submitted_at: Option<Timestamp>,
+    pub filled_at: Option<Timestamp>,
+    pub expired_at: Option<Timestamp>,
+    pub expires_at: Option<Timestamp>,
+    pub canceled_at: Option<Timestamp>,
+    pub failed_at: Option<Timestamp>,
+    pub replaced_at: Option<Timestamp>,
     pub replaced_by: Option<Uuid>,
     pub replaces: Option<Uuid>,
     pub asset_id: Option<Uuid>,
@@ -181,18 +181,18 @@ pub struct Watchlist {
     pub id: Uuid,
     pub name: String,
     pub account_id: Option<Uuid>,
-    pub created_at: Option<DateTime<Utc>>,
-    pub updated_at: Option<DateTime<Utc>>,
+    pub created_at: Option<Timestamp>,
+    pub updated_at: Option<Timestamp>,
     pub assets: Option<Vec<WatchlistAsset>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct Clock {
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: Timestamp,
     pub is_open: bool,
-    pub next_open: DateTime<Utc>,
-    pub next_close: DateTime<Utc>,
+    pub next_open: Timestamp,
+    pub next_close: Timestamp,
 }
 
 /// Market calendar for one market (`GET /v3/calendar/{market}`).
@@ -220,22 +220,22 @@ pub struct Market {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct MarketCalendarDay {
-    pub date: NaiveDate,
-    pub core_start: DateTime<Utc>,
-    pub core_end: DateTime<Utc>,
-    pub pre_start: Option<DateTime<Utc>>,
-    pub pre_end: Option<DateTime<Utc>>,
-    pub post_start: Option<DateTime<Utc>>,
-    pub post_end: Option<DateTime<Utc>>,
-    pub lunch_start: Option<DateTime<Utc>>,
-    pub lunch_end: Option<DateTime<Utc>>,
-    pub settlement_date: Option<NaiveDate>,
+    pub date: Date,
+    pub core_start: Timestamp,
+    pub core_end: Timestamp,
+    pub pre_start: Option<Timestamp>,
+    pub pre_end: Option<Timestamp>,
+    pub post_start: Option<Timestamp>,
+    pub post_end: Option<Timestamp>,
+    pub lunch_start: Option<Timestamp>,
+    pub lunch_end: Option<Timestamp>,
+    pub settlement_date: Option<Date>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct Calendar {
-    pub date: NaiveDate,
+    pub date: Date,
     pub open: String,
     pub close: String,
     pub session_open: Option<String>,
@@ -263,7 +263,7 @@ pub struct TradeAccount {
     pub trading_blocked: Option<bool>,
     pub transfers_blocked: Option<bool>,
     pub account_blocked: Option<bool>,
-    pub created_at: Option<DateTime<Utc>>,
+    pub created_at: Option<Timestamp>,
     pub trade_suspended_by_user: Option<bool>,
     pub multiplier: Option<String>,
     pub shorting_enabled: Option<bool>,
@@ -296,7 +296,7 @@ pub struct AccountConfiguration {
 pub struct TradeActivity {
     pub id: String,
     pub activity_type: ActivityType,
-    pub transaction_time: Option<DateTime<Utc>>,
+    pub transaction_time: Option<Timestamp>,
     pub order_id: Option<Uuid>,
     pub symbol: Option<String>,
     pub side: Option<TradeActivitySide>,
@@ -314,7 +314,7 @@ pub struct TradeActivity {
 pub struct NonTradeActivity {
     pub id: String,
     pub activity_type: ActivityType,
-    pub date: Option<NaiveDate>,
+    pub date: Option<Date>,
     pub net_amount: Option<String>,
     pub symbol: Option<String>,
     pub qty: Option<String>,
@@ -354,7 +354,7 @@ impl<'de> Deserialize<'de> for AccountActivity {
 pub struct TradeUpdate {
     pub event: TradeEvent,
     pub order: Order,
-    pub timestamp: Option<DateTime<Utc>>,
+    pub timestamp: Option<Timestamp>,
     pub position_qty: Option<String>,
     pub price: Option<String>,
     pub qty: Option<String>,
@@ -374,11 +374,11 @@ pub struct CorporateActionAnnouncement {
     pub initiating_original_cusip: Option<String>,
     pub target_symbol: Option<String>,
     pub target_original_cusip: Option<String>,
-    pub declaration_date: Option<NaiveDate>,
-    pub ex_date: Option<NaiveDate>,
-    pub effective_date: Option<NaiveDate>,
-    pub record_date: Option<NaiveDate>,
-    pub payable_date: Option<NaiveDate>,
+    pub declaration_date: Option<Date>,
+    pub ex_date: Option<Date>,
+    pub effective_date: Option<Date>,
+    pub record_date: Option<Date>,
+    pub payable_date: Option<Date>,
     pub cash: Option<String>,
     pub old_rate: Option<String>,
     pub new_rate: Option<String>,
@@ -392,7 +392,7 @@ pub struct OptionContract {
     pub name: Option<String>,
     pub status: Option<AssetStatus>,
     pub tradable: Option<bool>,
-    pub expiration_date: Option<NaiveDate>,
+    pub expiration_date: Option<Date>,
     pub root_symbol: Option<String>,
     pub underlying_symbol: Option<String>,
     pub underlying_asset_id: Option<Uuid>,
@@ -403,9 +403,9 @@ pub struct OptionContract {
     pub multiplier: Option<String>,
     pub size: Option<String>,
     pub open_interest: Option<String>,
-    pub open_interest_date: Option<NaiveDate>,
+    pub open_interest_date: Option<Date>,
     pub close_price: Option<String>,
-    pub close_price_date: Option<NaiveDate>,
+    pub close_price_date: Option<Date>,
     /// Penny Program Indicator: whether the contract is eligible for penny price increments.
     pub ppind: Option<bool>,
 }
@@ -435,8 +435,8 @@ pub struct Locate {
     /// `quote_unavailable` and `idempotency_key_conflict` in July 2026) and an
     /// enum without a catch-all variant would fail to deserialize on the next one.
     pub rejection_reason: Option<String>,
-    pub expires_at: Option<DateTime<Utc>>,
-    pub created_at: DateTime<Utc>,
+    pub expires_at: Option<Timestamp>,
+    pub created_at: Timestamp,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -445,7 +445,7 @@ pub struct LocateQuote {
     pub symbol: String,
     pub available_qty: i64,
     pub price: Option<String>,
-    pub quoted_at: DateTime<Utc>,
+    pub quoted_at: Timestamp,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -485,8 +485,8 @@ pub struct TokenizationRequest {
     pub underlying_symbol: String,
     pub token_symbol: String,
     pub qty: String,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: Option<DateTime<Utc>>,
+    pub created_at: Timestamp,
+    pub updated_at: Option<Timestamp>,
     pub issuer: TokenizationIssuer,
     pub network: TokenizationNetwork,
     /// Authorized Participant-supplied label for this request.
@@ -510,7 +510,7 @@ pub struct TokenizationMintResponse {
     pub underlying_symbol: String,
     pub token_symbol: String,
     pub qty: String,
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
     pub issuer: TokenizationIssuer,
     pub network: TokenizationNetwork,
 }

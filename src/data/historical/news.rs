@@ -2,7 +2,7 @@ use crate::common::client::{base_url, RestClient};
 use crate::common::enums::Sort;
 use crate::data::models::{News, NewsSet};
 use crate::error::AlpacaError;
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -10,9 +10,9 @@ pub struct NewsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbols: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]

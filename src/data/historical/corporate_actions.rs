@@ -2,7 +2,7 @@ use crate::common::client::{base_url, RestClient};
 use crate::common::enums::Sort;
 use crate::data::models::CorporateActionsSet;
 use crate::error::AlpacaError;
-use chrono::NaiveDate;
+use jiff::civil::Date;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -26,9 +26,9 @@ pub struct CorporateActionsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data_quality: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<NaiveDate>,
+    pub start: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<NaiveDate>,
+    pub end: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
