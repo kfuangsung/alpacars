@@ -13,7 +13,7 @@ use alpacars::broker::requests::{
     AcatsSecurities, AcatsSecurityId, AcatsTransferDetails, ListAcatsTransfersForAccountRequest,
     ListAcatsTransfersRequest,
 };
-use chrono::{TimeZone, Utc};
+use jiff::Timestamp;
 use serde_json::json;
 use uuid::Uuid;
 use wiremock::matchers::{body_json, method, path, query_param};
@@ -116,7 +116,7 @@ async fn test_initiate_partial_transfer() {
             }),
         },
         ip_address: "203.0.113.42".to_string(),
-        signed_at: Utc.with_ymd_and_hms(2026, 4, 21, 12, 0, 0).unwrap(),
+        signed_at: "2026-04-21T12:00:00Z".parse::<Timestamp>().unwrap(),
         validate_account_number: None,
     };
     let resp = client

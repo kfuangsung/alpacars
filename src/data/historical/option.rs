@@ -4,7 +4,7 @@ use crate::data::enums::{OptionsFeed, TimeFrame};
 use crate::data::models::*;
 use crate::error::AlpacaError;
 use crate::trading::enums::ContractType;
-use chrono::{DateTime, NaiveDate, Utc};
+use jiff::{civil::Date, Timestamp};
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -13,9 +13,9 @@ struct OptionBarsParams {
     pub symbols: String,
     pub timeframe: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -32,9 +32,9 @@ struct OptionBarsParams {
 struct OptionTradesParams {
     pub symbols: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<DateTime<Utc>>,
+    pub end: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -64,13 +64,13 @@ struct OptionSnapshotParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub currency: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub updated_since: Option<DateTime<Utc>>,
+    pub updated_since: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_token: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expiration_date: Option<NaiveDate>,
+    pub expiration_date: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub strike_price_gte: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -85,8 +85,8 @@ struct OptionSnapshotParams {
 pub struct OptionBarsRequest {
     pub symbols: Vec<String>,
     pub timeframe: Option<TimeFrame>,
-    pub start: Option<DateTime<Utc>>,
-    pub end: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
+    pub end: Option<Timestamp>,
     pub limit: Option<u32>,
     pub feed: Option<OptionsFeed>,
     pub currency: Option<String>,
@@ -96,8 +96,8 @@ pub struct OptionBarsRequest {
 #[derive(Default)]
 pub struct OptionTradesRequest {
     pub symbols: Vec<String>,
-    pub start: Option<DateTime<Utc>>,
-    pub end: Option<DateTime<Utc>>,
+    pub start: Option<Timestamp>,
+    pub end: Option<Timestamp>,
     pub limit: Option<u32>,
     pub feed: Option<OptionsFeed>,
     pub currency: Option<String>,
@@ -116,9 +116,9 @@ pub struct OptionSnapshotRequest {
     pub symbols: Vec<String>,
     pub feed: Option<OptionsFeed>,
     pub currency: Option<String>,
-    pub updated_since: Option<DateTime<Utc>>,
+    pub updated_since: Option<Timestamp>,
     pub limit: Option<u32>,
-    pub expiration_date: Option<NaiveDate>,
+    pub expiration_date: Option<Date>,
 }
 
 /// Snapshots of every contract on an underlying (`GET /v1beta1/options/snapshots/{underlying}`),
@@ -129,14 +129,14 @@ pub struct OptionChainRequest {
     pub feed: Option<OptionsFeed>,
     /// Page size; every page is fetched regardless.
     pub limit: Option<u32>,
-    pub updated_since: Option<DateTime<Utc>>,
+    pub updated_since: Option<Timestamp>,
     /// Only calls or only puts.
     pub r#type: Option<ContractType>,
     pub strike_price_gte: Option<f64>,
     pub strike_price_lte: Option<f64>,
-    pub expiration_date: Option<NaiveDate>,
-    pub expiration_date_gte: Option<NaiveDate>,
-    pub expiration_date_lte: Option<NaiveDate>,
+    pub expiration_date: Option<Date>,
+    pub expiration_date_gte: Option<Date>,
+    pub expiration_date_lte: Option<Date>,
     /// e.g. `AAPL1` for adjusted contracts.
     pub root_symbol: Option<String>,
 }
@@ -148,7 +148,7 @@ struct OptionChainParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    updated_since: Option<DateTime<Utc>>,
+    updated_since: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     r#type: Option<&'a ContractType>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -156,11 +156,11 @@ struct OptionChainParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     strike_price_lte: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    expiration_date: Option<NaiveDate>,
+    expiration_date: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    expiration_date_gte: Option<NaiveDate>,
+    expiration_date_gte: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    expiration_date_lte: Option<NaiveDate>,
+    expiration_date_lte: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
     root_symbol: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]

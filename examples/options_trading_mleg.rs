@@ -29,7 +29,7 @@ fn closest_strike(contracts: &[OptionContract], target: f64) -> Option<&OptionCo
 }
 use alpacars::trading::enums::{AssetStatus, ContractType, OrderClass, OrderSide, TimeInForce};
 use alpacars::trading::requests::{GetOptionContractsRequest, OptionLegRequest, OrderRequest};
-use chrono::{Duration, Utc};
+use jiff::{tz::TimeZone, Timestamp, ToSpan};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -54,9 +54,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Strategy 1: Straddle on TSLA
     //   Buy 1 call + buy 1 put with the same strike & expiry
     // ─────────────────────────────────────────────────────────────────────────
-    let today = Utc::now().date_naive();
-    let expiry_min = today + Duration::days(20);
-    let expiry_max = today + Duration::days(50);
+    let today = TimeZone::UTC.to_datetime(Timestamp::now()).date();
+    let expiry_min = today + 20.days();
+    let expiry_max = today + 50.days();
 
     // Fetch TSLA calls
     let calls_resp = trading

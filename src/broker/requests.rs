@@ -3,7 +3,7 @@ use crate::common::enums::Sort;
 use crate::trading::enums::{
     AccountStatus, ActivityCategory, ActivityType, AssetClass, QueryOrderStatus,
 };
-use chrono::{DateTime, NaiveDate, Utc};
+use jiff::{civil::Date, Timestamp};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -30,7 +30,7 @@ pub struct CreateIdentityRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub middle_name: Option<String>,
     pub family_name: String,
-    pub date_of_birth: NaiveDate,
+    pub date_of_birth: Date,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tax_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -41,7 +41,7 @@ pub struct CreateIdentityRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub visa_type: Option<VisaType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub visa_expiration_date: Option<NaiveDate>,
+    pub visa_expiration_date: Option<Date>,
     pub funding_source: Vec<FundingSource>,
 }
 
@@ -56,7 +56,7 @@ pub struct CreateDisclosuresRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgreementRequest {
     pub agreement: AgreementType,
-    pub signed_at: DateTime<Utc>,
+    pub signed_at: Timestamp,
     pub ip_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub revision: Option<String>,
@@ -131,9 +131,9 @@ pub struct ListAccountsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub query: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub created_after: Option<DateTime<Utc>>,
+    pub created_after: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub created_before: Option<DateTime<Utc>>,
+    pub created_before: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<AccountStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -158,11 +158,11 @@ pub struct GetAccountActivitiesRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub order_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub date: Option<NaiveDate>,
+    pub date: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub until: Option<DateTime<Utc>>,
+    pub until: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<DateTime<Utc>>,
+    pub after: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direction: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -183,9 +183,9 @@ pub struct UploadDocumentRequest {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetTradeDocumentsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub start: Option<NaiveDate>,
+    pub start: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<NaiveDate>,
+    pub end: Option<Date>,
     /// Only documents of this type.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<TradeDocumentType>,
@@ -393,9 +393,9 @@ pub struct CreateReverseBatchJournalRequest {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetJournalsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<NaiveDate>,
+    pub after: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub before: Option<NaiveDate>,
+    pub before: Option<Date>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<JournalStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -486,9 +486,9 @@ pub struct GetRunsRequest {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetEventsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub since: Option<DateTime<Utc>>,
+    pub since: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub until: Option<DateTime<Utc>>,
+    pub until: Option<Timestamp>,
     /// Deprecated by Alpaca, removed on 2027-02-15; use `since_ulid`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub since_id: Option<u64>,
@@ -511,9 +511,9 @@ pub struct GetOrdersForAccountRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<DateTime<Utc>>,
+    pub after: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub until: Option<DateTime<Utc>>,
+    pub until: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direction: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -558,7 +558,7 @@ pub struct UpdateWatchlistRequest {
 pub struct CreatePartyAgreementRequest {
     pub party_id: Uuid,
     pub agreement: PartyAgreementType,
-    pub signed_at: DateTime<Utc>,
+    pub signed_at: Timestamp,
     pub ip_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub revision: Option<String>,
@@ -573,7 +573,7 @@ pub struct CreateAccountAgreementRequest {
     pub party_id: Uuid,
     pub account_id: Uuid,
     pub agreement: PerAccountAgreementType,
-    pub signed_at: DateTime<Utc>,
+    pub signed_at: Timestamp,
     pub ip_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub revision: Option<String>,
@@ -600,7 +600,7 @@ pub struct AcatsInitiateTransferRequest {
     /// IP address of the customer who authorized the transfer.
     pub ip_address: String,
     /// When the customer authorized the transfer.
-    pub signed_at: DateTime<Utc>,
+    pub signed_at: Timestamp,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub validate_account_number: Option<bool>,
 }
@@ -686,9 +686,9 @@ pub struct ListAcatsTransfersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub contra_broker_number: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub since: Option<DateTime<Utc>>,
+    pub since: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub until: Option<DateTime<Utc>>,
+    pub until: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_by: Option<AcatsSortBy>,
     #[serde(skip_serializing_if = "Option::is_none")]
