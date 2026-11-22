@@ -50,7 +50,7 @@ async fn test_get_trade_documents_for_account() {
 
     let client = common::broker_client(&server.uri());
     let filter = alpacars::broker::requests::GetTradeDocumentsRequest {
-        start: Some(chrono::NaiveDate::from_ymd_opt(2019, 1, 1).unwrap()),
+        start: Some(jiff::civil::date(2019, 1, 1)),
         end: None,
         r#type: Some(TradeDocumentType::AccountStatement),
     };

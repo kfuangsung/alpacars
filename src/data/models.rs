@@ -1,5 +1,5 @@
 use crate::data::enums::MarketType;
-use chrono::{DateTime, NaiveDate, Utc};
+use jiff::{civil::Date, Timestamp};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -31,7 +31,7 @@ pub struct Bar {
     pub symbol: String,
     /// Timestamp
     #[serde(rename = "t")]
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: Timestamp,
     /// Open price
     #[serde(rename = "o")]
     pub open: f64,
@@ -72,7 +72,7 @@ pub struct Quote {
     pub symbol: String,
     /// Timestamp
     #[serde(rename = "t")]
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: Timestamp,
     /// Ask exchange
     #[serde(rename = "ax")]
     pub ask_exchange: Option<String>,
@@ -113,7 +113,7 @@ pub struct Trade {
     pub symbol: String,
     /// Timestamp
     #[serde(rename = "t")]
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: Timestamp,
     /// Exchange
     #[serde(rename = "x")]
     pub exchange: Option<String>,
@@ -159,7 +159,7 @@ pub struct Orderbook {
     #[serde(rename = "S", default)]
     pub symbol: String,
     #[serde(rename = "t")]
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: Timestamp,
     #[serde(rename = "a")]
     pub asks: Vec<OrderbookEntry>,
     #[serde(rename = "b")]
@@ -228,7 +228,7 @@ pub type OptionsSnapshotSet = HashMap<String, OptionsSnapshot>;
 #[non_exhaustive]
 pub struct TradingStatus {
     #[serde(rename = "t")]
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: Timestamp,
     #[serde(rename = "S")]
     pub symbol: String,
     #[serde(rename = "sc")]
@@ -247,7 +247,7 @@ pub struct TradingStatus {
 #[non_exhaustive]
 pub struct TradeCancel {
     #[serde(rename = "t")]
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: Timestamp,
     #[serde(rename = "x")]
     pub exchange: Option<String>,
     #[serde(rename = "p")]
@@ -266,7 +266,7 @@ pub struct TradeCancel {
 #[non_exhaustive]
 pub struct TradeCorrection {
     #[serde(rename = "t")]
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: Timestamp,
     #[serde(rename = "x")]
     pub exchange: Option<String>,
     #[serde(rename = "oi")]
@@ -304,8 +304,8 @@ pub struct News {
     pub id: u64,
     pub headline: String,
     pub author: Option<String>,
-    pub created_at: Option<DateTime<Utc>>,
-    pub updated_at: Option<DateTime<Utc>>,
+    pub created_at: Option<Timestamp>,
+    pub updated_at: Option<Timestamp>,
     pub summary: Option<String>,
     pub content: Option<String>,
     pub url: Option<String>,
@@ -329,7 +329,7 @@ pub struct ActiveStock {
 #[non_exhaustive]
 pub struct MostActives {
     pub most_actives: Vec<ActiveStock>,
-    pub last_updated: Option<DateTime<Utc>>,
+    pub last_updated: Option<Timestamp>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -347,7 +347,7 @@ pub struct Movers {
     pub gainers: Vec<Mover>,
     pub losers: Vec<Mover>,
     pub market_type: Option<MarketType>,
-    pub last_updated: Option<DateTime<Utc>>,
+    pub last_updated: Option<Timestamp>,
 }
 
 // Corporate action types
@@ -357,11 +357,11 @@ pub struct ForwardSplit {
     pub symbol: String,
     pub new_rate: f64,
     pub old_rate: f64,
-    pub process_date: Option<NaiveDate>,
-    pub ex_date: Option<NaiveDate>,
-    pub record_date: Option<NaiveDate>,
-    pub payable_date: Option<NaiveDate>,
-    pub due_bill_redemption_date: Option<NaiveDate>,
+    pub process_date: Option<Date>,
+    pub ex_date: Option<Date>,
+    pub record_date: Option<Date>,
+    pub payable_date: Option<Date>,
+    pub due_bill_redemption_date: Option<Date>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -371,10 +371,10 @@ pub struct ReverseSplit {
     pub new_symbol: Option<String>,
     pub new_rate: f64,
     pub old_rate: f64,
-    pub process_date: Option<NaiveDate>,
-    pub ex_date: Option<NaiveDate>,
-    pub record_date: Option<NaiveDate>,
-    pub payable_date: Option<NaiveDate>,
+    pub process_date: Option<Date>,
+    pub ex_date: Option<Date>,
+    pub record_date: Option<Date>,
+    pub payable_date: Option<Date>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -386,9 +386,9 @@ pub struct UnitSplit {
     pub new_rate: f64,
     pub alternate_symbol: Option<String>,
     pub alternate_rate: Option<f64>,
-    pub process_date: Option<NaiveDate>,
-    pub effective_date: Option<NaiveDate>,
-    pub payable_date: Option<NaiveDate>,
+    pub process_date: Option<Date>,
+    pub effective_date: Option<Date>,
+    pub payable_date: Option<Date>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -398,12 +398,12 @@ pub struct CashDividend {
     pub rate: f64,
     pub special: bool,
     pub foreign: bool,
-    pub process_date: Option<NaiveDate>,
-    pub ex_date: Option<NaiveDate>,
-    pub record_date: Option<NaiveDate>,
-    pub payable_date: Option<NaiveDate>,
-    pub due_bill_on_date: Option<NaiveDate>,
-    pub due_bill_off_date: Option<NaiveDate>,
+    pub process_date: Option<Date>,
+    pub ex_date: Option<Date>,
+    pub record_date: Option<Date>,
+    pub payable_date: Option<Date>,
+    pub due_bill_on_date: Option<Date>,
+    pub due_bill_off_date: Option<Date>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -411,10 +411,10 @@ pub struct CashDividend {
 pub struct StockDividend {
     pub symbol: String,
     pub rate: f64,
-    pub process_date: Option<NaiveDate>,
-    pub ex_date: Option<NaiveDate>,
-    pub record_date: Option<NaiveDate>,
-    pub payable_date: Option<NaiveDate>,
+    pub process_date: Option<Date>,
+    pub ex_date: Option<Date>,
+    pub record_date: Option<Date>,
+    pub payable_date: Option<Date>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -424,11 +424,11 @@ pub struct SpinOff {
     pub source_rate: f64,
     pub new_symbol: String,
     pub new_rate: f64,
-    pub process_date: Option<NaiveDate>,
-    pub ex_date: Option<NaiveDate>,
-    pub record_date: Option<NaiveDate>,
-    pub payable_date: Option<NaiveDate>,
-    pub due_bill_redemption_date: Option<NaiveDate>,
+    pub process_date: Option<Date>,
+    pub ex_date: Option<Date>,
+    pub record_date: Option<Date>,
+    pub payable_date: Option<Date>,
+    pub due_bill_redemption_date: Option<Date>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

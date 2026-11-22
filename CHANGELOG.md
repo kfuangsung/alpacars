@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Breaking:** dates and times use [`jiff`](https://docs.rs/jiff) instead of `chrono`, which RustSec now lists as unmaintained (RUSTSEC-2026-0543), with no patched version. Every `DateTime<Utc>` is now a `jiff::Timestamp`, and every `NaiveDate` a `jiff::civil::Date`. The wire formats are unchanged: RFC 3339 timestamps and `YYYY-MM-DD` dates. To migrate, add `jiff = "1"` to your dependencies. Build dates with `jiff::civil::date(2026, 1, 2)` and timestamps with `"2026-01-02T15:04:05Z".parse::<jiff::Timestamp>()`. Get today in UTC with `jiff::tz::TimeZone::UTC.to_datetime(jiff::Timestamp::now()).date()`. A timestamp's `Display` is RFC 3339 (`2026-01-02T15:04:05Z`).
+
+### Security
+- `openssl` upgraded to 0.10.82 (via `native-tls`) for RUSTSEC-2026-0474, RUSTSEC-2026-0476 and RUSTSEC-2026-0477.
+
 ## [0.8.0] - 2026-10-20
 
 Breaking release. Live market-data events now carry their symbol. Response models can gain fields in future patch releases. The option chain is typed and fully paginated, and string filters the API defines as enums are typed. It also fixes corporate action announcements, which never parsed correctly. Migrating is mostly mechanical:

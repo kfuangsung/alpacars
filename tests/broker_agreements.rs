@@ -8,7 +8,7 @@ use alpacars::broker::requests::{
     CreateAccountAgreementRequest, CreateAgreementRequest, CreatePartyAgreementRequest,
 };
 use alpacars::error::AlpacaError;
-use chrono::{TimeZone, Utc};
+use jiff::Timestamp;
 use serde_json::json;
 use uuid::Uuid;
 use wiremock::matchers::{body_json, method, path};
@@ -42,7 +42,7 @@ async fn test_create_party_agreement() {
     let req = CreateAgreementRequest::Party(CreatePartyAgreementRequest {
         party_id: uuid("f47ac10b-58cc-4372-a567-0e02b2c3d479"),
         agreement: PartyAgreementType::MarginAgreement,
-        signed_at: Utc.with_ymd_and_hms(2024, 1, 15, 10, 30, 0).unwrap(),
+        signed_at: "2024-01-15T10:30:00Z".parse::<Timestamp>().unwrap(),
         ip_address: "192.168.1.100".to_string(),
         revision: Some("19.2024.01".to_string()),
         signer_party_id: None,
@@ -84,7 +84,7 @@ async fn test_create_account_agreement_for_legal_entity() {
         party_id: uuid("550e8400-e29b-41d4-a716-446655440000"),
         account_id: uuid("d7e8f9a0-b1c2-3d4e-5f67-890123456789"),
         agreement: PerAccountAgreementType::OptionsAgreement,
-        signed_at: Utc.with_ymd_and_hms(2024, 8, 18, 14, 5, 0).unwrap(),
+        signed_at: "2024-08-18T14:05:00Z".parse::<Timestamp>().unwrap(),
         ip_address: "10.0.0.50".to_string(),
         revision: None,
         signer_party_id: Some(uuid("550e8400-e29b-41d4-a716-446655440003")),
@@ -117,7 +117,7 @@ async fn test_create_agreement_party_not_found() {
     let req = CreateAgreementRequest::Party(CreatePartyAgreementRequest {
         party_id: uuid("e4d3c2b1-a098-7654-3210-fedcba987654"),
         agreement: PartyAgreementType::CertificationsAndResolutionsStatement,
-        signed_at: Utc.with_ymd_and_hms(2024, 8, 18, 14, 0, 0).unwrap(),
+        signed_at: "2024-08-18T14:00:00Z".parse::<Timestamp>().unwrap(),
         ip_address: "10.0.0.50".to_string(),
         revision: None,
         signer_party_id: None,
