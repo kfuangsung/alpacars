@@ -314,7 +314,9 @@ pub struct RebalancingRun {
 #[non_exhaustive]
 pub struct ListRunsResponse {
     pub runs: Vec<RebalancingRun>,
-    pub next_page_token: Option<String>,
+    /// Offset to pass as the next request's `page_token`; `None` when there are no more runs.
+    /// Set only when the page is full.
+    pub next_page_token: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

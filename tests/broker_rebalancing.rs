@@ -303,7 +303,9 @@ async fn test_create_subscription_run() {
     client.create_manual_run(&req).await.unwrap();
 }
 
-/// List All Runs returns {runs, next_page_token}, not a bare array.
+/// List All Runs returns {runs, next_page_token}, not a bare array. Per get-v1-rebalancing-runs,
+/// `page_token` and `next_page_token` are int32 offsets (`offset + limit` on a full page, else
+/// null); a string-typed token failed to parse every full page.
 #[tokio::test]
 async fn test_get_all_runs_is_paginated() {
     let server = MockServer::start().await;
@@ -312,8 +314,10 @@ async fn test_get_all_runs_is_paginated() {
         .and(path("/v1/rebalancing/runs"))
         .and(query_param("account_id", ACCOUNT_ID))
         .and(query_param("type", "full_rebalance"))
+        .and(query_param("page_token", "100"))
+        .and(query_param("limit", "1"))
         .respond_with(ResponseTemplate::new(200).set_body_string(format!(
-            r#"{{"runs": [{}], "next_page_token": "eyJwYWdlIjoyfQ"}}"#,
+            r#"{{"runs": [{}], "next_page_token": 101}}"#,
             RUN_JSON
         )))
         .expect(1)
@@ -324,13 +328,15 @@ async fn test_get_all_runs_is_paginated() {
     let filter = GetRunsRequest {
         account_id: Some(uuid(ACCOUNT_ID)),
         run_type: Some(RunType::FullRebalance),
+        page_token: Some(100),
+        limit: Some(1),
         ..Default::default()
     };
     let resp = client.get_all_runs(Some(&filter)).await.unwrap();
 
     assert_eq!(resp.runs.len(), 1);
     assert_eq!(resp.runs[0].id, uuid(RUN_ID));
-    assert_eq!(resp.next_page_token.as_deref(), Some("eyJwYWdlIjoyfQ"));
+    assert_eq!(resp.next_page_token, Some(101));
 }
 
 #[tokio::test]
@@ -380,7 +386,7 @@ const SUBSCRIPTION_JSON: &str = r#"{
 
 /// get-v1-rebalancing-subscriptions answers `{subscriptions, next_page_token}`, not a bare
 /// array; the crate parsed an array and so could never list subscriptions. Every page is
-/// fetched, and the filter is sent on each.
+/// fetched, and the filter is sent on each. The token is an int32 offset, not a string.
 #[tokio::test]
 async fn test_get_all_subscriptions_is_paginated() {
     let server = MockServer::start().await;
@@ -389,7 +395,7 @@ async fn test_get_all_subscriptions_is_paginated() {
         .and(query_param("account_id", ACCOUNT_ID))
         .and(wiremock::matchers::query_param_is_missing("page_token"))
         .respond_with(ResponseTemplate::new(200).set_body_string(format!(
-            r#"{{"subscriptions": [{SUBSCRIPTION_JSON}], "next_page_token": "MTAwMA=="}}"#
+            r#"{{"subscriptions": [{SUBSCRIPTION_JSON}], "next_page_token": 100}}"#
         )))
         .expect(1)
         .mount(&server)
@@ -397,7 +403,7 @@ async fn test_get_all_subscriptions_is_paginated() {
     Mock::given(method("GET"))
         .and(path("/v1/rebalancing/subscriptions"))
         .and(query_param("account_id", ACCOUNT_ID))
-        .and(query_param("page_token", "MTAwMA=="))
+        .and(query_param("page_token", "100"))
         .respond_with(ResponseTemplate::new(200).set_body_string(format!(
             r#"{{"subscriptions": [{SUBSCRIPTION_JSON}], "next_page_token": null}}"#
         )))
