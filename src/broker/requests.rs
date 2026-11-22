@@ -347,6 +347,23 @@ pub struct TransferIraTaxWithholding {
     pub state_pct: Option<String>,
 }
 
+/// Body of `simulate_incoming_wire` (sandbox only).
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CreateSimulatedIncomingWireRequest {
+    /// Decimal amount, greater than 0.
+    pub amount: String,
+    /// Must contain `FFC <correspondent>-<account_number>`, for example `FFC TEST-123456789`
+    /// (the hyphen may be a space or omitted).
+    pub wire_instructions: String,
+    /// ISO currency; must match the account's base currency. The API defaults to `USD`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub currency: Option<String>,
+    /// Accepted and echoed back, but not used: the wire is processed on the next worker run
+    /// regardless.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delay_until: Option<Timestamp>,
+}
+
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetTransfersRequest {
     #[serde(skip_serializing_if = "Option::is_none")]

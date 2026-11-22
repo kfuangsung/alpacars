@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `trade_marker` (`TradeMarker`: `Discretionary`, `Unsolicited`) on `CreateSubscriptionRequest` and `Subscription`.
 - `currency` on `CreateJournalRequest` and `ReverseBatchJournalEntry`.
 - `TokenizationRequest.transfer_status` (`TokenizationTransferStatus`).
+- `BrokerClient::simulate_incoming_wire` (`POST /v1/testing/incoming_wires`) funds an account in sandbox with a simulated incoming wire. It takes a `CreateSimulatedIncomingWireRequest` and returns a `SimulatedIncomingWire`.
 
 ### Changed
 - **Breaking:** dates and times use [`jiff`](https://docs.rs/jiff) instead of `chrono`, which RustSec now lists as unmaintained (RUSTSEC-2026-0543), with no patched version. Every `DateTime<Utc>` is now a `jiff::Timestamp`, and every `NaiveDate` a `jiff::civil::Date`. The wire formats are unchanged: RFC 3339 timestamps and `YYYY-MM-DD` dates. To migrate, add `jiff = "1"` to your dependencies. Build dates with `jiff::civil::date(2026, 1, 2)` and timestamps with `"2026-01-02T15:04:05Z".parse::<jiff::Timestamp>()`. Get today in UTC with `jiff::tz::TimeZone::UTC.to_datetime(jiff::Timestamp::now()).date()`. A timestamp's `Display` is RFC 3339 (`2026-01-02T15:04:05Z`).
