@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Listing rebalancing runs or subscriptions failed whenever a page was full. `GET /v1/rebalancing/runs` and `/v1/rebalancing/subscriptions` paginate with integer offsets: `page_token` is an int32 and `next_page_token` a nullable int32 (`offset + limit` on a full page). The crate parsed `next_page_token` as a string, so `get_all_runs` errored on a full page and `get_all_subscriptions` could not get past the first one. **Breaking:** `GetRunsRequest.page_token` and `ListRunsResponse.next_page_token` are `Option<u32>`.
+
 ## [0.8.0] - 2026-10-20
 
 Breaking release. Live market-data events now carry their symbol. Response models can gain fields in future patch releases. The option chain is typed and fully paginated, and string filters the API defines as enums are typed. It also fixes corporate action announcements, which never parsed correctly. Migrating is mostly mechanical:
