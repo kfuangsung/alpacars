@@ -444,3 +444,73 @@ fn test_transfer_type_wire_values() {
         assert_eq!(parsed, variant);
     }
 }
+
+/// createincomingwire (sandbox only): request examples `usd` and `eur`, response example
+/// `queued`. The response spells the creation time `create_at`.
+#[tokio::test]
+async fn test_simulate_incoming_wire() {
+    use alpacars::broker::requests::CreateSimulatedIncomingWireRequest;
+
+    let server = MockServer::start().await;
+    let queued = json!({
+        "account_number": "123456789",
+        "amount": "1000",
+        "batch_processed_at": "0001-01-01T00:00:00Z",
+        "correspondent": "TEST",
+        "create_at": "2026-11-09T17:45:12.123456Z",
+        "currency": "USD",
+        "delay_until": null,
+        "id": "0b6c4a9e-2f4d-4b8a-9c1e-7f3d2a1b5c6d",
+        "status": "QUEUED",
+        "wire_instructions": "FFC TEST-123456789"
+    });
+    Mock::given(method("POST"))
+        .and(path("/v1/testing/incoming_wires"))
+        .and(body_json(
+            json!({"amount": "1000.00", "wire_instructions": "FFC TEST-123456789"}),
+        ))
+        .respond_with(ResponseTemplate::new(200).set_body_json(&queued))
+        .expect(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
+        .and(path("/v1/testing/incoming_wires"))
+        .and(body_json(json!({
+            "amount": "250.50",
+            "currency": "EUR",
+            "wire_instructions": "FFC TEST-987654321"
+        })))
+        .respond_with(ResponseTemplate::new(200).set_body_json(&queued))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = common::broker_client(&server.uri());
+    let wire = client
+        .simulate_incoming_wire(&CreateSimulatedIncomingWireRequest {
+            amount: "1000.00".into(),
+            wire_instructions: "FFC TEST-123456789".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+    assert_eq!(wire.status, TransferStatus::Queued);
+    assert_eq!(wire.correspondent, "TEST");
+    assert_eq!(wire.delay_until, None);
+    assert_eq!(
+        wire.id,
+        "0b6c4a9e-2f4d-4b8a-9c1e-7f3d2a1b5c6d"
+            .parse::<Uuid>()
+            .unwrap()
+    );
+
+    client
+        .simulate_incoming_wire(&CreateSimulatedIncomingWireRequest {
+            amount: "250.50".into(),
+            wire_instructions: "FFC TEST-987654321".into(),
+            currency: Some("EUR".into()),
+            delay_until: None,
+        })
+        .await
+        .unwrap();
+}

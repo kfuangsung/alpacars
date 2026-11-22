@@ -185,6 +185,27 @@ pub struct Bank {
     pub street_address: Option<String>,
 }
 
+/// A simulated incoming wire, returned by `simulate_incoming_wire` (sandbox only).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct SimulatedIncomingWire {
+    pub id: Uuid,
+    pub amount: String,
+    pub currency: String,
+    pub status: TransferStatus,
+    /// Destination account number.
+    pub account_number: String,
+    /// Your 4-character correspondent code.
+    pub correspondent: String,
+    pub wire_instructions: String,
+    /// When the wire was created. The API spells this key `create_at`.
+    pub create_at: Timestamp,
+    /// Not populated yet: always the zero time `0001-01-01T00:00:00Z`.
+    pub batch_processed_at: Timestamp,
+    /// Echo of the request's `delay_until`.
+    pub delay_until: Option<Timestamp>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct Transfer {

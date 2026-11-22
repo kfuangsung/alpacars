@@ -324,6 +324,21 @@ impl BrokerClient {
             .await
     }
 
+    /// Simulate an incoming wire (`POST /v1/testing/incoming_wires`), to fund an account in
+    /// **sandbox** without a real sending bank. Production returns 403.
+    ///
+    /// `wire_instructions` names the destination with an FFC string,
+    /// `FFC <correspondent>-<account_number>`. The wire is created `QUEUED` and processed on
+    /// a later worker run.
+    pub async fn simulate_incoming_wire(
+        &self,
+        data: &CreateSimulatedIncomingWireRequest,
+    ) -> Result<SimulatedIncomingWire, AlpacaError> {
+        self.client
+            .post("/testing/incoming_wires", Some(data))
+            .await
+    }
+
     pub async fn get_transfers_for_account(
         &self,
         account_id: &Uuid,
